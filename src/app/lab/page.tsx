@@ -1,23 +1,52 @@
 "use client";
 
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import {
   User, Database, AlertCircle, Wifi, Terminal, Activity,
   MapPin, Settings, ShieldCheck, Cpu, RefreshCw, Plus, FileText,
   Trash2, Mail, Eye, EyeOff, Globe, Server, Check, CheckCircle2,
   TrendingUp, DollarSign, Zap, ShoppingCart, ChevronUp, ChevronDown,
-  LogOut, Usb
+  LogOut, Usb, Loader2
 } from 'lucide-react';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { RdsDiagnosticPanel } from '../../components/RdsDiagnosticPanel';
-import CacheManagement from '../../components/CacheManagement';
-import { HardwareScanChart } from '../../components/HardwareScanChart';
-import TicketTemplatesPanel from '../../components/TicketTemplatesPanel';
-import { UsbSimulator } from '../../components/UsbSimulator';
-import { ToastContainer, Toast } from '../../components/ToastNotification';
-import SignatureCanvas from '../../components/SignatureCanvas';
+import type { Toast } from '../../components/ToastNotification';
 import { RepairTicket, POSLog, QuoteResponse, TicketTemplate } from '@/lib/types';
 import { calculateQuoteInternal, WA_TAX_DATA } from '@/lib/repair-logic';
+
+// Dynamically import heavy components to reduce main bundle size
+const RdsDiagnosticPanel = dynamic(() => import('../../components/RdsDiagnosticPanel').then(m => m.RdsDiagnosticPanel), {
+  loading: () => <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-blue-500" /></div>,
+  ssr: false
+});
+
+const CacheManagement = dynamic(() => import('../../components/CacheManagement'), {
+  loading: () => <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-blue-500" /></div>,
+  ssr: false
+});
+
+const HardwareScanChart = dynamic(() => import('../../components/HardwareScanChart').then(m => m.HardwareScanChart), {
+  loading: () => <div className="h-[350px] w-full bg-slate-900 animate-pulse rounded-xl border border-slate-800" />,
+  ssr: false
+});
+
+const UsbSimulator = dynamic(() => import('../../components/UsbSimulator').then(m => m.UsbSimulator), {
+  loading: () => <div className="p-8 flex justify-center"><Loader2 className="animate-spin text-blue-500" /></div>,
+  ssr: false
+});
+
+const SignatureCanvas = dynamic(() => import('../../components/SignatureCanvas'), {
+  loading: () => <div className="h-[400px] w-full bg-slate-900 animate-pulse rounded-xl border border-slate-800" />,
+  ssr: false
+});
+
+const TicketTemplatesPanel = dynamic(() => import('../../components/TicketTemplatesPanel'), {
+  ssr: false
+});
+
+const ToastContainer = dynamic(() => import('../../components/ToastNotification').then(m => m.ToastContainer), {
+  ssr: false
+});
 
 // WebUSB Types for safe compilation
 interface USBEndpoint {
