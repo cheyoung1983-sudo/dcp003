@@ -46,8 +46,21 @@ export default async function RootLayout({
           src="https://www.google.com/recaptcha/enterprise.js?render=6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"
           strategy="afterInteractive"
         />
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans">
+        {/* Google One Tap / Automatic Sign-in Initialization */}
+        <div id="g_id_onload"
+             data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"}
+             data-context="signin"
+             data-login_uri={`${process.env.NEXTAUTH_URL || ""}/api/auth/google/callback`}
+             data-auto_select="true"
+             data-itp_support="true"
+             data-use_fedcm_for_prompt="true">
+        </div>
         <Auth0Provider user={user}>
           <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

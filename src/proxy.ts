@@ -40,8 +40,19 @@ export async function proxy(request: Request) {
     }
   }
 
+  // Targeted bypass for public API routes to prevent middleware interference
+  if (
+    url.pathname.startsWith('/api/recaptcha') ||
+    url.pathname.startsWith('/api/health') ||
+    url.pathname.startsWith('/api/auth/google')
+  ) {
+    return NextResponse.next();
+  }
+
   try {
-    return await auth0.middleware(request);
+    const res = await auth0.middleware(request);
+    // If the middleware returns a response, return it; otherwise continue
+    return res || NextResponse.next();
   } catch (err) {
     console.warn('[AI Studio] Auth0 middleware error, bypassing:', err);
     return NextResponse.next();

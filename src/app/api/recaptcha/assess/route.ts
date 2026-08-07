@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Token is required' }, { status: 400 });
     }
 
-    const projectId = 'displaycellpros-com';
-    const recaptchaKey = siteKey || '6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj';
+    const projectId = process.env.RECAPTCHA_PROJECT_ID || 'displaycellpros-com';
+    const recaptchaKey = siteKey || process.env.RECAPTCHA_SITE_KEY || '6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj';
     const action = expectedAction || 'submit';
 
     let assessmentResult: any = null;

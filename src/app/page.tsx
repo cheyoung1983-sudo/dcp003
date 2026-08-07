@@ -20,11 +20,9 @@ export default function Home() {
 
       try {
         const payload = {
-          event: {
-            token: token,
-            expectedAction: 'submit',
-            siteKey: '6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj'
-          }
+          token: token,
+          expectedAction: 'submit',
+          siteKey: '6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj'
         };
 
         const res = await fetch('/api/recaptcha/assess', {
@@ -33,11 +31,19 @@ export default function Home() {
           body: JSON.stringify(payload)
         });
 
-        const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error || 'Assessment failed');
+          const errorText = await res.text();
+          let errorMessage = 'Assessment failed';
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error || errorMessage;
+          } catch {
+            errorMessage = `Network error (${res.status}): ${errorText.substring(0, 100)}`;
+          }
+          throw new Error(errorMessage);
         }
 
+        const data = await res.json();
         setAssessmentData(data);
         setSubmitted(true);
       } catch (err: any) {

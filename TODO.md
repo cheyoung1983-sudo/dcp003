@@ -13,10 +13,19 @@ The build is successful with `@vercel/functions@^3.8.0`. `createSigner` is no lo
 ## 3. Resolve Prisma Client Generation [DONE]
 - **Action Taken:** Added `prisma generate` to the `build` script in `package.json`.
 
-## 4. ESLint and Build Optimization [DONE]
-- **Action Taken:** Downgraded ESLint to v9 to match Next.js 15 requirements.
-- **Action Taken:** Optimized `src/lib/auth0.ts` for `VERCEL_URL` detection.
-- **Action Taken:** Updated CSP headers in `middleware.ts` and `vercel.json`.
+## 5. Fix reCAPTCHA API Response Parsing Error [DONE]
+- **Problem:** Client-side `onSubmit` failed with `SyntaxError` when `/api/recaptcha/assess` returned a 404 HTML page.
+- **Action Taken:** Updated `src/app/page.tsx` to check `res.ok` and handle non-JSON responses gracefully.
+- **Action Taken:** Aligned JSON payload between frontend and backend.
+- **Action Taken:** Updated `src/proxy.ts` to bypass Auth0 middleware for `/api/recaptcha` routes to prevent 404 interference.
+- **Action Taken:** Updated `src/app/api/recaptcha/assess/route.ts` to use environment variables for `siteKey` and `projectId`.
+
+## 6. Implement Sign in with Google [DONE]
+- **Action Taken:** Added Google Identity Services script to `RootLayout`.
+- **Action Taken:** Initialized One Tap and Automatic Sign-in with FedCM support.
+- **Action Taken:** Created `GoogleSignInButton` component and added it to the sign-in page.
+- **Action Taken:** Implemented backend callback handler at `src/app/api/auth/google/callback/route.ts` using `google-auth-library` to verify ID tokens.
+- **Action Taken:** Updated `src/proxy.ts` to bypass Auth0 middleware for Google Auth routes.
 
 ## 4. Final Deployment
 Once the above steps are completed:
