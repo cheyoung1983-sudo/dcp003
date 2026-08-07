@@ -2,6 +2,13 @@ import { proxy } from './proxy';
 import { NextResponse } from 'next/server';
 
 export async function middleware(request: Request) {
+  const url = new URL(request.url);
+
+  // 1. Direct bypass for API routes to ensure they never hit the Auth0 proxy
+  if (url.pathname.startsWith('/api/')) {
+    return NextResponse.next();
+  }
+
   const response = await proxy(request);
 
   if (response instanceof NextResponse && process.env.NODE_ENV === 'production') {

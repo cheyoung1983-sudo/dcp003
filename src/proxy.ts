@@ -6,17 +6,6 @@ import { validateLexicalPayload } from '@/lib/lexical-firewall';
 export async function proxy(request: Request) {
   const url = new URL(request.url);
 
-  // Targeted bypass for public API routes to prevent middleware interference
-  // We do this first to ensure minimum TTFB and zero interference.
-  if (
-    url.pathname.startsWith('/api/recaptcha') ||
-    url.pathname.startsWith('/api/health') ||
-    url.pathname.startsWith('/api/auth/google') ||
-    url.pathname.startsWith('/api/auth/logout')
-  ) {
-    return NextResponse.next();
-  }
-
   // Handle /welcome and /api/welcome via Edge Config
   if (url.pathname === '/welcome' || url.pathname === '/api/welcome') {
     try {
