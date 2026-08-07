@@ -8,7 +8,7 @@ export async function middleware(request: Request) {
     const csp = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.gstatic.com https://*.google-analytics.com https://vercel.live https://*.vercel.live https://*.auth0.com",
-      "connect-src 'self' https://*.google.com https://*.gstatic.com https://*.google-analytics.com https://vercel.live https://*.vercel.live https://*.auth0.com https://displaycellpros.us.auth0.com wss://*.vercel.live",
+      "connect-src 'self' https://*.google.com https://*.gstatic.com https://*.google-analytics.com https://vercel.live https://*.vercel.live https://*.auth0.com https://icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com wss://*.vercel.live",
       "img-src 'self' data: blob: https://*.google.com https://*.google-analytics.com https://*.gstatic.com https://*.auth0.com https://*.githubusercontent.com https://picsum.photos https://*.picsum.photos https://images.unsplash.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' data: https://fonts.gstatic.com",

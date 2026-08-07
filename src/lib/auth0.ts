@@ -32,8 +32,10 @@ function resolveAuth0Config() {
   let envDomain = process.env.AUTH0_DOMAIN || process.env.AUTH0_ISSUER_BASE_URL;
   let rawBaseUrl = process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL || process.env.NEXTAUTH_URL;
 
-  // Auto-detect appBaseUrl on Vercel if not explicitly provided
-  if (!rawBaseUrl && process.env.VERCEL_URL) {
+  // Auto-detect appBaseUrl on Vercel
+  // We prioritize VERCEL_URL in production if rawBaseUrl is localhost or missing
+  const isLocalhost = rawBaseUrl?.includes('localhost') || rawBaseUrl?.includes('127.0.0.1');
+  if ((!rawBaseUrl || isLocalhost) && process.env.VERCEL_URL) {
     rawBaseUrl = `https://${process.env.VERCEL_URL}`;
   }
 
