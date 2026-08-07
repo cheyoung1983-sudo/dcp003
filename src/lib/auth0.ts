@@ -101,7 +101,10 @@ function resolveAuth0Config() {
     clientId: clientId || 'iHyCQzrHYenv4lrkCFy4v9528jtJUUHl',
     clientSecret: clientSecret || '',
     secret: secret || '',
-    appBaseUrl
+    appBaseUrl,
+    authorizationParameters: {
+      scope: 'openid profile email offline_access',
+    },
   };
 
   if (process.env.NODE_ENV === 'production') {
