@@ -86,7 +86,9 @@ export default async function RootLayout({
           <div id="g_id_onload"
                data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
                data-context="signin"
+               data-ux_mode="popup"
                data-login_uri={`${appBaseUrl}/api/auth/google/callback`}
+               data-auto_prompt="false"
                data-auto_select="true"
                data-itp_support="true"
                data-use_fedcm_for_prompt="true">

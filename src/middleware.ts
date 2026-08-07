@@ -16,14 +16,20 @@ export async function middleware(request: Request) {
       "default-src 'self'",
       "manifest-src 'self' https://vercel.com",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.gstatic.com https://*.google-analytics.com https://*.googletagmanager.com https://vercel.live https://*.vercel.live https://*.auth0.com",
-      "connect-src 'self' https://*.google.com https://*.gstatic.com https://*.google-analytics.com https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.openai.com https://vercel.live https://*.vercel.live https://*.auth0.com https://icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com wss://*.vercel.live",
+      "connect-src 'self' https://*.google.com https://*.gstatic.com https://*.google-analytics.com https://vercel.live https://*.vercel.live https://*.auth0.com https://icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com wss://*.vercel.live",
       "img-src 'self' data: blob: https://*.google.com https://*.google-analytics.com https://*.gstatic.com https://*.auth0.com https://*.githubusercontent.com https://picsum.photos https://*.picsum.photos https://images.unsplash.com https://ai.google.dev",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com",
       "font-src 'self' data: https://fonts.gstatic.com",
       "frame-src 'self' https://*.google.com https://*.gstatic.com https://vercel.live https://*.vercel.live https://*.auth0.com",
     ].join('; ');
 
+    // Security Hardening Headers
     response.headers.set('Content-Security-Policy', csp);
+    response.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
   return response;
