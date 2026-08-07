@@ -44,7 +44,8 @@ export async function proxy(request: Request) {
   if (
     url.pathname.startsWith('/api/recaptcha') ||
     url.pathname.startsWith('/api/health') ||
-    url.pathname.startsWith('/api/auth/google')
+    url.pathname.startsWith('/api/auth/google') ||
+    url.pathname.startsWith('/api/auth/logout')
   ) {
     return NextResponse.next();
   }

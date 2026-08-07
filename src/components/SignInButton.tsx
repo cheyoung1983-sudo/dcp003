@@ -44,13 +44,14 @@ export default function SignInButton() {
 
   return (
     <button
-      className="g-recaptcha rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      className="g-recaptcha w-[240px] flex items-center justify-center gap-2 rounded-md bg-[#4f46e5] h-[40px] font-medium text-white hover:bg-indigo-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 shadow-sm"
       data-sitekey="6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"
       data-callback="onSubmit"
       data-action="submit"
       onClick={onClick}
     >
-      Sign In
+      <img src="https://vercel.com/favicon.ico" alt="" className="w-4 h-4 invert" />
+      Sign in with Vercel
     </button>
   );
 }

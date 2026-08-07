@@ -9,7 +9,7 @@ import React from 'react';
  */
 export default function GoogleSignInButton() {
   return (
-    <div className="flex justify-center my-4">
+    <div className="flex justify-center my-2">
       <div
         className="g_id_signin"
         data-type="standard"
@@ -18,6 +18,7 @@ export default function GoogleSignInButton() {
         data-text="signin_with"
         data-size="large"
         data-logo_alignment="left"
+        data-width="240"
         data-use_fedcm_for_button="true"
         data-button_auto_select="true"
       ></div>

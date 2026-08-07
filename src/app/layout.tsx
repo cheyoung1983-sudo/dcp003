@@ -3,6 +3,8 @@ import Script from 'next/script';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { Auth0Provider } from "@auth0/nextjs-auth0/client";
 import { auth0, getAppBaseUrl } from "@/lib/auth0";
+import { cookies } from 'next/headers';
+import * as jose from 'jose';
 import LoginButton from "@/components/LoginButton";
 import LogoutButton from "@/components/LogoutButton";
 import Profile from "@/components/Profile";
@@ -37,8 +39,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await auth0.getSession();
-  const user = session?.user;
+  let user = session?.user;
   const appBaseUrl = getAppBaseUrl();
+
+  // Unified authentication check (Auth0 or Google)
+  const cookieStore = await cookies();
+  const googleToken = cookieStore.get('google_session_token')?.value;
+
+  if (!user && googleToken) {
+    try {
+      const decoded = jose.decodeJwt(googleToken);
+      user = {
+        name: (decoded.name as string) || (decoded.email as string),
+        email: decoded.email as string,
+        picture: decoded.picture as string,
+        sub: decoded.sub as string,
+      };
+    } catch (err) {
+      console.error('Failed to decode Google token:', err);
+    }
+  }
+
+  const isAuthenticated = !!user;
 
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>
@@ -54,9 +76,9 @@ export default async function RootLayout({
       </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans">
         {/* Google One Tap / Automatic Sign-in Initialization (only for unauthenticated users) */}
-        {!user && (
+        {!isAuthenticated && (
           <div id="g_id_onload"
-               data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"}
+               data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1046067704682-53gvjpcerlg3d7k09bhdounphcr074tt.apps.googleusercontent.com"}
                data-context="signin"
                data-login_uri={`${appBaseUrl}/api/auth/google/callback`}
                data-auto_select="true"
