@@ -1,14 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { auth0 } from '@/lib/auth0';
 
 /**
- * Redundant route handler for Auth0 SDK v4.
- * SDK v4 handles /auth/* routes via the proxy/middleware in src/middleware.ts.
- * This file is kept as a fallback but will redirect to root if hit directly.
+ * Main Auth0 route handler for SDK v4.
+ * Handles /auth/login, /auth/logout, /auth/callback, /auth/me, etc.
+ * The SDK automatically parses the path and executes the correct logic.
  */
-export async function GET(request: NextRequest) {
-  return NextResponse.redirect(new URL('/', request.url));
-}
-
-export async function POST(request: NextRequest) {
-  return NextResponse.redirect(new URL('/', request.url));
-}
+export const GET = auth0.handleAuth();
+export const POST = auth0.handleAuth();
