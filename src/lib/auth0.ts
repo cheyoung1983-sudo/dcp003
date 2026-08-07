@@ -105,6 +105,12 @@ function resolveAuth0Config() {
     authorizationParameters: {
       scope: 'openid profile email offline_access',
     },
+    session: {
+      cookie: {
+        // Use Lax in development to prevent "invalid state" errors on localhost
+        sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'strict',
+      }
+    }
   };
 
   if (process.env.NODE_ENV === 'production') {

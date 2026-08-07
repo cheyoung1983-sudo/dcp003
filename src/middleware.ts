@@ -4,8 +4,9 @@ import { NextResponse } from 'next/server';
 export async function middleware(request: Request) {
   const url = new URL(request.url);
 
-  // 1. Direct bypass for API routes to ensure they never hit the Auth0 proxy
-  if (url.pathname.startsWith('/api/')) {
+  // 1. Direct bypass for API and Auth routes
+  // This prevents state mismatch errors by ensuring the SDK handles its own routes entirely.
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
     return NextResponse.next();
   }
 
