@@ -108,7 +108,7 @@ function resolveAuth0Config() {
     session: {
       cookie: {
         // Use Lax in development to prevent "invalid state" errors on localhost
-        sameSite: process.env.NODE_ENV === 'development' ? 'lax' : 'strict',
+        sameSite: (process.env.NODE_ENV === 'development' ? 'lax' : 'strict') as 'lax' | 'strict',
       }
     }
   };

@@ -1,22 +1,18 @@
 "use client";
 
 // src/components/SignInButton.tsx
-import { signIn } from "next-auth/react";
 import React from "react";
 
 /**
  * Simple sign‑in button used on the /auth/signin page.
- * Adjust the provider name ("auth0", "github", etc.) according to your NextAuth configuration.
+ * Uses a direct redirect to the Auth0 login flow.
  */
 export default function SignInButton() {
   React.useEffect(() => {
     window.onSubmit = async (token: string) => {
       console.log('reCAPTCHA enterprise token generated via callback:', token);
-      try {
-        await signIn("auth0");
-      } catch (err) {
-        console.error("Failed to sign in:", err);
-      }
+      // Redirect to Auth0 login flow
+      window.location.href = "/auth/login";
     };
   }, []);
 
@@ -24,21 +20,19 @@ export default function SignInButton() {
     e.preventDefault();
     try {
       if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.enterprise) {
-        await new Promise<void>((resolve) => {
-          window.grecaptcha.enterprise.ready(async () => {
-            const token = await window.grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
-            console.log('reCAPTCHA enterprise token generated:', token);
-            if (window.onSubmit) {
-              window.onSubmit(token);
-            }
-            resolve();
-          });
+        window.grecaptcha.enterprise.ready(async () => {
+          const token = await window.grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
+          console.log('reCAPTCHA enterprise token generated:', token);
+          if (window.onSubmit) {
+            window.onSubmit(token);
+          }
         });
       } else {
-        await signIn("auth0");
+        window.location.href = "/auth/login";
       }
     } catch (err) {
       console.error("Failed to initiate sign‑in or reCAPTCHA verification:", err);
+      window.location.href = "/auth/login";
     }
   };
 
