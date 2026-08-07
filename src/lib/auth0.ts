@@ -99,13 +99,15 @@ function getAuth0Client() {
 
   const isMissingSecrets = !config.clientSecret || !config.secret;
   const isDefaultBaseUrl = config.appBaseUrl === 'http://localhost:3000' && process.env.NODE_ENV === 'production';
+  const isVercelDeployment = !!process.env.VERCEL;
 
   if (process.env.NODE_ENV === 'production') {
     if (isMissingSecrets) {
       console.error('[Auth0] CRITICAL: AUTH0_CLIENT_SECRET or AUTH0_SECRET is missing.');
     }
-    if (isDefaultBaseUrl) {
-      console.warn('[Auth0] WARNING: appBaseUrl is set to localhost in production. This will cause authentication failures.');
+    // Only warn about localhost if we are actually on Vercel, or if it's not the build phase
+    if (isDefaultBaseUrl && isVercelDeployment) {
+      console.warn('[Auth0] WARNING: appBaseUrl is set to localhost in a production deployment. This will cause authentication failures.');
     }
   }
 

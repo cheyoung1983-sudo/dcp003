@@ -3,6 +3,12 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  webpack: (config) => {
+    config.ignoreWarnings = [
+      { module: /node_modules\/@auth0\/nextjs-auth0/ },
+    ];
+    return config;
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
