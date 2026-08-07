@@ -76,9 +76,9 @@ export default async function RootLayout({
       </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans">
         {/* Google One Tap / Automatic Sign-in Initialization (only for unauthenticated users) */}
-        {!isAuthenticated && (
+        {!isAuthenticated && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
           <div id="g_id_onload"
-               data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "1046067704682-53gvjpcerlg3d7k09bhdounphcr074tt.apps.googleusercontent.com"}
+               data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
                data-context="signin"
                data-login_uri={`${appBaseUrl}/api/auth/google/callback`}
                data-auto_select="true"
