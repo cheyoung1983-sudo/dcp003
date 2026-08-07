@@ -9,11 +9,28 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aws-sdk/cloudfront-signer": "^3.1098.0",
+    "@aws-sdk/rds-signer": "^3.1105.0",
+    "@google-cloud/recaptcha-enterprise": "^6.4.2",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@types/jest": "^30.0.0",
+    "@types/pg": "^8.20.4",
+    "@vercel/connect": "^0.6.1",
+    "@vercel/edge-config": "^1.5.1",
+    "@vercel/functions": "^3.8.0",
+    "ai": "^7.0.56",
+    "jest": "^30.4.2",
+    "jsqr": "^1.4.0",
+    "lucide-react": "^1.16.0",
+    "motion": "^12.4.0",
     "next": "15.5.22",
+    "next-auth": "^4.24.15",
+    "pg": "^8.22.0",
+    "prisma": "^7.9.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "lucide-react": "^1.16.0",
-    "motion": "^12.4.0"
+    "recharts": "^3.10.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
