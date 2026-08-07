@@ -1,4 +1,4 @@
-import { Auth0Client } from '@auth0/nextjs-auth0';
+import { Auth0Client } from '@auth0/nextjs-auth0/server';
 import { NextResponse } from 'next/server';
 
 function formatUrl(urlStr?: string): string | null {

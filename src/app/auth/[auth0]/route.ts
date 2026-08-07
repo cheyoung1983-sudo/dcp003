@@ -8,5 +8,16 @@ export const dynamic = 'force-dynamic';
  * Handles /auth/login, /auth/logout, /auth/callback, /auth/me, etc.
  * The SDK automatically parses the path and executes the correct logic.
  */
-export const GET = auth0.handleAuth();
-export const POST = auth0.handleAuth();
+export async function GET(req: any, ctx: any) {
+  if (typeof auth0.handleAuth === 'function') {
+    return auth0.handleAuth()(req, ctx);
+  }
+  return new Response('Auth0 handleAuth not available', { status: 500 });
+}
+
+export async function POST(req: any, ctx: any) {
+  if (typeof auth0.handleAuth === 'function') {
+    return auth0.handleAuth()(req, ctx);
+  }
+  return new Response('Auth0 handleAuth not available', { status: 500 });
+}
