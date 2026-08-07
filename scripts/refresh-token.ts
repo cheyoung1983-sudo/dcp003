@@ -8,7 +8,7 @@ const storePath = path.resolve(__dirname, "../tokenStore.json");
 
 async function refreshIfNeeded() {
   if (!fs.existsSync(storePath)) {
-    console.error("Token store not found at", storePath);
+    console.warn("Token store not found at", storePath);
     return;
   }
 
@@ -24,11 +24,16 @@ async function refreshIfNeeded() {
   if (data.refresh_token && data.expires_at - now < 300) {
     console.log("Access token expiring soon – refreshing...");
     const newToken = await refreshVercelToken(data.refresh_token);
+
+    // Adapt from ConnectTokenResponse to local store structure
     const updated = {
-      access_token: newToken.access_token,
-      refresh_token: newToken.refresh_token ?? data.refresh_token,
-      expires_at: now + newToken.expires_in,
+      access_token: (newToken as any).token || (newToken as any).access_token,
+      refresh_token: (newToken as any).refresh_token ?? data.refresh_token,
+      expires_at: (newToken as any).expiresAt
+        ? Math.floor((newToken as any).expiresAt / 1000)
+        : (now + ((newToken as any).expires_in || 3600)),
     };
+
     fs.writeFileSync(storePath, JSON.stringify(updated, null, 2));
     console.log("Token refreshed and stored.");
   } else {
