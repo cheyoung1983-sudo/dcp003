@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
 import { Auth0Provider } from "@auth0/nextjs-auth0/client";
-import { auth0 } from "@/lib/auth0";
+import { auth0, getAppBaseUrl } from "@/lib/auth0";
 import LoginButton from "@/components/LoginButton";
 import LogoutButton from "@/components/LogoutButton";
 import Profile from "@/components/Profile";
@@ -38,6 +38,7 @@ export default async function RootLayout({
 }) {
   const session = await auth0.getSession();
   const user = session?.user;
+  const appBaseUrl = getAppBaseUrl();
 
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>
@@ -52,15 +53,17 @@ export default async function RootLayout({
         />
       </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans">
-        {/* Google One Tap / Automatic Sign-in Initialization */}
-        <div id="g_id_onload"
-             data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"}
-             data-context="signin"
-             data-login_uri={`${process.env.NEXTAUTH_URL || ""}/api/auth/google/callback`}
-             data-auto_select="true"
-             data-itp_support="true"
-             data-use_fedcm_for_prompt="true">
-        </div>
+        {/* Google One Tap / Automatic Sign-in Initialization (only for unauthenticated users) */}
+        {!user && (
+          <div id="g_id_onload"
+               data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"}
+               data-context="signin"
+               data-login_uri={`${appBaseUrl}/api/auth/google/callback`}
+               data-auto_select="true"
+               data-itp_support="true"
+               data-use_fedcm_for_prompt="true">
+          </div>
+        )}
         <Auth0Provider user={user}>
           <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

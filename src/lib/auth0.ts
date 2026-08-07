@@ -28,6 +28,29 @@ function cleanDomain(domainStr?: string): string {
   }
 }
 
+export function getAppBaseUrl(): string {
+  let rawBaseUrl = process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL || process.env.NEXTAUTH_URL;
+
+  // Auto-detect appBaseUrl on Vercel
+  const isLocalhost = rawBaseUrl?.includes('localhost') || rawBaseUrl?.includes('127.0.0.1');
+  if ((!rawBaseUrl || isLocalhost) && process.env.VERCEL_URL) {
+    rawBaseUrl = `https://${process.env.VERCEL_URL}`;
+  }
+
+  if (rawBaseUrl) {
+    const formatted = formatUrl(rawBaseUrl);
+    if (formatted) {
+      try {
+        new URL(formatted);
+        return formatted;
+      } catch {
+        // Fallback below
+      }
+    }
+  }
+  return 'http://localhost:3000';
+}
+
 function resolveAuth0Config() {
   let envDomain = process.env.AUTH0_DOMAIN || process.env.AUTH0_ISSUER_BASE_URL;
   let rawBaseUrl = process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL || process.env.NEXTAUTH_URL;
@@ -49,18 +72,7 @@ function resolveAuth0Config() {
 
   const domain = cleanDomain(envDomain);
   
-  let appBaseUrl = 'http://localhost:3000';
-  if (rawBaseUrl) {
-    const formatted = formatUrl(rawBaseUrl);
-    if (formatted) {
-      try {
-        new URL(formatted);
-        appBaseUrl = formatted;
-      } catch {
-        appBaseUrl = 'http://localhost:3000';
-      }
-    }
-  }
+  const appBaseUrl = getAppBaseUrl();
 
   const clientId = process.env.AUTH0_CLIENT_ID;
   const clientSecret = process.env.AUTH0_CLIENT_SECRET;
