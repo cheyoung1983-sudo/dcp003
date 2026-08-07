@@ -8,12 +8,22 @@ export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: (Error & { digest?: string }) | any;
   reset: () => void;
 }) {
   useEffect(() => {
     console.error('[AI Studio] Application Error:', error);
   }, [error]);
+
+  const getErrorMessage = () => {
+    if (!error) return 'An unexpected error occurred in the system laboratory.';
+    if (typeof error === 'string') return error;
+    if (error.message && typeof error.message === 'string' && error.message !== '[object Event]') {
+      return error.message;
+    }
+    if (error.type) return `System event trigger (${error.type}).`;
+    return 'An unexpected system event occurred. Please try again.';
+  };
 
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-12">
@@ -22,7 +32,7 @@ export default function Error({
       </div>
       <h1 className="text-3xl font-extrabold text-white mb-2">Something went wrong</h1>
       <p className="text-slate-400 mb-6 max-w-md text-sm">
-        {error?.message || 'An unexpected error occurred in the system laboratory.'}
+        {getErrorMessage()}
       </p>
       <div className="flex flex-wrap items-center justify-center gap-4">
         <button
@@ -41,3 +51,4 @@ export default function Error({
     </div>
   );
 }
+

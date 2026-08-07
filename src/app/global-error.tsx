@@ -6,12 +6,22 @@ export default function GlobalError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error: (Error & { digest?: string }) | any;
   reset: () => void;
 }) {
   useEffect(() => {
     console.error('[AI Studio] Global Error:', error);
   }, [error]);
+
+  const getErrorMessage = () => {
+    if (!error) return 'A critical error occurred while loading the application.';
+    if (typeof error === 'string') return error;
+    if (error.message && typeof error.message === 'string' && error.message !== '[object Event]') {
+      return error.message;
+    }
+    if (error.type) return `System event trigger (${error.type}).`;
+    return 'An unexpected application load event occurred. Please refresh.';
+  };
 
   return (
     <html lang="en">
@@ -19,7 +29,7 @@ export default function GlobalError({
         <div className="max-w-md text-center space-y-4">
           <h1 className="text-2xl font-bold text-red-500">System Error</h1>
           <p className="text-sm text-slate-400">
-            {error?.message || 'A critical error occurred while loading the application.'}
+            {getErrorMessage()}
           </p>
           <button
             onClick={() => reset()}
@@ -32,3 +42,4 @@ export default function GlobalError({
     </html>
   );
 }
+

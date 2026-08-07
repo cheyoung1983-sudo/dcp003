@@ -1,5 +1,8 @@
 // src/app/api/auth/[...nextauth]/route.ts
 import NextAuth, { User } from "next-auth";
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import CredentialsProvider from "next-auth/providers/credentials";
 import { exchangeCodeForToken, refreshVercelToken } from "@/lib/vercelAuth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";

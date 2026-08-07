@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { exchangeCodeForToken } from '@/lib/vercelAuth';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/auth/callback
  * Handles the OAuth callback from Vercel. Expects a `code` query param.

@@ -9,19 +9,46 @@ import React from "react";
  * Adjust the provider name ("auth0", "github", etc.) according to your NextAuth configuration.
  */
 export default function SignInButton() {
-  const handleSignIn = async () => {
+  React.useEffect(() => {
+    window.onSubmit = async (token: string) => {
+      console.log('reCAPTCHA enterprise token generated via callback:', token);
+      try {
+        await signIn("auth0");
+      } catch (err) {
+        console.error("Failed to sign in:", err);
+      }
+    };
+  }, []);
+
+  const onClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     try {
-      // Replace "auth0" with the provider you configured in [...nextauth].js
-      await signIn("auth0");
+      if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.enterprise) {
+        await new Promise<void>((resolve) => {
+          window.grecaptcha.enterprise.ready(async () => {
+            const token = await window.grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
+            console.log('reCAPTCHA enterprise token generated:', token);
+            if (window.onSubmit) {
+              window.onSubmit(token);
+            }
+            resolve();
+          });
+        });
+      } else {
+        await signIn("auth0");
+      }
     } catch (err) {
-      console.error("Failed to initiate sign‑in:", err);
+      console.error("Failed to initiate sign‑in or reCAPTCHA verification:", err);
     }
   };
 
   return (
     <button
-      onClick={handleSignIn}
-      className="rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      className="g-recaptcha rounded bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      data-sitekey="6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"
+      data-callback="onSubmit"
+      data-action="submit"
+      onClick={onClick}
     >
       Sign In
     </button>

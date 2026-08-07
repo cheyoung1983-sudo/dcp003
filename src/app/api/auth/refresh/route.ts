@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { refreshVercelToken } from '@/lib/vercelAuth';
 import { getToken } from 'next-auth/jwt';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/auth/refresh
  * Refreshes the Vercel access token using the stored refresh token.

@@ -31,7 +31,9 @@ export default function Profile() {
             referrerPolicy="no-referrer"
             className="w-11 h-11 rounded-full object-cover bg-slate-900 block"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
+              const target = e.currentTarget;
+              target.onerror = null;
+              target.src = FALLBACK_AVATAR;
             }}
           />
         </div>

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { startAuthorization } from '@vercel/connect';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/auth/start
  * Redirects the user to Vercel's OAuth authorization page.
