@@ -69,7 +69,10 @@ export async function POST(req: NextRequest) {
     return response;
 
   } catch (error: any) {
-    console.error('[Google Auth] Callback error:', error);
-    return NextResponse.json({ error: 'Authentication failed', details: error.message }, { status: 401 });
+    console.error("[Google Auth Callback Error]:", error); // Explicit logging for Vercel Logs
+    return NextResponse.json({
+      error: 'Authentication failed',
+      message: error.message
+    }, { status: 500 });
   }
 }

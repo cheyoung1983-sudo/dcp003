@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     });
     return response;
   } catch (err) {
-    console.error('Token exchange error:', err);
-    return new NextResponse('Token exchange failed', { status: 500 });
+    console.error("[Auth Callback Error]:", err); // Aligned with Vercel Logs logging style
+    return new NextResponse('Authentication Failed', { status: 500 });
   }
 }
