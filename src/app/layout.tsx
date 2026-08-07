@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import { Auth0Provider } from "@auth0/nextjs-auth0/client";
+import { auth0 } from "@/lib/auth0";
+import LoginButton from "@/components/LoginButton";
+import LogoutButton from "@/components/LogoutButton";
+import Profile from "@/components/Profile";
 import './globals.css';
 
 const inter = Inter({
@@ -26,11 +31,14 @@ export const metadata: Metadata = {
   description: 'Professional on-site mobile electronics and smartphone repair services in Spokane, Washington and Spokane Valley.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth0.getSession();
+  const user = session?.user;
+
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>
       <head>
@@ -40,7 +48,8 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans">
-        <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
+        <Auth0Provider>
+          <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <span className="font-bold text-xl tracking-tight text-blue-600">Display & Cell Pros LLC</span>
@@ -50,6 +59,21 @@ export default function RootLayout({
               <a href="#services" className="hover:text-blue-600 transition-colors">Services</a>
               <a href="#quote" className="hover:text-blue-600 transition-colors">Instant Quote</a>
               <a href="#verify" className="hover:text-blue-600 transition-colors">Secure Verification</a>
+              <div className="h-6 w-px bg-slate-200" />
+              {user ? (
+                <div className="flex items-center gap-4">
+                  <div className="hidden md:block">
+                    <Profile />
+                  </div>
+                  <div className="w-32">
+                    <LogoutButton />
+                  </div>
+                </div>
+              ) : (
+                <div className="w-32">
+                  <LoginButton />
+                </div>
+              )}
             </nav>
           </div>
         </header>
@@ -62,7 +86,8 @@ export default function RootLayout({
             <p className="text-xs">Protected by reCAPTCHA Enterprise.</p>
           </div>
         </footer>
-      </body>
+      </Auth0Provider>
+    </body>
     </html>
   );
 }
