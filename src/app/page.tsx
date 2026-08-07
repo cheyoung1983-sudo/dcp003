@@ -140,9 +140,11 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Select Device Model</label>
+              <label htmlFor="device-model" className="text-sm font-medium text-slate-700">Select Device Model</label>
               <select 
-                value={device} 
+                id="device-model"
+                name="device_model"
+                value={device}
                 onChange={(e) => setDevice(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
@@ -155,9 +157,11 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Select Repair Service</label>
+              <label htmlFor="repair-service" className="text-sm font-medium text-slate-700">Select Repair Service</label>
               <select 
-                value={repairType} 
+                id="repair-service"
+                name="repair_service"
+                value={repairType}
                 onChange={(e) => setRepairType(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
