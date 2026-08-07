@@ -42,7 +42,7 @@ function getAuth0Domain(): string {
   }
 
   if (!domainRaw) {
-    domainRaw = 'displaycellpros.us.auth0.com';
+    domainRaw = 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   }
 
   let cleaned = domainRaw.trim();
@@ -52,10 +52,10 @@ function getAuth0Domain(): string {
 
   try {
     const parsed = new URL(cleaned);
-    return parsed.hostname || 'displaycellpros.us.auth0.com';
+    return parsed.hostname || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   } catch {
     let stripped = cleaned.replace(/^https?:\/\//i, '').split('/')[0].split('?')[0].split('#')[0].trim();
-    return stripped || 'displaycellpros.us.auth0.com';
+    return stripped || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   }
 }
 
