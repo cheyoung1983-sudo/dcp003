@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from '@/lib/auth0';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth0.getSession(request);
     if (!session || !session.user) {

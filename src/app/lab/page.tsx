@@ -15,6 +15,7 @@ import { HardwareScanChart } from '../../components/HardwareScanChart';
 import TicketTemplatesPanel from '../../components/TicketTemplatesPanel';
 import { UsbSimulator } from '../../components/UsbSimulator';
 import { ToastContainer, Toast } from '../../components/ToastNotification';
+import SignatureCanvas from '../../components/SignatureCanvas';
 import { RepairTicket, POSLog, QuoteResponse, TicketTemplate } from '@/lib/types';
 import { calculateQuoteInternal, WA_TAX_DATA } from '@/lib/repair-logic';
 
@@ -534,6 +535,27 @@ Status: Physical hardware coupled over WebUSB link. Ready for triage calculation
               )}
 
               <HardwareScanChart deviceBrand={deviceBrand} deviceModel={deviceModel} issueType={issueType} />
+
+              <SignatureCanvas
+                customerName={customerName}
+                deviceBrand={deviceBrand}
+                deviceModel={deviceModel}
+                selectedTier={selectedTier}
+                onSelectTier={(tier) => setSelectedTier(tier)}
+                quote={quote}
+                onSignatureConfirmed={(sigData) => {
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: Date.now(),
+                      sender: "system",
+                      text: `✍️ Quote Digitally Signed by ${sigData.customerName} for $${sigData.totalAmount.toFixed(2)} (${sigData.tier} Tier) at ${sigData.timestamp}`,
+                      timestamp: new Date().toLocaleTimeString(),
+                    },
+                  ]);
+                }}
+                onToast={addToast}
+              />
             </div>
           )}
 

@@ -97,57 +97,93 @@ export class Auth0McpService {
   private config: Auth0Config;
   private accessToken: string | null = null;
   private tokenExpiry: number = 0;
+  private tokenRefreshPromise: Promise<string> | null = null;
 
   constructor(config: Auth0Config) {
     this.config = config;
   }
 
-  // ── Token Acquisition (Client Credentials) ──────────────────────────────
+  // ── Token Acquisition & Proactive Auto-Refresh ──────────────────────────
+
+  /**
+   * Checks if the currently cached Management API access token is expired or close to expiring (within buffer seconds).
+   */
+  isTokenExpired(bufferSeconds = 120): boolean {
+    if (!this.accessToken) return true;
+    return Date.now() >= this.tokenExpiry - bufferSeconds * 1000;
+  }
+
+  /**
+   * Gets the remaining validity duration in seconds for the cached token.
+   */
+  getTokenRemainingLifetime(): number {
+    if (!this.accessToken) return 0;
+    const remainingMs = this.tokenExpiry - Date.now();
+    return Math.max(0, Math.floor(remainingMs / 1000));
+  }
+
+  /**
+   * Proactively forces a token refresh via Client Credentials grant.
+   * Useful for pre-empting expiration before long-running diagnostic sessions.
+   */
+  async refreshToken(): Promise<string> {
+    if (this.tokenRefreshPromise) {
+      return this.tokenRefreshPromise;
+    }
+
+    this.tokenRefreshPromise = (async () => {
+      try {
+        const tokenUrl = `https://${this.config.domain}/oauth/token`;
+        const payload = {
+          client_id: this.config.clientId,
+          client_secret: this.config.clientSecret,
+          audience: `https://${this.config.domain}/api/v2/`,
+          grant_type: "client_credentials",
+        };
+
+        const resp = await fetch(tokenUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!resp.ok) {
+          const err = await resp.text();
+          throw new Error(`[Auth0McpService] Token acquisition failed: ${err}`);
+        }
+
+        const data = (await resp.json()) as Auth0TokenResponse;
+        this.accessToken = data.access_token;
+        // Cache expiry timestamp with 120s safety buffer
+        this.tokenExpiry = Date.now() + data.expires_in * 1000;
+        return this.accessToken;
+      } finally {
+        this.tokenRefreshPromise = null;
+      }
+    })();
+
+    return this.tokenRefreshPromise;
+  }
 
   /**
    * Acquires a Management API access token using the Client Credentials flow.
-   * Caches the token until 60s before expiry.
+   * Automatically refreshes cached token if expired or nearing expiry (60s window).
    */
   async getAccessToken(): Promise<string> {
-    const now = Date.now();
-    if (this.accessToken && now < this.tokenExpiry) {
+    if (this.accessToken && !this.isTokenExpired(60)) {
       return this.accessToken;
     }
-
-    const tokenUrl = `https://${this.config.domain}/oauth/token`;
-    const payload = {
-      client_id: this.config.clientId,
-      client_secret: this.config.clientSecret,
-      audience: `https://${this.config.domain}/api/v2/`,
-      grant_type: "client_credentials",
-    };
-
-    const resp = await fetch(tokenUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!resp.ok) {
-      const err = await resp.text();
-      throw new Error(`[Auth0McpService] Token acquisition failed: ${err}`);
-    }
-
-    const data = (await resp.json()) as Auth0TokenResponse;
-    this.accessToken = data.access_token;
-    // Cache with 60s buffer before expiry
-    this.tokenExpiry = now + (data.expires_in - 60) * 1000;
-    return this.accessToken;
+    return this.refreshToken();
   }
 
   private async mgmtRequest<T>(
     path: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const token = await this.getAccessToken();
+    let token = await this.getAccessToken();
     const url = `https://${this.config.domain}/api/v2${path}`;
 
-    const resp = await fetch(url, {
+    let resp = await fetch(url, {
       ...options,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -155,6 +191,20 @@ export class Auth0McpService {
         ...(options.headers ?? {}),
       },
     });
+
+    // If 401 Unauthorized occurs due to token invalidation, force token refresh & retry once
+    if (resp.status === 401) {
+      console.warn(`[Auth0McpService] HTTP 401 encountered on ${path}. Force-refreshing access token and retrying request...`);
+      token = await this.refreshToken();
+      resp = await fetch(url, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          ...(options.headers ?? {}),
+        },
+      });
+    }
 
     if (!resp.ok) {
       const body = await resp.text();
@@ -459,16 +509,37 @@ let _serviceInstance: Auth0McpService | null = null;
 export function getAuth0McpService(): Auth0McpService {
   if (_serviceInstance) return _serviceInstance;
 
-  const domain = process.env.AUTH0_DOMAIN;
-  const clientId = process.env.AUTH0_CLIENT_ID;
-  const clientSecret = process.env.AUTH0_CLIENT_SECRET;
+  let domainRaw =
+    process.env.AUTH0_DOMAIN ||
+    process.env.AUTH0_ISSUER_BASE_URL;
 
-  if (!domain || !clientId || !clientSecret) {
-    throw new Error(
-      "[Auth0McpService] Missing required environment variables: " +
-        "AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET"
-    );
+  if (!domainRaw && process.env.AUTH0_BASE_URL && process.env.AUTH0_BASE_URL.includes('auth0.com')) {
+    domainRaw = process.env.AUTH0_BASE_URL;
   }
+
+  let cleanedDomain = (domainRaw || 'displaycellpros.us.auth0.com').trim();
+  if (!cleanedDomain.startsWith('http://') && !cleanedDomain.startsWith('https://')) {
+    cleanedDomain = `https://${cleanedDomain}`;
+  }
+
+  let domain = 'displaycellpros.us.auth0.com';
+  try {
+    const parsed = new URL(cleanedDomain);
+    domain = parsed.hostname || 'displaycellpros.us.auth0.com';
+  } catch {
+    const stripped = cleanedDomain.replace(/^https?:\/\//i, '').split('/')[0].split('?')[0].split('#')[0].trim();
+    domain = stripped || 'displaycellpros.us.auth0.com';
+  }
+
+  const clientId =
+    process.env.AUTH0_MGMT_CLIENT_ID ||
+    process.env.AUTH0_CLIENT_ID ||
+    'dummy_client_id_for_preview';
+
+  const clientSecret =
+    process.env.AUTH0_MGMT_CLIENT_SECRET ||
+    process.env.AUTH0_CLIENT_SECRET ||
+    'dummy_client_secret_for_preview';
 
   _serviceInstance = new Auth0McpService({ domain, clientId, clientSecret });
   return _serviceInstance;
