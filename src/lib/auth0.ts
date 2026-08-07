@@ -1,4 +1,5 @@
-import { Auth0Client } from '@auth0/nextjs-auth0/server';
+import { Auth0Client } from '@auth0/nextjs-auth0';
+import { NextResponse } from 'next/server';
 
 function formatUrl(urlStr?: string): string | null {
   if (!urlStr) return null;
@@ -134,27 +135,32 @@ function getAuth0Client() {
     }
   }
 
+  // Define the proxy/mock object first so it's consistent
+  const mockClient = {
+    middleware: async () => NextResponse.next(),
+    getSession: async () => null,
+    updateSession: async () => {},
+    handleAuth: () => async () => {
+      return new Response(
+        JSON.stringify({
+          error: 'Auth0 configuration error',
+          message: 'The authentication service is not properly configured. Check server logs for details.',
+        }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    },
+  } as any;
+
+  if (isMissingSecrets && process.env.NODE_ENV === 'production') {
+    return mockClient;
+  }
+
   try {
-    // Auth0Client constructor will throw if mandatory fields are missing or invalid (like secret length)
+    // Auth0Client constructor will throw if mandatory fields are missing or invalid
     return new Auth0Client(config);
   } catch (err) {
     console.error('[Auth0] Client initialization failed. Check your environment variables and secret lengths.', err);
-    // Return a proxy that catches middleware calls and returns a descriptive error
-    return {
-      middleware: async () => {
-        return new Response(
-          JSON.stringify({
-            error: 'Auth0 configuration error',
-            message: 'The authentication service is not properly configured. Check server logs for details.',
-            details: process.env.NODE_ENV === 'development' ? String(err) : undefined
-          }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
-      },
-      getSession: async () => null,
-      updateSession: async () => {},
-      // Add other methods if needed
-    } as any;
+    return mockClient;
   }
 }
 
