@@ -2,10 +2,21 @@ import { Auth0Client } from '@auth0/nextjs-auth0/server';
 
 function formatUrl(urlStr?: string): string | null {
   if (!urlStr) return null;
-  const trimmed = urlStr.trim();
+  let trimmed = urlStr.trim();
   if (!trimmed) return null;
+
+  // Remove trailing slash
+  if (trimmed.endsWith('/')) {
+    trimmed = trimmed.slice(0, -1);
+  }
+
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     return trimmed;
+  }
+
+  // Use http for localhost, https for everything else
+  if (trimmed.includes('localhost') || trimmed.includes('127.0.0.1')) {
+    return `http://${trimmed}`;
   }
   return `https://${trimmed}`;
 }

@@ -62,6 +62,11 @@ export default async function RootLayout({
 
   const isAuthenticated = !!user;
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[Google Auth] Base URL:', appBaseUrl);
+    console.log('[Google Auth] Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
+  }
+
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>
       <head>

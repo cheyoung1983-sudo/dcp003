@@ -25,7 +25,19 @@ export function AIAssistantWidget({
   ]);
   const [input, setInput] = useState<string>("");
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [isGuestMode, setIsGuestMode] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Check for potential guest/incognito mode or blocked storage
+    try {
+      if (!window.localStorage) {
+        setIsGuestMode(true);
+      }
+    } catch {
+      setIsGuestMode(true);
+    }
+  }, []);
 
   // Auto-scroll
   useEffect(() => {
@@ -128,6 +140,11 @@ export function AIAssistantWidget({
 
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth bg-slate-950/40">
+          {isGuestMode && (
+            <div className="bg-amber-900/20 border border-amber-900/30 rounded-xl p-3 text-[10px] text-amber-200/80 text-center">
+              ⚠️ AI assistance may be limited in Incognito or Guest mode. Sign in for full hardware lab diagnostics.
+            </div>
+          )}
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
