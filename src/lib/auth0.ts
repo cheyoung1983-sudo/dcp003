@@ -11,9 +11,9 @@ function formatUrl(urlStr?: string): string | null {
 }
 
 function cleanDomain(domainStr?: string): string {
-  if (!domainStr) return 'displaycellpros.us.auth0.com';
+  if (!domainStr) return 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   let cleaned = domainStr.trim();
-  if (!cleaned) return 'displaycellpros.us.auth0.com';
+  if (!cleaned) return 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
 
   if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
     cleaned = `https://${cleaned}`;
@@ -21,10 +21,10 @@ function cleanDomain(domainStr?: string): string {
 
   try {
     const parsed = new URL(cleaned);
-    return parsed.hostname || 'displaycellpros.us.auth0.com';
+    return parsed.hostname || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   } catch {
     let stripped = cleaned.replace(/^https?:\/\//i, '').split('/')[0].split('?')[0].split('#')[0].trim();
-    return stripped || 'displaycellpros.us.auth0.com';
+    return stripped || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   }
 }
 
@@ -55,26 +55,38 @@ function resolveAuth0Config() {
     }
   }
 
-  const clientId = process.env.AUTH0_CLIENT_ID || 'dummy_client_id_for_preview';
-  const clientSecret = process.env.AUTH0_CLIENT_SECRET || 'dummy_client_secret_for_preview';
-  const secret = process.env.AUTH0_SECRET || 'a-32-byte-long-secret-key-for-auth0-session-encryption-fallback!';
+  const clientId = process.env.AUTH0_CLIENT_ID;
+  const clientSecret = process.env.AUTH0_CLIENT_SECRET;
+  const secret = process.env.AUTH0_SECRET;
 
-  return { domain, clientId, clientSecret, secret, appBaseUrl };
+  if (!clientId || !clientSecret || !secret) {
+    console.error('[Auth0] Missing required environment variables. Authentication will not function correctly.');
+    // In production, you might want to throw an error here.
+  }
+
+  return {
+    domain,
+    clientId: clientId || 'iHyCQzrHYenv4lrkCFy4v9528jtJUUHl',
+    clientSecret: clientSecret || '',
+    secret: secret || '',
+    appBaseUrl
+  };
 }
 
 function getAuth0Client() {
   const config = resolveAuth0Config();
+
+  // Basic validation for production
+  if (process.env.NODE_ENV === 'production' && (!config.clientSecret || !config.secret)) {
+    throw new Error('AUTH0_CLIENT_SECRET and AUTH0_SECRET must be set in production');
+  }
+
   try {
     return new Auth0Client(config);
   } catch (err) {
-    console.warn('[AI Studio] Auth0 client fallback initialization:', err);
-    return new Auth0Client({
-      domain: 'displaycellpros.us.auth0.com',
-      clientId: 'dummy_client_id_for_preview',
-      clientSecret: 'dummy_client_secret_for_preview',
-      secret: 'a-32-byte-long-secret-key-for-auth0-session-encryption-fallback!',
-      appBaseUrl: 'http://localhost:3000',
-    });
+    console.error('[Auth0] Client initialization failed:', err);
+    // Return a client that will fail gracefully or re-throw
+    throw err;
   }
 }
 

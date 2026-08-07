@@ -517,30 +517,37 @@ export function getAuth0McpService(): Auth0McpService {
     domainRaw = process.env.AUTH0_BASE_URL;
   }
 
-  let cleanedDomain = (domainRaw || 'displaycellpros.us.auth0.com').trim();
+  let cleanedDomain = (domainRaw || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com').trim();
   if (!cleanedDomain.startsWith('http://') && !cleanedDomain.startsWith('https://')) {
     cleanedDomain = `https://${cleanedDomain}`;
   }
 
-  let domain = 'displaycellpros.us.auth0.com';
+  let domain = 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   try {
     const parsed = new URL(cleanedDomain);
-    domain = parsed.hostname || 'displaycellpros.us.auth0.com';
+    domain = parsed.hostname || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   } catch {
     const stripped = cleanedDomain.replace(/^https?:\/\//i, '').split('/')[0].split('?')[0].split('#')[0].trim();
-    domain = stripped || 'displaycellpros.us.auth0.com';
+    domain = stripped || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
   }
 
   const clientId =
     process.env.AUTH0_MGMT_CLIENT_ID ||
     process.env.AUTH0_CLIENT_ID ||
-    'dummy_client_id_for_preview';
+    'iHyCQzrHYenv4lrkCFy4v9528jtJUUHl';
 
   const clientSecret =
     process.env.AUTH0_MGMT_CLIENT_SECRET ||
-    process.env.AUTH0_CLIENT_SECRET ||
-    'dummy_client_secret_for_preview';
+    process.env.AUTH0_CLIENT_SECRET;
 
-  _serviceInstance = new Auth0McpService({ domain, clientId, clientSecret });
+  if (!clientSecret && process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH0_CLIENT_SECRET is required for Auth0McpService in production');
+  }
+
+  _serviceInstance = new Auth0McpService({
+    domain,
+    clientId,
+    clientSecret: clientSecret || ''
+  });
   return _serviceInstance;
 }
