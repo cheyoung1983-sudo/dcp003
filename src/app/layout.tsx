@@ -70,6 +70,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>
       <head>
+        <meta name="referrer" content="no-referrer-when-downgrade" />
         <Script
           src="https://www.google.com/recaptcha/enterprise.js?render=6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"
           strategy="afterInteractive"
