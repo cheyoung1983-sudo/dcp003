@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "my-local-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {}
+    },
+    "server-name": {
+      "url": "https://mcp.example.com/mcp",
+      "type": "http"
+    }
+  }
+}
