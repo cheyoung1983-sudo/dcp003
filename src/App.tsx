@@ -3325,7 +3325,7 @@ Status: ${issueType === "battery" ? "DEGRADED" : "OPTIMAL"}`;
 
 // --- SUB-VIEWS ---
 
-function HomeView({ onBookClick, onLabClick }) {
+function HomeView({ onBookClick, onLabClick }: { onBookClick: () => void; onLabClick: () => void }) {
   return (
     <div className="animate-in fade-in duration-300">
       {/* Hero Section */}
@@ -3401,7 +3401,7 @@ function HomeView({ onBookClick, onLabClick }) {
   );
 }
 
-function ServicesView({ onBookClick }) {
+function ServicesView({ onBookClick }: { onBookClick: () => void }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-in fade-in duration-300">
       <div className="text-center mb-16">
@@ -3440,7 +3440,7 @@ function ServicesView({ onBookClick }) {
   );
 }
 
-function B2BView({ onBookClick }) {
+function B2BView({ onBookClick }: { onBookClick: () => void }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-in fade-in duration-300">
       <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl border border-slate-705 overflow-hidden shadow-2xl">
