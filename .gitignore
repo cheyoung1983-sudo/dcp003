@@ -14,3 +14,4 @@ coverage/
 github-mcp-server/
 
 .env*
+.vercel
