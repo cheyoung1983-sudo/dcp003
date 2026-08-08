@@ -1,5 +1,5 @@
 import React from 'react';
-import { SERVICES } from '../lib/ui-constants';
+import { SERVICES } from '@/lib/constants';
 
 interface ServicesViewProps {
   onBookClick: () => void;

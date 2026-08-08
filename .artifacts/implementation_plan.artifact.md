@@ -1,45 +1,42 @@
-# Fix Build Errors and Align with Professional Standards
+# Implementation Plan - Professional Compliance & Mobile Readiness
 
-The project is currently failing to build on Vercel due to module resolution errors. Additionally, there are violations of the established professional standards (use of `any` types, improper import patterns).
+Elevate the project's professional posture by establishing a "Mobile Readiness" framework, documenting Android/iOS app signing requirements, and consolidating all cross-platform verification steps (SHA-1, reCAPTCHA, and Redundancy) into the Compliance Lab.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> I am proposing to rename `src/lib/constants.tsx` to `src/lib/ui-constants.tsx` to resolve a name conflict with `src/lib/constants.ts`. This will require updating all references to this file.
-
-> [!WARNING]
-> There are duplicate `components` and `lib` directories in both the root and `src/`. I will prioritize using the files in `src/` as they are aligned with the Next.js App Router structure.
+> [!NOTE]
+> **Native Android Shell**: Since our current architecture is a Vite/React web app, these Android signing steps (SHA-1) are preparations for a **Native Android Shell** (e.g., via Trusted Web Activities or Capacitor) or for linking a future native mobile app to the same Firebase backend.
+>
+> **Keystore Safety**: Never commit your `.keystore` or `.jks` files to this repository. Only track the public SHA-1 fingerprints.
 
 ## Proposed Changes
 
-### [Cleanup & Resolution]
+### 1. Mobile Readiness Framework
 
-#### [RENAME] [constants.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/lib/constants.tsx) -> [ui-constants.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/lib/ui-constants.tsx)
-Renaming to avoid conflict with `constants.ts` (which contains auth tokens).
+#### [MODIFY] [OAuthDocumentationPanel.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/components/OAuthDocumentationPanel.tsx)
+- Add a new **"Mobile Readiness (Android/iOS)"** section to the checklist.
+- Include placeholders for tracking **SHA-1 (Debug)** and **SHA-1 (Release)** fingerprints.
+- Document the `keytool` command provided in your instructions for easy technician access.
+- **[New]** Add **"External Client ID Safelisting"** as an optional task for cross-project authentication.
 
-#### [MODIFY] [ServicesView.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/components/ServicesView.tsx)
-- Update import from `@/lib/constants.tsx` to `@/lib/ui-constants`.
-- Remove any potential `any` types.
+### 2. Cross-Platform Identity Consolidation
 
-#### [MODIFY] [StoreView.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/components/StoreView.tsx)
-- Update import from `@/lib/constants.tsx` to `@/lib/ui-constants`.
+#### [MODIFY] [App.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/App.tsx)
+- Update the **Compliance Lab** tab to clearly distinguish between **Web-Native** (Auth.js) and **Mobile-Native** (Firebase SHA-1) identity requirements.
 
-#### [MODIFY] [page.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/app/auth/signin/page.tsx)
-- Verify and fix `SignInButton` import resolution.
+### 3. Release Checklist Documentation
 
-#### [MODIFY] [page.tsx](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/app/comments/page.tsx)
-- Fix `@/lib/db` import resolution.
-- Define `Comment` interface and remove `any`.
-
-#### [MODIFY] [db.ts](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/src/lib/db.ts)
-- Remove `any` from `signerOptions` and `query` arguments.
-- Define proper types for DB configuration.
+#### [NEW] [mobile_readiness.artifact.md](file:///C:/Users/cheyo/OneDrive/Documents/GitHub/displaycellpros.com/.artifacts/mobile_readiness.artifact.md)
+- Create a dedicated guide summarizing:
+    - How to generate the SHA-1 fingerprints using `keytool` (per your instructions).
+    - How to register the Android app in the `displaycellpros-com` Firebase console.
+    - Integration steps for linking the web backend to a native mobile client.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `npm run lint` (which triggers `tsc --noEmit`) to verify type safety and resolution.
-- Run `next build` locally (if possible) to simulate the Vercel build.
+- Build verification to ensure no breaking changes in the Documentation component.
 
 ### Manual Verification
-- Verify that the Services and Store pages still render correctly with the renamed constants file.
+- **Compliance Check**: Open the Lab Portal and verify the new "Mobile Readiness" checklist is visible.
+- **Copy-Paste Test**: Verify the `keytool` command is easy to copy for future use.

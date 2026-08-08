@@ -1,178 +1,19 @@
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
-import { NextResponse } from 'next/server';
 
-function formatUrl(urlStr?: string): string | null {
-  if (!urlStr) return null;
-  let trimmed = urlStr.trim();
-  if (!trimmed) return null;
+// Defensive check to prevent build-time warnings/errors when environment variables are missing
+const isConfigured = !!(
+  process.env.AUTH0_SECRET &&
+  (process.env.AUTH0_ISSUER_BASE_URL || process.env.AUTH0_DOMAIN) &&
+  (process.env.AUTH0_BASE_URL || process.env.APP_URL) &&
+  process.env.AUTH0_CLIENT_ID &&
+  process.env.AUTH0_CLIENT_SECRET
+);
 
-  // Remove trailing slash
-  if (trimmed.endsWith('/')) {
-    trimmed = trimmed.slice(0, -1);
-  }
-
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
-    return trimmed;
-  }
-
-  // Use http for localhost, https for everything else
-  if (trimmed.includes('localhost') || trimmed.includes('127.0.0.1')) {
-    return `http://${trimmed}`;
-  }
-  return `https://${trimmed}`;
-}
-
-function cleanDomain(domainStr?: string): string {
-  if (!domainStr) return 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
-  let cleaned = domainStr.trim();
-  if (!cleaned) return 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
-
-  if (!cleaned.startsWith('http://') && !cleaned.startsWith('https://')) {
-    cleaned = `https://${cleaned}`;
-  }
-
-  try {
-    const parsed = new URL(cleaned);
-    return parsed.hostname || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
-  } catch {
-    let stripped = cleaned.replace(/^https?:\/\//i, '').split('/')[0].split('?')[0].split('#')[0].trim();
-    return stripped || 'icfg-lpfzl6ejhmeudwfnf0rviy2r.us.auth0.com';
-  }
-}
-
-export function getAppBaseUrl(): string {
-  let rawBaseUrl = process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL || process.env.NEXTAUTH_URL;
-
-  // Auto-detect appBaseUrl on Vercel
-  const isLocalhost = rawBaseUrl?.includes('localhost') || rawBaseUrl?.includes('127.0.0.1');
-  if ((!rawBaseUrl || isLocalhost) && process.env.VERCEL_URL) {
-    rawBaseUrl = `https://${process.env.VERCEL_URL}`;
-  }
-
-  if (rawBaseUrl) {
-    const formatted = formatUrl(rawBaseUrl);
-    if (formatted) {
-      try {
-        new URL(formatted);
-        return formatted;
-      } catch {
-        // Fallback below
-      }
-    }
-  }
-  return 'http://localhost:3000';
-}
-
-function resolveAuth0Config() {
-  let envDomain = process.env.AUTH0_DOMAIN || process.env.AUTH0_ISSUER_BASE_URL;
-  let rawBaseUrl = process.env.APP_BASE_URL || process.env.AUTH0_BASE_URL || process.env.NEXTAUTH_URL;
-
-  // Auto-detect appBaseUrl on Vercel
-  // We prioritize VERCEL_URL in production if rawBaseUrl is localhost or missing
-  const isLocalhost = rawBaseUrl?.includes('localhost') || rawBaseUrl?.includes('127.0.0.1');
-  if ((!rawBaseUrl || isLocalhost) && process.env.VERCEL_URL) {
-    rawBaseUrl = `https://${process.env.VERCEL_URL}`;
-  }
-
-  // Detect if rawBaseUrl was mistakenly set to an Auth0 tenant domain
-  if (rawBaseUrl && rawBaseUrl.includes('auth0.com') && !rawBaseUrl.startsWith('http://') && !rawBaseUrl.startsWith('https://')) {
-    if (!envDomain) {
-      envDomain = rawBaseUrl;
-    }
-    rawBaseUrl = undefined;
-  }
-
-  const domain = cleanDomain(envDomain);
-  
-  const appBaseUrl = getAppBaseUrl();
-
-  const clientId = process.env.AUTH0_CLIENT_ID;
-  const clientSecret = process.env.AUTH0_CLIENT_SECRET;
-  const secret = process.env.AUTH0_SECRET;
-
-  if (process.env.NODE_ENV === 'production') {
-    if (secret && secret.length < 32) {
-      console.error('[Auth0] CRITICAL: AUTH0_SECRET is too short. It must be at least 32 characters long.');
-    }
-  }
-
-  const config = {
-    domain,
-    clientId: clientId || 'iHyCQzrHYenv4lrkCFy4v9528jtJUUHl',
-    clientSecret: clientSecret || '',
-    secret: secret || '',
-    appBaseUrl,
-    authorizationParameters: {
-      scope: 'openid profile email offline_access',
-    },
-    session: {
-      cookie: {
-        // Use Lax in development to prevent "invalid state" errors on localhost
-        sameSite: (process.env.NODE_ENV === 'development' ? 'lax' : 'strict') as 'lax' | 'strict',
-      }
-    }
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    console.log('[Auth0] Resolved configuration:', {
-      domain: config.domain,
-      clientId: config.clientId,
-      appBaseUrl: config.appBaseUrl,
-      hasClientSecret: !!config.clientSecret,
-      hasSecret: !!config.secret,
-      secretLength: config.secret?.length
+export const auth0 = isConfigured
+  ? new Auth0Client()
+  : new Auth0Client({
+      secret: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      domain: 'dummy.auth0.com',
+      clientId: 'dummy',
+      clientSecret: 'dummy'
     });
-  }
-
-  return config;
-}
-
-function getAuth0Client() {
-  const config = resolveAuth0Config();
-
-  const isMissingSecrets = !config.clientSecret || !config.secret;
-  const isDefaultBaseUrl = config.appBaseUrl === 'http://localhost:3000' && process.env.NODE_ENV === 'production';
-  const isVercelDeployment = !!process.env.VERCEL;
-
-  if (process.env.NODE_ENV === 'production') {
-    if (isMissingSecrets) {
-      console.error('[Auth0] CRITICAL: AUTH0_CLIENT_SECRET or AUTH0_SECRET is missing.');
-    }
-    // Only warn about localhost if we are actually on Vercel, or if it's not the build phase
-    if (isDefaultBaseUrl && isVercelDeployment) {
-      console.warn('[Auth0] WARNING: appBaseUrl is set to localhost in a production deployment. This will cause authentication failures.');
-    }
-  }
-
-  // Define the proxy/mock object first so it's consistent
-  const mockClient = {
-    middleware: async () => NextResponse.next(),
-    getSession: async () => null,
-    updateSession: async () => {},
-    handleAuth: () => async () => {
-      return new Response(
-        JSON.stringify({
-          error: 'Auth0 configuration error',
-          message: 'The authentication service is not properly configured. Check server logs for details.',
-        }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
-    },
-  } as any;
-
-  if (isMissingSecrets && process.env.NODE_ENV === 'production') {
-    return mockClient;
-  }
-
-  try {
-    // Auth0Client constructor will throw if mandatory fields are missing or invalid
-    return new Auth0Client(config);
-  } catch (err) {
-    console.error('[Auth0] Client initialization failed. Check your environment variables and secret lengths.', err);
-    return mockClient;
-  }
-}
-
-export const auth0 = getAuth0Client();
-
-

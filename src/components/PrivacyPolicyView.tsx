@@ -50,18 +50,18 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
           
           <p className="text-slate-300 text-sm leading-relaxed max-w-2xl">
             This document outlines the brand representation, dynamic application capabilities, 
-            and transparent user data practices of <b>Display & Cell Pros LLC</b>. Our systems are fully engineered to ensure
-            absolute client trust, Right to Repair compliance, and secure infrastructure alignment.
+            and transparent Google user data practices of <b>Display & Cell Pros LLC</b>. Our systems are fully engineered to ensure 
+            absolute client trust, Right to Repair compliance, and Google Trust & Safety alignment.
           </p>
 
           <div className="flex flex-wrap gap-2 pt-2 text-[11px] font-mono">
             <span className="bg-slate-900 border border-slate-800 text-slate-350 px-2.5 py-1 rounded-md flex items-center gap-1">
               <Globe className="w-3.5 h-3.5 text-blue-400" />
-              Verified Domain: displaycellpros.com
+              Verified Domain: {typeof window !== 'undefined' ? window.location.hostname : 'Custom Domain'}
             </span>
             <span className="bg-slate-900 border border-slate-800 text-slate-350 px-2.5 py-1 rounded-md flex items-center gap-1">
               <Server className="w-3.5 h-3.5 text-indigo-400" />
-              Infrastructure: Secure Cloud Hosting
+              Infrastructure: Google Cloud Platform (GCP)
             </span>
           </div>
         </div>
@@ -91,8 +91,8 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
               </div>
 
               <div className="space-y-1">
-                <span className="text-slate-500 font-medium">Authentication Purpose</span>
-                <p className="text-slate-200 font-bold">Durable Cloud Backups</p>
+                <span className="text-slate-500 font-medium">Google Auth Purpose</span>
+                <p className="text-slate-200 font-bold">Durable Firestore Backups</p>
                 <p className="text-slate-400 font-mono text-[10.5px]">Secure multi-device sync</p>
               </div>
 
@@ -159,7 +159,7 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                   <b className="text-white font-sans">Dynamic Repair Quote Generator</b>: Computes repair parts costs, applies corporate discounts (e.g., Fast-Track fleet repair rates), and overlays Spokane WA combined state and local sales tax rates instantly.
                 </li>
                 <li>
-                  <b className="text-white font-sans">Domain Verification Handler</b>: Allows webmasters and site admins to easily serve verified verification tokens dynamically to satisfy cloud ownership criteria.
+                  <b className="text-white font-sans">Google Search Console Challenge Handler</b>: Allows webmasters and site admins to easily serve verified Google verification tokens dynamically to satisfy cloud ownership criteria.
                 </li>
                 <li>
                   <b className="text-white font-sans">Multi-Device Cloud Backup</b>: Authorizes users to sync their local quotes and telemetry sweeps to durable cloud storage.
@@ -175,10 +175,10 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
               2. OAuth Scope & User Data Transparency
             </h2>
             <p>
-              To ensure transparency and conform with industry standard User Data Policies, we explicitly document
-              the exact scope and usage of requested User Data:
+              To ensure transparency and conform with Google API Services User Data Policies, we explicitly document 
+              the exact scope and usage of requested Google User Data:
             </p>
-            <div className="bg-slate-900 border border-slate-755 rounded-xl p-4 space-y-4">
+            <div className="bg-slate-900 border border-slate-750 rounded-xl p-4 space-y-4">
               <div className="flex items-start gap-3">
                 <Info className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="space-y-1.5">
@@ -186,8 +186,8 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                     Why does our app request user data?
                   </h4>
                   <p className="text-xs text-slate-300">
-                    We use Secure Authentication (OAuth 2.0) solely to authorize users and provision a secure personal container
-                    within our durable <b>Secure Cloud Database</b>.
+                    We use Google Sign-In (OAuth 2.0) solely to authorize users and provision a secure personal container 
+                    within our durable <b>Google Cloud Firestore Database</b>.
                   </p>
                 </div>
               </div>
@@ -199,10 +199,10 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                     Specific Data Elements Collected & Utilized:
                   </h4>
                   <p className="text-xs text-slate-350">
-                    We retrieve only the user's <b>Unique User ID (UID)</b>, <b>Email Address</b>, and <b>Display Name</b>.
+                    We retrieve only the user's Google <b>Unique User ID (UID)</b>, <b>Email Address</b>, and <b>Display Name</b>.
                   </p>
                   <ul className="list-disc pl-5 text-[11px] font-mono text-slate-400 space-y-1">
-                    <li>The <b className="text-slate-300">Unique UID</b> forms the critical logical isolation key in our database. Security rules enforce that users can only read or write records matching their authenticated UID.</li>
+                    <li>The <b className="text-slate-300">Google UID</b> forms the critical logical isolation key in Firestore. Security rules enforce that users can only read or write records matching their authenticated UID.</li>
                     <li>The <b className="text-slate-300">Email Address</b> associates diagnostic records to facilitate automated invoicing and dispatching notifications.</li>
                     <li>The <b className="text-slate-300">Display Name</b> is used exclusively to customize client diagnostic reports and terminal printouts.</li>
                   </ul>
@@ -242,7 +242,7 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                 </h4>
                 <p>
                   At Display & Cell Pros LLC, we respect your privacy and are committed to protecting any personal data 
-                  collected. This Privacy Policy governs your use of displaycellpros.com and the embedded technical lab portal.
+                  collected. This Privacy Policy governs your use of this platform and the embedded technical lab portal.
                 </p>
               </div>
 
@@ -252,9 +252,9 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                 </h4>
                 <p>
                   When you access our platform, we may gather diagnostic details (such as device manufacturer, 
-                  serial metrics, and parts quote configurations). If you choose to log in using our Authentication portal,
-                  we request access to your basic profile (ID, name, and email address). This information is used
-                  specifically to securely associate, save, and synchronize your diagnostic history in our Secure Cloud Database.
+                  serial metrics, and parts quote configurations). If you choose to log in using Google Sign-In, 
+                  we request access to your basic Google profile (ID, name, and email address). This information is used 
+                  specifically to securely associate, save, and synchronize your diagnostic history in Google Cloud Firestore.
                 </p>
               </div>
 
@@ -263,9 +263,9 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                   Durable Storage & Data Security
                 </h4>
                 <p>
-                  Our database is hosted in enterprise-grade Cloud infrastructure. Data transit is protected
+                  Our database is hosted in Google's enterprise-grade Cloud Firestore. Data transit is protected 
                   using Secure Sockets Layer (SSL) encryption, and access controls are actively validated on every query 
-                  using server-side database security rules. Your diagnostic records cannot be read, updated, or altered
+                  using server-side Firestore security rules. Your diagnostic records cannot be read, updated, or altered 
                   by any other user.
                 </p>
               </div>
@@ -277,8 +277,8 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
                 <p>
                   In accordance with global privacy principles, you maintain full authority over your data. 
                   You may use the interactive features in the Cloud Backups table inside the Lab Portal to permanently 
-                  and instantly delete any saved diagnostic ticket from Cloud storage. If you wish to revoke active Authentication consent,
-                  you may do so at any time via your Account security settings.
+                  and instantly delete any saved diagnostic ticket from Cloud Firestore. If you wish to revoke active Google OAuth consent, 
+                  you may do so at any time via your Google Account security settings.
                 </p>
               </div>
 
@@ -319,14 +319,14 @@ export function PrivacyPolicyView({ onBackToHome, onNavigateToLab }: PrivacyPoli
           </section>
 
           {/* Section 4: Direct Verification Link instructions */}
-          <section className="bg-blue-955/20 border border-blue-500/20 rounded-xl p-5 space-y-3">
+          <section className="bg-blue-950/20 border border-blue-500/20 rounded-xl p-5 space-y-3">
             <h3 className="text-sm font-bold text-blue-350 flex items-center gap-1.5 uppercase font-mono">
               <Scale className="w-4.5 h-4.5 text-blue-400" />
-              Trust & Safety Quick-Link
+              Google Trust & Safety Quick-Link
             </h3>
             <p className="text-xs text-slate-300">
-              This page satisfies all OAuth Verification Criteria: it is hosted on our verified custom domain 
-              (<code>displaycellpros.com</code>), describes our app and brand accurately, details requested data purposes transparently, 
+              This page satisfies all OAuth Verification Criteria: it is hosted on our verified custom domain, 
+              describes our app and brand accurately, details requested data purposes transparently, 
               and contains an easily accessible, non-shortened link to our Privacy Policy.
             </p>
             {onBackToHome && (

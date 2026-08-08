@@ -3,6 +3,7 @@ const TEMPLATE_URL = "/api/ticket-templates";
 
 const ASSETS_TO_PRECACHE = [
   "/",
+  "/index.html",
   "/favicon.ico",
   "/favicon.svg",
   "/api/ticket-templates"

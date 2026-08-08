@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { calculateQuoteInternal, WA_TAX_DATA } from '../../../lib/repair-logic';
+import { calculateQuoteInternal, WA_TAX_DATA } from '@/lib/repair-logic';
 
 export const dynamic = 'force-dynamic';
 

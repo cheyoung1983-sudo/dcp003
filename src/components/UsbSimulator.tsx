@@ -315,13 +315,11 @@ export const UsbSimulator: React.FC<UsbSimulatorProps> = ({ onDeviceDetected, on
           
           {/* Preset selector */}
           <div className="space-y-1">
-            <label htmlFor="virtual-device-selector" className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-1">
+            <label className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest font-mono flex items-center gap-1">
               <Cpu className="w-3 h-3 text-blue-400" />
               1. Select Virtual Device
             </label>
             <select
-              id="virtual-device-selector"
-              name="virtual_device"
               value={selectedPresetId}
               onChange={(e) => {
                 setSelectedPresetId(e.target.value);

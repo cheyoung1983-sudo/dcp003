@@ -1,137 +1,103 @@
-import type { Metadata } from 'next';
-import Script from 'next/script';
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import type { Metadata } from "next";
+import { Plus_Jakarta_Sans, JetBrains_Mono, Inter } from "next/font/google";
 import { Auth0Provider } from "@auth0/nextjs-auth0/client";
-import { auth0, getAppBaseUrl } from "@/lib/auth0";
-import { cookies } from 'next/headers';
-import * as jose from 'jose';
-import LoginButton from "@/components/LoginButton";
-import LogoutButton from "@/components/LogoutButton";
-import Profile from "@/components/Profile";
-import './globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { LayoutWrapper } from "@/components/LayoutWrapper";
+import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-plus-jakarta',
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  display: "swap",
 });
 
 const jetBrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: 'Display & Cell Pros LLC | Spokane On-Site Mobile Repair',
-  description: 'Professional on-site mobile electronics and smartphone repair services in Spokane, Washington and Spokane Valley.',
+  title: "Display & Cell Pros | Mobile Device Repair & Diagnostic Lab Spokane",
+  description: "Spokane's premier mobile technical device repair laboratory. Professional on-site screen renewals, battery replacements, and hardware diagnostics in Spokane, WA. Combat-veteran owned, Right-to-Repair compliant.",
+  keywords: "phone repair spokane, phone diagnostic lab, mobile screen repair, battery replacement spokane, iphone repair spokane, galaxy repair spokane, right to repair spokane, mobile electronics lab spokane, device diagnostic, tablet repair spokane valley, display cell pros",
+  authors: [{ name: "Display & Cell Pros LLC" }],
+  manifest: "/manifest.json",
+  other: {
+    "google-site-verification": "DjTZnriRaF2EHXE831Ic98h35DrLC07FA6gYqBV_TLU",
+    "geo.region": "US-WA",
+    "geo.placename": "Spokane",
+    "geo.position": "47.6588;-117.4260",
+    "ICBM": "47.6588, -117.4260",
+  },
+  openGraph: {
+    type: "website",
+    title: "Display & Cell Pros | Mobile Device Repair & Diagnostic Lab",
+    description: "Professional, on-site device hardware triage & certified repairs delivered straight to your location in Spokane and Spokane Valley. Combat-veteran owned.",
+    url: process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Display & Cell Pros | Mobile Lab Spokane",
+    description: "Professional on-site device diagnostics and repair solutions. Screen, battery, and micro-soldering delivered straight to you in Spokane, WA.",
+  },
 };
 
-export default async function RootLayout({
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#2563eb",
+};
+
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
-  const session = await auth0.getSession();
-  let user = session?.user;
-  const appBaseUrl = getAppBaseUrl();
-
-  // Unified authentication check (Auth0 or Google)
-  const cookieStore = await cookies();
-  const googleToken = cookieStore.get('google_session_token')?.value;
-
-  if (!user && googleToken) {
-    try {
-      const decoded = jose.decodeJwt(googleToken);
-      user = {
-        name: (decoded.name as string) || (decoded.email as string),
-        email: decoded.email as string,
-        picture: decoded.picture as string,
-        sub: decoded.sub as string,
-      };
-    } catch (err) {
-      console.error('Failed to decode Google token:', err);
-    }
-  }
-
-  const isAuthenticated = !!user;
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log('[Google Auth] Base URL:', appBaseUrl);
-    console.log('[Google Auth] Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
-  }
-
+}>) {
   return (
-    <html lang="en" className={`${inter.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable}`}>
+    <html lang="en" className={`${plusJakartaSans.variable} ${jetBrainsMono.variable} ${inter.variable}`}>
       <head>
-        <meta name="referrer" content="no-referrer-when-downgrade" />
-        <Script
-          src="https://www.google.com/recaptcha/enterprise.js?render=6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"
-          strategy="afterInteractive"
+        {/* Google Analytics (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E192YYWZKK"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-E192YYWZKK');
+            `,
+          }}
         />
-        <Script
-          src="https://accounts.google.com/gsi/client"
-          strategy="afterInteractive"
+        {/* Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+            `,
+          }}
         />
       </head>
-      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col font-sans">
-        {/* Google One Tap / Automatic Sign-in Initialization (only for unauthenticated users) */}
-        {!isAuthenticated && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-          <div id="g_id_onload"
-               data-client_id={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-               data-context="signin"
-               data-ux_mode="popup"
-               data-login_uri={`${appBaseUrl}/api/auth/google/callback`}
-               data-auto_prompt="false"
-               data-auto_select="true"
-               data-itp_support="true"
-               data-use_fedcm_for_prompt="true">
-          </div>
-        )}
-        <Auth0Provider user={user}>
-          <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="font-bold text-xl tracking-tight text-blue-600">Display & Cell Pros LLC</span>
-                <span className="text-xs bg-blue-100 text-blue-800 font-medium px-2.5 py-0.5 rounded-full hidden sm:inline-block">Spokane, WA On-Site Repair</span>
-              </div>
-              <nav className="flex items-center space-x-6 text-sm font-medium text-slate-600">
-                <a href="#services" className="hover:text-blue-600 transition-colors">Services</a>
-                <a href="#quote" className="hover:text-blue-600 transition-colors">Instant Quote</a>
-                <a href="#verify" className="hover:text-blue-600 transition-colors">Secure Verification</a>
-                <div className="h-6 w-px bg-slate-200" />
-                {user ? (
-                  <div className="flex items-center gap-4">
-                    <div className="hidden md:block">
-                      <Profile />
-                    </div>
-                    <div className="w-32">
-                      <LogoutButton />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-32">
-                    <LoginButton />
-                  </div>
-                )}
-              </nav>
-            </div>
-          </header>
-          <main className="flex-1">
+      <body className="bg-slate-50 text-slate-800 antialiased selection:bg-blue-500 selection:text-white">
+        <Auth0Provider>
+          <LayoutWrapper>
             {children}
-          </main>
-          <footer className="bg-slate-900 text-slate-400 py-8 border-t border-slate-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm">© {new Date().getFullYear()} Display & Cell Pros LLC. Serving Spokane, Washington & Spokane Valley.</p>
-              <p className="text-xs">Protected by reCAPTCHA Enterprise.</p>
-            </div>
-          </footer>
+          </LayoutWrapper>
+          <SpeedInsights />
         </Auth0Provider>
       </body>
     </html>

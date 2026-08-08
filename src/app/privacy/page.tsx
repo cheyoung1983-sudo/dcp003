@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { PrivacyPolicyView } from '../../components/PrivacyPolicyView';
+import { PrivacyPolicyView } from '@/components/PrivacyPolicyView';
 
 export default function Privacy() {
   return (

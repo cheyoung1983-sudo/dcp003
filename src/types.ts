@@ -20,32 +20,37 @@ export interface POSLog {
   source: "Square" | "CellSmart" | "WebHook-Receiver";
 }
 
-export interface QuoteTier {
+export interface QuoteBreakdown {
   partsCost: number;
   laborCost: number;
+  overhead: number;
   subtotal: number;
-  discountAmount: number;
-  calculatedTax: number;
-  grandTotal: number;
-  extras: string[];
+}
+
+export interface TaxResponse {
+  valid: boolean;
+  zipCode: string;
+  city: string;
+  rate: number;
+  message: string;
 }
 
 export interface QuoteResponse {
-  tiers: {
-    budget: QuoteTier;
-    professional: QuoteTier;
-    authorized: QuoteTier;
-  };
+  baseQuote: QuoteBreakdown;
   taxInfo: {
     zipCode: string;
     city: string;
     rate: number;
+    calculatedTax: number;
   };
   discountInfo: {
     applied: boolean;
     percentage: number;
+    amount: number;
     company: string;
   };
+  subtotal: number;
+  grandTotal: number;
 }
 
 export interface TicketTemplate {
