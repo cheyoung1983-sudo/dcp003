@@ -44,6 +44,9 @@ model User {
 
   accounts Account[]
   sessions Session[]
+  tickets  Ticket[]
+
+  @@map("users")
 }
 
 model VerificationToken {
@@ -52,4 +55,26 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// Repair Ticket — created by /api/tickets POST
+// Raw SQL in route.ts inserts into lowercase "tickets" table, so we @@map it.
+// The "users" table referenced in raw SQL maps to the User model above via @@map.
+model Ticket {
+  id           String   @id                  // e.g. "DSC-1234"
+  customerName String
+  device       String
+  issueType    String
+  status       String   @default("open")     // open | in_progress | closed
+  quotedPrice  Decimal  @db.Decimal(10, 2)
+  tax          Decimal  @db.Decimal(10, 2)
+  discount     Decimal  @db.Decimal(10, 2)
+  total        Decimal  @db.Decimal(10, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tickets")
 }

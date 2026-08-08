@@ -1,5 +1,4 @@
 import React from 'react';
-import { signIn } from 'next-auth/react';
 import { Inter } from 'next/font/google';
 import styles from './SignInButton.module.css';
 

@@ -1,17 +1,12 @@
 import React from 'react';
-import { signIn } from 'next-auth/react';
 import { Inter } from 'next/font/google';
 import styles from './SignInButton.module.css';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '600'] });
 
 export default function SignInButton() {
-  const handleSignIn = async () => {
-    // Initiates Vercel OAuth flow via the /api/auth/signin route we just created
-    await signIn('credentials', {
-      callbackUrl: '/',
-      redirect: false,
-    });
+  const handleSignIn = () => {
+    window.location.href = '/api/auth/signin';
   };
 
   return (
