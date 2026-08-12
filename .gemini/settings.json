@@ -1,23 +1,42 @@
 {
-  "mcpServers": {
-    "my-local-server": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-everything"
-      ]
-    },
-    "github": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ],
-      "env": {}
-    },
-    "server-name": {
-      "url": "https://mcp.example.com/mcp",
-      "type": "http"
+  "general": {
+    "vimMode": true,
+    "plan": {
+      "enabled": false,
+      "modelRouting": false
     }
+  },
+  "ide": {
+    "enabled": true
+  },
+  "billing": {
+    "overageStrategy": "always"
+  },
+  "model": {
+    "name": ""
+  },
+  "context": {
+    "loadMemoryFromIncludeDirectories": true
+  },
+  "security": {
+    "autoAddToPolicyByDefault": true,
+    "allowedExtensions": []
+  },
+  "advanced": {
+    "ignoreLocalEnv": true
+  },
+  "experimental": {
+    "worktrees": true,
+    "modelSteering": true,
+    "directWebFetch": true,
+    "gemmaModelRouter": {
+      "autoStartServer": true
+    },
+    "autoMemory": true,
+    "generalistProfile": true,
+    "contextManagement": true
+  },
+  "skills": {
+    "enabled": true
   }
 }

@@ -6,7 +6,7 @@ import { Wrench, ShieldCheck, Phone, MapPin, Clock, Wifi, Check } from 'lucide-r
 
 export function Footer() {
   return (
-    <footer className="bg-slate-950 border-t border-slate-800 pt-12 pb-8 shrink-0">
+    <footer suppressHydrationWarning className="bg-slate-950 border-t border-slate-800 pt-12 pb-8 shrink-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
@@ -23,8 +23,13 @@ export function Footer() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white tracking-wider uppercase mb-4 font-mono">Contact</h3>
-            <ul className="space-y-2 text-sm text-slate-400">
-              <li className="flex items-center gap-2"><Phone size={14}/> 509-903-6139</li>
+            <ul className="space-y-2 text-sm text-slate-400" suppressHydrationWarning>
+              <li className="flex items-center gap-2" suppressHydrationWarning>
+                <Phone size={14}/>
+                <a href="tel:5099036139" className="hover:text-blue-400 transition-colors" suppressHydrationWarning>
+                  509-903-6139
+                </a>
+              </li>
               <li className="flex items-center gap-2"><MapPin size={14}/> Mobile Service: Spokane & Valley</li>
               <li className="flex items-center gap-2"><Clock size={14}/> Mon-Sat: 8am - 6pm</li>
             </ul>
@@ -45,19 +50,14 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-slate-850 pt-5 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
-          <div>
+          <div suppressHydrationWarning>
             &copy; {new Date().getFullYear()} Display & Cell Pros LLC. All rights reserved.
           </div>
 
           <div className="flex gap-4 items-center select-none font-mono text-[9.5px]">
             <span className="flex items-center gap-1.5 text-slate-400">
               <Wifi className="w-3.5 h-3.5 text-emerald-500" />
-              CELLSMART HUB: CONNECTED
-            </span>
-            <span className="text-slate-700">|</span>
-            <span className="flex items-center gap-1.5 text-slate-400">
-              <Check className="w-3 h-3 text-emerald-500" />
-              SQUARE WEBHOOKS: READY
+              CLOUD HUB: CONNECTED
             </span>
           </div>
         </div>

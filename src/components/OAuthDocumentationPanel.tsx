@@ -54,7 +54,7 @@ export function OAuthDocumentationPanel({ projectId, devUrl, prodUrl }: OAuthDoc
   // Professional Redundancy catalog
   const redundancyProviders = [
     {
-      name: "Google (Search Console)",
+      name: "Auth0 Dashboard",
       status: "Verified",
       purpose: "Trust & Safety review for reCAPTCHA and OAuth handshakes.",
       icon: <Globe className="w-4 h-4 text-blue-400" />
@@ -96,7 +96,7 @@ export function OAuthDocumentationPanel({ projectId, devUrl, prodUrl }: OAuthDoc
             Compliance Lab: Multi-Platform Ownership
           </h3>
           <p className="text-[11px] text-slate-400 mt-1">
-            Verified redundancy across Google, OpenAI, Vercel, and Netlify for professional-grade stability.
+            Verified redundancy across Auth0, OpenAI, Vercel, and Netlify for professional-grade stability.
           </p>
         </div>
         
@@ -111,7 +111,7 @@ export function OAuthDocumentationPanel({ projectId, devUrl, prodUrl }: OAuthDoc
           <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
             <div 
               className={`h-full transition-all duration-500 rounded-full ${
-                completionPercentage === 100 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-gradient-to-r from-amber-500 to-blue-500"
+                completionPercentage === 100 ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,184,129,0.5)]" : "bg-gradient-to-r from-amber-500 to-blue-500"
               }`}
               style={{ width: `${completionPercentage}%` }}
             />
@@ -163,7 +163,7 @@ export function OAuthDocumentationPanel({ projectId, devUrl, prodUrl }: OAuthDoc
           </h4>
 
           <div className="space-y-3">
-            {/* Task 1: Google Search Console */}
+            {/* Task 1: Auth0 Dashboard */}
             <div className={`p-3.5 rounded-lg border transition-all ${checklist.siteVerification ? "bg-slate-950/40 border-slate-800 shadow-inner" : "bg-slate-950/20 border-slate-900"}`}>
               <div className="flex items-start gap-3">
                 <button 
@@ -173,9 +173,9 @@ export function OAuthDocumentationPanel({ projectId, devUrl, prodUrl }: OAuthDoc
                   {checklist.siteVerification && <Check className="w-3 h-3 stroke-[3]" />}
                 </button>
                 <div className="flex-1 space-y-1">
-                  <span className="font-bold text-slate-200 text-xs">Verify Domain (Google Search Console)</span>
+                  <span className="font-bold text-slate-200 text-xs">Verify Domain (Auth0 Dashboard)</span>
                   <p className="text-[10.5px] text-slate-400 leading-normal">
-                    Fulfill Google Trust & Safety requirements. Serving <code className="text-blue-300 font-bold bg-slate-900 px-1 rounded">/googleb89bdda23b0fc37b.html</code> dynamically for verification.
+                    Fulfill Auth0 Trust & Safety requirements. Serving <code className="text-blue-300 font-bold bg-slate-900 px-1 rounded">/auth0verification.html</code> dynamically for verification.
                   </p>
                 </div>
               </div>
@@ -251,10 +251,10 @@ export function OAuthDocumentationPanel({ projectId, devUrl, prodUrl }: OAuthDoc
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-200 text-xs uppercase tracking-tight">Android Self-Signing Verification</span>
-                    <span className="text-[8px] bg-blue-900/40 text-blue-300 px-1.5 py-0.2 rounded border border-blue-800/30 font-bold uppercase tracking-widest">Mandatory for Google SSO</span>
+                    <span className="text-[8px] bg-blue-900/40 text-blue-300 px-1.5 py-0.2 rounded border border-blue-800/30 font-bold uppercase tracking-widest">Mandatory for Auth0 SSO</span>
                   </div>
                   <p className="text-[10.5px] text-slate-400 leading-normal">
-                    To enable Google Sign-In for Android, you must provide the <b>SHA-1 release fingerprint</b> in <b>Project Settings &gt; Your apps</b>.
+                    To enable Auth0 Sign-In for Android, you must provide the <b>SHA-1 release fingerprint</b> in <b>Project Settings &gt; Your apps</b>.
                   </p>
 
                   <div className="mt-3 space-y-2">

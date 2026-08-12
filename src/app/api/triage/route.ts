@@ -67,7 +67,15 @@ export async function POST(req: Request) {
     });
 
     const replyText = response.choices[0]?.message?.content || "{}";
-    return NextResponse.json(JSON.parse(replyText));
+
+    // Apply outbound Lexical Firewall to scrub AI hallucinations or forbidden terms
+    const { sanitizeAIResponse } = await import('@/lib/lexical-firewall');
+    const sanitizedReply = JSON.parse(replyText);
+    if (sanitizedReply.text) {
+      sanitizedReply.text = sanitizeAIResponse(sanitizedReply.text);
+    }
+
+    return NextResponse.json(sanitizedReply);
 
   } catch (err: any) {
     console.error("[Triage Error]:", err);

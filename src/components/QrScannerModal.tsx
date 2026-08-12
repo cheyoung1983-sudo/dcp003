@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { 
   X, 
   Camera, 
@@ -65,8 +65,89 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
     }
   };
 
+  // Stop Camera & Clean Loops
+  const stopCamera = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
+
+  // Handle successful decoding from any source
+  const handleDecodedData = useCallback((data: string) => {
+    stopCamera();
+    
+    // Parse serial - if JSON trace from our own app, extract details
+    let serial = data.trim();
+    let brand = "";
+    let model = "";
+
+    if (data.includes("--- TELEMETRY TRACE ---") || data.includes("Serial:")) {
+      // Attempt line-by-line parsing
+      const lines = data.split("\n");
+      const serialLine = lines.find(l => l.startsWith("Serial:") || l.includes("Serial:"));
+      const brandLine = lines.find(l => l.startsWith("Manufacturer:") || l.includes("Brand:"));
+      const modelLine = lines.find(l => l.startsWith("Model:") || l.includes("Model:"));
+
+      if (serialLine) {
+        serial = serialLine.split(":")[1].trim();
+      }
+      if (brandLine) {
+        brand = brandLine.split(":")[1].trim();
+      }
+      if (modelLine) {
+        model = modelLine.split(":")[1].trim();
+      }
+    }
+
+    setScanResult({
+      serial,
+      details: brand || model ? `${brand} ${model}` : "Standard Hardware Label"
+    });
+
+    // Notify parent immediately
+    onScanSuccess(serial, brand, model);
+  }, [stopCamera, onScanSuccess]);
+
+  // Scan frame by frame using jsQR
+  const startScanLoop = useCallback(() => {
+    const scan = () => {
+      if (!videoRef.current || !canvasRef.current || activeTab !== "camera") return;
+      
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      if (video.readyState === video.HAVE_CURRENT_DATA && ctx) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+
+        if (code && code.data) {
+          playBeep("success");
+          handleDecodedData(code.data);
+          return; // Stop scanning
+        }
+      }
+      animationFrameRef.current = requestAnimationFrame(scan);
+    };
+    animationFrameRef.current = requestAnimationFrame(scan);
+  }, [activeTab, handleDecodedData]);
+
   // Start Camera
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     setCameraError(null);
     setIsCameraLoading(true);
     try {
@@ -100,90 +181,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
     } finally {
       setIsCameraLoading(false);
     }
-  };
-
-  // Stop Camera & Clean Loops
-  const stopCamera = () => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
-
-  // Scan frame by frame using jsQR
-  const startScanLoop = () => {
-    const scan = () => {
-      if (!videoRef.current || !canvasRef.current || activeTab !== "camera") return;
-      
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-
-      if (video.readyState === video.HAVE_CURRENT_DATA && ctx) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: "dontInvert",
-        });
-
-        if (code && code.data) {
-          playBeep("success");
-          handleDecodedData(code.data);
-          return; // Stop scanning
-        }
-      }
-      animationFrameRef.current = requestAnimationFrame(scan);
-    };
-    animationFrameRef.current = requestAnimationFrame(scan);
-  };
-
-  // Handle successful decoding from any source
-  const handleDecodedData = (data: string) => {
-    stopCamera();
-    
-    // Parse serial - if JSON trace from our own app, extract details
-    let serial = data.trim();
-    let brand = "";
-    let model = "";
-
-    if (data.includes("--- TELEMETRY TRACE ---") || data.includes("Serial:")) {
-      // Attempt line-by-line parsing
-      const lines = data.split("\n");
-      const serialLine = lines.find(l => l.startsWith("Serial:") || l.includes("Serial:"));
-      const brandLine = lines.find(l => l.startsWith("Manufacturer:") || l.includes("Brand:"));
-      const modelLine = lines.find(l => l.startsWith("Model:") || l.includes("Model:"));
-
-      if (serialLine) {
-        serial = serialLine.split(":")[1].trim();
-      }
-      if (brandLine) {
-        brand = brandLine.split(":")[1].trim();
-      }
-      if (modelLine) {
-        model = modelLine.split(":")[1].trim();
-      }
-    } else if (data.includes("ID:") && data.includes("Vault:")) {
-      // Format parser
-    }
-
-    setScanResult({
-      serial,
-      details: brand || model ? `${brand} ${model}` : "Standard Hardware Label"
-    });
-
-    // Notify parent immediately
-    onScanSuccess(serial, brand, model);
-  };
+  }, [stopCamera, startScanLoop]);
 
   // Handle uploaded image files
   const handleFileDrop = (e: React.DragEvent) => {
@@ -278,7 +276,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrSca
     return () => {
       stopCamera();
     };
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, startCamera, stopCamera]);
 
   if (!isOpen) return null;
 

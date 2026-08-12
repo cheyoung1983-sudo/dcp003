@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Database, 
   RefreshCw, 
@@ -14,7 +14,7 @@ import {
   FileCode,
   Clock
 } from "lucide-react";
-import { TicketTemplate } from "../types";
+import { TicketTemplate } from "@/lib/types";
 
 interface CacheManagementProps {
   onRefreshCompleted?: () => void;
@@ -31,13 +31,13 @@ export default function CacheManagement({ onRefreshCompleted, onAddToast }: Cach
   const [activeCacheName, setActiveCacheName] = useState<string>("dcp-diagnostic-lab-cache-v2");
   const [cacheStatusLog, setCacheStatusLog] = useState<Array<{ time: string; msg: string; type: "info" | "success" | "warning" }>>([]);
 
-  const addLog = (msg: string, type: "info" | "success" | "warning" = "info") => {
+  const addLog = useCallback((msg: string, type: "info" | "success" | "warning" = "info") => {
     const time = new Date().toLocaleTimeString();
     setCacheStatusLog(prev => [{ time, msg, type }, ...prev].slice(0, 8));
-  };
+  }, []);
 
   // Inspect the actual browser cache storage to find cached assets and templates
-  const inspectCache = async () => {
+  const inspectCache = useCallback(async () => {
     if (typeof window === "undefined" || !("caches" in window)) {
       addLog("Cache Storage API not supported in this environment", "warning");
       return;
@@ -71,7 +71,7 @@ export default function CacheManagement({ onRefreshCompleted, onAddToast }: Cach
       console.error("Failed to inspect browser cache:", err);
       addLog(`Cache inspection failed: ${err.message}`, "warning");
     }
-  };
+  }, [addLog]);
 
   // Initial diagnostics checks
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function CacheManagement({ onRefreshCompleted, onAddToast }: Cach
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
+  }, [inspectCache, addLog]);
 
   // Force Purge and Re-fetch Templates
   const handleForceRefresh = async () => {

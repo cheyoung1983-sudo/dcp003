@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Database, 
   RefreshCw, 
@@ -79,25 +79,23 @@ export function RdsDiagnosticPanel() {
 
   // Read manual token from localStorage if present
   const [manualToken, setManualToken] = useState(() => {
+    if (typeof window === "undefined") return "";
     return localStorage.getItem("rds_manual_auth_token") || "";
   });
 
   const handleTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setManualToken(val);
-    if (val.trim()) {
-      localStorage.setItem("rds_manual_auth_token", val.trim());
-    } else {
-      localStorage.removeItem("rds_manual_auth_token");
+    if (typeof window !== "undefined") {
+      if (val.trim()) {
+        localStorage.setItem("rds_manual_auth_token", val.trim());
+      } else {
+        localStorage.removeItem("rds_manual_auth_token");
+      }
     }
   };
 
-  // Fetch status on mount or when token changes
-  useEffect(() => {
-    fetchRdsStatus();
-  }, [manualToken]);
-
-  const fetchRdsStatus = async () => {
+  const fetchRdsStatus = useCallback(async () => {
     setLoadingStatus(true);
     try {
       const headers: HeadersInit = {};
@@ -127,7 +125,12 @@ export function RdsDiagnosticPanel() {
     } finally {
       setLoadingStatus(false);
     }
-  };
+  }, [manualToken]);
+
+  // Fetch status on mount or when token changes
+  useEffect(() => {
+    fetchRdsStatus();
+  }, [fetchRdsStatus]);
 
   const fetchMovies = async () => {
     setLoadingMovies(true);

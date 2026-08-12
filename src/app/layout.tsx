@@ -1,104 +1,47 @@
-import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono, Inter } from "next/font/google";
-import { Auth0Provider } from "@auth0/nextjs-auth0/client";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { LayoutWrapper } from "@/components/LayoutWrapper";
-import "./globals.css";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta",
-  display: "swap",
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+import type { Metadata } from 'next';
+import './globals.css';
+import UserProviderWrapper from '@/components/UserProviderWrapper';
 
 export const metadata: Metadata = {
-  title: "Display & Cell Pros | Mobile Device Repair & Diagnostic Lab Spokane",
-  description: "Spokane's premier mobile technical device repair laboratory. Professional on-site screen renewals, battery replacements, and hardware diagnostics in Spokane, WA. Combat-veteran owned, Right-to-Repair compliant.",
-  keywords: "phone repair spokane, phone diagnostic lab, mobile screen repair, battery replacement spokane, iphone repair spokane, galaxy repair spokane, right to repair spokane, mobile electronics lab spokane, device diagnostic, tablet repair spokane valley, display cell pros",
-  authors: [{ name: "Display & Cell Pros LLC" }],
-  manifest: "/manifest.json",
-  other: {
-    "google-site-verification": "DjTZnriRaF2EHXE831Ic98h35DrLC07FA6gYqBV_TLU",
-    "geo.region": "US-WA",
-    "geo.placename": "Spokane",
-    "geo.position": "47.6588;-117.4260",
-    "ICBM": "47.6588, -117.4260",
-  },
-  openGraph: {
-    type: "website",
-    title: "Display & Cell Pros | Mobile Device Repair & Diagnostic Lab",
-    description: "Professional, on-site device hardware triage & certified repairs delivered straight to your location in Spokane and Spokane Valley. Combat-veteran owned.",
-    url: process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "/",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Display & Cell Pros | Mobile Lab Spokane",
-    description: "Professional on-site device diagnostics and repair solutions. Screen, battery, and micro-soldering delivered straight to you in Spokane, WA.",
-  },
-};
-
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#2563eb",
+  title: 'Display & Cell Pros LLC | Spokane On-Site Mobile Repair',
+  description: 'Professional on-site mobile electronics and smartphone repair services in Spokane, Washington and Spokane Valley.',
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} ${jetBrainsMono.variable} ${inter.variable}`}>
+    <html lang="en">
       <head>
-        {/* Google Analytics (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-E192YYWZKK"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-E192YYWZKK');
-            `,
-          }}
-        />
-        {/* Service Worker Registration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                  }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                  });
-                });
-              }
-            `,
-          }}
-        />
+        <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"></script>
       </head>
-      <body className="bg-slate-50 text-slate-800 antialiased selection:bg-blue-500 selection:text-white">
-        <Auth0Provider>
-          <LayoutWrapper>
+      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
+        <UserProviderWrapper>
+          <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="font-bold text-xl tracking-tight text-blue-600">Display & Cell Pros LLC</span>
+                <span className="text-xs bg-blue-100 text-blue-800 font-medium px-2.5 py-0.5 rounded-full hidden sm:inline-block">Spokane, WA On-Site Repair</span>
+              </div>
+              <nav className="flex items-center space-x-6 text-sm font-medium text-slate-600">
+                <a href="#services" className="hover:text-blue-600 transition-colors">Services</a>
+                <a href="#quote" className="hover:text-blue-600 transition-colors">Instant Quote</a>
+                <a href="#verify" className="hover:text-blue-600 transition-colors">Secure Verification</a>
+              </nav>
+            </div>
+          </header>
+          <main className="flex-1">
             {children}
-          </LayoutWrapper>
-          <SpeedInsights />
-        </Auth0Provider>
+          </main>
+          <footer className="bg-slate-900 text-slate-400 py-8 border-t border-slate-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-sm">© {new Date().getFullYear()} Display & Cell Pros LLC. Serving Spokane, Washington & Spokane Valley.</p>
+              <p className="text-xs">Protected by reCAPTCHA Enterprise.</p>
+            </div>
+          </footer>
+        </UserProviderWrapper>
       </body>
     </html>
   );

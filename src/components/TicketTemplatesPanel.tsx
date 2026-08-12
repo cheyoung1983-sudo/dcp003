@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { TicketTemplate } from "../types";
+import React, { useState, useEffect, useCallback } from "react";
+import { TicketTemplate } from "@/lib/types";
 import { 
   FileText, 
   Wifi, 
@@ -47,7 +47,7 @@ export default function TicketTemplatesPanel({ onApplyTemplate }: TicketTemplate
   }, []);
 
   // Fetch templates
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     setLoading(true);
     setError(null);
     const startTime = performance.now();
@@ -61,9 +61,6 @@ export default function TicketTemplatesPanel({ onApplyTemplate }: TicketTemplate
       setTemplates(data);
       
       const duration = performance.now() - startTime;
-      // Service worker cache response is usually extremely fast (< 10ms)
-      // or we can detect via header/response properties. Since it's a standard SW,
-      // let's estimate or read the cache status, or just show a beautiful indicator.
       if (duration < 12 && isServiceWorkerControlled) {
         setSource("cache");
       } else {
@@ -77,11 +74,11 @@ export default function TicketTemplatesPanel({ onApplyTemplate }: TicketTemplate
     } finally {
       setLoading(false);
     }
-  };
+  }, [isOnline, isServiceWorkerControlled]);
 
   useEffect(() => {
     fetchTemplates();
-  }, [isOnline]);
+  }, [fetchTemplates]);
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-4.5 flex flex-col space-y-4 shadow-xl">

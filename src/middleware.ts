@@ -1,45 +1,29 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { get, has } from '@vercel/edge-config';
 import { proxy } from './proxy';
+import { NextResponse } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export async function middleware(request: Request) {
+  const response = await proxy(request);
 
-  // 1. Auth0 Proxy Middleware
-  const authResponse = await proxy(request);
-  if (authResponse) return authResponse;
+  if (response instanceof NextResponse && process.env.NODE_ENV === 'production') {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google.com https://*.google-analytics.com https://vercel.live https://*.vercel.live https://*.auth0.com",
+      "connect-src 'self' https://*.google.com https://*.google-analytics.com https://vercel.live https://*.vercel.live https://*.auth0.com https://displaycellpros.us.auth0.com wss://*.vercel.live",
+      "img-src 'self' data: blob: https://*.google.com https://*.google-analytics.com https://*.gstatic.com https://*.auth0.com https://*.githubusercontent.com https://picsum.photos https://*.picsum.photos https://images.unsplash.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "frame-src 'self' https://vercel.live https://*.vercel.live https://*.auth0.com",
+    ].join('; ');
 
-  // 2. Existing Edge Config logic
-  if (pathname === '/welcome' || pathname === '/api/welcome') {
-    try {
-      if (await has('greeting')) {
-        const greeting = await get('greeting');
-        return NextResponse.json({
-          greeting: greeting || "hello world",
-          source: "vercel-edge-config-middleware",
-          timestamp: new Date().toISOString()
-        }, {
-          headers: { 'x-middleware-cache': 'hit' }
-        });
-      }
-    } catch (err) {
-      console.error('Middleware Edge Config Error:', err);
-    }
+    response.headers.set('Content-Security-Policy', csp);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api/auth (handled by SDK handleAuth, though proxy might overlap)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     */
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
+

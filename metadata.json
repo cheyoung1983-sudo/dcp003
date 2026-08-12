@@ -1,6 +1,8 @@
 {
-  "name": "Display & Cell Pros Diagnostic Hub",
-  "description": "Custom hardware diagnostic, real-time quoting, WA State tax compliance, and cloud architecture portal for Display & Cell Pros.",
-  "requestFramePermissions": ["usb", "camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "Display & Cell Pros LLC",
+  "description": "On-site mobile smartphone and device repair services in Spokane, Washington and Spokane Valley.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-const APP_URL = process.env.APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '');
+const APP_URL = process.env.APP_URL || 'https://www.displaycellpros.com';
 const lastMod = new Date().toISOString().split('T')[0];
 
 interface Route {

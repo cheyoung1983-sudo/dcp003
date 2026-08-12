@@ -17,7 +17,7 @@ export interface POSLog {
   timestamp: string;
   level: string;
   message: string;
-  source: "Square" | "CellSmart" | "WebHook-Receiver";
+  source: "Cloud" | "WebHook-Receiver";
 }
 
 export interface QuoteTier {
