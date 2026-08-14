@@ -73,7 +73,10 @@ export function StoreView() {
                 key={product.id}
                 className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden group flex flex-col hover:border-slate-700 transition-all shadow-lg"
               >
-                <div className="h-52 overflow-hidden relative bg-slate-950">
+                <Link
+                  href={`/products/${product.handle}`}
+                  className="h-52 overflow-hidden relative bg-slate-950 block"
+                >
                   {product.featuredImage ? (
                     <img
                       src={product.featuredImage.url}
@@ -88,13 +91,15 @@ export function StoreView() {
                   <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded text-emerald-400 border border-slate-700">
                     {product.availableForSale ? "In Stock" : "Sold Out"}
                   </div>
-                </div>
+                </Link>
 
                 <div className="p-5 flex flex-col flex-grow space-y-4">
                   <div>
-                    <h3 className="text-base font-bold text-white mb-1 leading-snug line-clamp-2">
-                      {product.title}
-                    </h3>
+                    <Link href={`/products/${product.handle}`}>
+                      <h3 className="text-base font-bold text-white mb-1 leading-snug line-clamp-2 hover:text-blue-400 transition-colors">
+                        {product.title}
+                      </h3>
+                    </Link>
                     <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                       {product.description || "Certified component for store distribution."}
                     </p>

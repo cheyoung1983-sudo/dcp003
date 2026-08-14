@@ -27,7 +27,7 @@ export async function shopifyFetch<T>(
     },
     body: JSON.stringify({ query, variables }),
     next: { revalidate: 60 },
-  });
+  } as any);
 
   const json: ShopifyResponse<T> = await response.json();
 

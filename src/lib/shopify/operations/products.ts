@@ -28,8 +28,14 @@ export interface ShopifyProduct {
   }>;
 }
 
-const DEFAULT_STORE_DOMAIN = process.env.DCP_SANDBOX_SHOPIFY_STORE_DOMAIN || "vercel-store-34d604b7-q6ui4f53.myshopify.com";
-const DEFAULT_STOREFRONT_TOKEN = process.env.DCP_SANDBOX_SHOPIFY_STOREFRONT_ACCESS_TOKEN || "cda195dfcf9e55984c840562aaeafa85";
+const DEFAULT_STORE_DOMAIN =
+  process.env.SHOPIFY_STORE_DOMAIN ||
+  process.env.DCP_SANDBOX_SHOPIFY_STORE_DOMAIN ||
+  "vercel-store-34d604b7-q6ui4f53.myshopify.com";
+const DEFAULT_STOREFRONT_TOKEN =
+  process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+  process.env.DCP_SANDBOX_SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+  "cda195dfcf9e55984c840562aaeafa85";
 
 export async function shopifyFetch<T>({
   query,
@@ -38,8 +44,14 @@ export async function shopifyFetch<T>({
   query: string;
   variables?: Record<string, any>;
 }): Promise<T | null> {
-  const domain = process.env.DCP_SANDBOX_SHOPIFY_STORE_DOMAIN || DEFAULT_STORE_DOMAIN;
-  const token = process.env.DCP_SANDBOX_SHOPIFY_STOREFRONT_ACCESS_TOKEN || DEFAULT_STOREFRONT_TOKEN;
+  const domain =
+    process.env.SHOPIFY_STORE_DOMAIN ||
+    process.env.DCP_SANDBOX_SHOPIFY_STORE_DOMAIN ||
+    DEFAULT_STORE_DOMAIN;
+  const token =
+    process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+    process.env.DCP_SANDBOX_SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+    DEFAULT_STOREFRONT_TOKEN;
 
   const endpoint = `https://${domain.replace(/^https?:\/\//, '')}/api/2024-01/graphql.json`;
 
@@ -52,7 +64,7 @@ export async function shopifyFetch<T>({
       },
       body: JSON.stringify({ query, variables }),
       next: { revalidate: 60 },
-    });
+    } as any);
 
     if (!res.ok) {
       console.error(`Shopify API error: ${res.status} ${res.statusText}`);
