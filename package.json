@@ -7,6 +7,9 @@
     "build": "prisma generate && next build",
     "start": "next start -p 3000",
     "lint": "next lint",
+    "test": "tsx scripts/run-all-tests.ts",
+    "test:all": "tsx scripts/run-all-tests.ts && tsx scripts/test-shopify.ts",
+    "test:shopify": "tsx scripts/test-shopify.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
