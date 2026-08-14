@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2022",
     "lib": [
       "dom",
       "dom.iterable",
@@ -38,6 +38,7 @@
     "node_modules",
     "netlify",
     "index.ts",
-    "scripts"
+    "scripts",
+    "dist"
   ]
 }

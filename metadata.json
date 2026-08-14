@@ -1,7 +1,10 @@
 {
-  "name": "Display & Cell Pros LLC",
-  "description": "On-site mobile smartphone and device repair services in Spokane, Washington and Spokane Valley.",
-  "requestFramePermissions": [],
+  "name": "Display & Cell Pros LLC Repair Portal",
+  "description": "On-site mobile smartphone and device repair services in Spokane, Washington and Shopify synchronization platform.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
