@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useToast } from './Toast.tsx';
 import { 
   Search, 
   CheckCircle2, 
@@ -20,12 +19,13 @@ import {
   Camera,
   Radio
 } from 'lucide-react';
-import QRScannerModal from './QRScannerModal.tsx';
-import NFCScannerModal from './NFCScannerModal.tsx';
-import WarrantyTrackerCard from './WarrantyTrackerCard.tsx';
-import RepairTimeEstimator from './RepairTimeEstimator.tsx';
-import DynamicCompletionCard from './DynamicCompletionCard.tsx';
-import RepairDeviceLabelQR from './RepairDeviceLabelQR.tsx';
+import { useToast } from './Toast';
+import QRScannerModal from './QrScannerModal';
+import NFCScannerModal from './NFCScannerModal';
+import WarrantyTrackerCard from './WarrantyTrackerCard';
+import RepairTimeEstimator from './RepairTimeEstimator';
+import DynamicCompletionCard from './DynamicCompletionCard';
+import RepairDeviceLabelQR from './RepairDeviceLabelQR';
 
 interface TelemetrySummary {
   batteryHealthPercentage: number;

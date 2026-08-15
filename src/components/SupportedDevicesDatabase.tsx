@@ -31,8 +31,8 @@ import {
   SUPPORTED_DEVICES_DATABASE,
   SupportedDeviceModel,
   BoardRepairCapability
-} from '../data/supportedDevicesData.ts';
-import { useToast } from './Toast.tsx';
+} from '../data/supportedDevicesData';
+import { useToast } from './Toast';
 
 interface SupportedDevicesDatabaseProps {
   onSelectDeviceForIntake?: (manufacturer: string, model: string) => void;

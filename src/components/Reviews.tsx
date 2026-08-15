@@ -6,8 +6,8 @@
 import { useState } from 'react';
 import { Star, MessageSquare, User, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../lib/utils.ts';
-import { useToast } from './Toast.tsx';
+import { cn } from '../lib/utils';
+import { useToast } from './Toast';
 
 interface Review {
   id: string;

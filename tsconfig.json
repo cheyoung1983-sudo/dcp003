@@ -29,8 +29,8 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts"
   ],
@@ -39,6 +39,8 @@
     "netlify",
     "index.ts",
     "scripts",
+    "api",
+    "server.ts",
     "dist"
   ]
 }

@@ -4,8 +4,8 @@ import {
   Database, Zap, Server, CheckCircle2, Copy, Play, ArrowRight,
   TrendingUp, RefreshCw, Cpu, Check, HardDrive
 } from 'lucide-react';
-import { useToast } from './Toast.tsx';
-import { REPAIR_DB_INDEX_RECOMMENDATIONS, POSTGRES_TABLE_SCHEMAS_DDL } from '../lib/dbOptimizations.ts';
+import { useToast } from './Toast';
+import { REPAIR_DB_INDEX_RECOMMENDATIONS, POSTGRES_TABLE_SCHEMAS_DDL } from '../lib/dbOptimizations';
 
 interface PoolMetricsData {
   status: string;

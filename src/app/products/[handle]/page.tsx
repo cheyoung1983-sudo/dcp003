@@ -42,7 +42,7 @@ export async function generateMetadata({
   };
 }
 
-export async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({ params }: ProductPageProps) {
   const { handle } = await params;
   const product = await getProduct(handle, params);
 
@@ -239,5 +239,3 @@ export async function ProductPage({ params }: ProductPageProps) {
     </main>
   );
 }
-
-export default ProductPage;

@@ -23,7 +23,7 @@ import {
   X,
   FileSpreadsheet
 } from 'lucide-react';
-import { useToast } from './Toast.tsx';
+import { useToast } from './Toast';
 
 export interface RepairPartAsset {
   id: string;

@@ -22,25 +22,25 @@ import {
   Cpu,
   Loader2
 } from 'lucide-react';
-import LocalLabBanner from './components/LocalLabBanner.tsx';
-import SEO from './components/SEO.tsx';
-import OfflineStatusBanner from './components/OfflineStatusBanner.tsx';
-import A11yInspector from './components/A11yInspector.tsx';
-import { ToastProvider } from './components/Toast.tsx';
+import LocalLabBanner from './components/LocalLabBanner';
+import SEO from './components/SEO';
+import OfflineStatusBanner from './components/OfflineStatusBanner';
+import A11yInspector from './components/A11yInspector';
+import { ToastProvider } from './components/Toast';
 
 // Code-split dynamic views with React.lazy for optimized bundle performance
-const IntakeForm = lazy(() => import('./components/IntakeForm.tsx'));
-const FeaturedProducts = lazy(() => import('./components/FeaturedProducts.tsx'));
-const AboutUs = lazy(() => import('./components/AboutUs.tsx'));
-const Reviews = lazy(() => import('./components/Reviews.tsx'));
-const RepairStatusTracker = lazy(() => import('./components/RepairStatusTracker.tsx'));
-const RepairEstimateCalculator = lazy(() => import('./components/RepairEstimateCalculator.tsx'));
-const ContactSupport = lazy(() => import('./components/ContactSupport.tsx'));
-const RepairAcademy = lazy(() => import('./components/RepairAcademy.tsx'));
-const ServiceBooking = lazy(() => import('./components/ServiceBooking.tsx'));
-const RepairAnalytics = lazy(() => import('./components/RepairAnalytics.tsx'));
-const SupportedDevicesDatabase = lazy(() => import('./components/SupportedDevicesDatabase.tsx'));
-const CompanyBlueprintGovernance = lazy(() => import('./components/CompanyBlueprintGovernance.tsx'));
+const IntakeForm = lazy(() => import('./components/IntakeForm'));
+const FeaturedProducts = lazy(() => import('./components/FeaturedProducts'));
+const AboutUs = lazy(() => import('./components/AboutUs'));
+const Reviews = lazy(() => import('./components/Reviews'));
+const RepairStatusTracker = lazy(() => import('./components/RepairStatusTracker'));
+const RepairEstimateCalculator = lazy(() => import('./components/RepairEstimateCalculator'));
+const ContactSupport = lazy(() => import('./components/ContactSupport'));
+const RepairAcademy = lazy(() => import('./components/RepairAcademy'));
+const ServiceBooking = lazy(() => import('./components/ServiceBooking'));
+const RepairAnalytics = lazy(() => import('./components/RepairAnalytics'));
+const SupportedDevicesDatabase = lazy(() => import('./components/SupportedDevicesDatabase'));
+const CompanyBlueprintGovernance = lazy(() => import('./components/CompanyBlueprintGovernance'));
 
 function TabLoadingSkeleton() {
   return (
@@ -399,7 +399,7 @@ export default function App() {
           </div>
         </div>
       </footer>
-      {import.meta.env.PROD && typeof window !== 'undefined' && window.location.hostname.includes('vercel') && (
+      {process.env.NODE_ENV === "production" && typeof window !== 'undefined' && window.location.hostname.includes('vercel') && (
         <Analytics />
       )}
     </div>

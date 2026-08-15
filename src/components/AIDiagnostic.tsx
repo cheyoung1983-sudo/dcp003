@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Sparkles, Brain, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
-import { TelemetryData } from '../types.ts';
+import { TelemetryData } from '../types';
 
 interface AIDiagnosticProps {
   telemetry: TelemetryData;
