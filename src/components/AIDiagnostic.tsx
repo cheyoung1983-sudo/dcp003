@@ -47,6 +47,11 @@ export default function AIDiagnostic({ telemetry, issue, model }: AIDiagnosticPr
         }),
       });
 
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`GitHub Sync Failed (${res.status}): ${errText}`);
+      }
+
       const data = await res.json();
       if (res.ok) {
         setGithubSyncedUrl(data.htmlUrl);
@@ -70,9 +75,15 @@ export default function AIDiagnostic({ telemetry, issue, model }: AIDiagnosticPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ telemetry, customerReportedIssue: issue, deviceModel: model }),
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error ${response.status}: ${errorText}`);
+      }
+
       const contentType = response.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        throw new Error(`Server returned status ${response.status}`);
+        throw new Error(`Server returned non-JSON response.`);
       }
       const data = await response.json();
       if (response.ok && data.analysis) {

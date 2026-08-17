@@ -600,9 +600,15 @@ export default function IntakeForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server returned status ${response.status}: ${errorText}`);
+      }
+
       const contentType = response.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        throw new Error(`Server returned non-JSON status ${response.status}`);
+        throw new Error(`Server returned non-JSON response format.`);
       }
       const res = await response.json();
       if (response.ok && res.success) {

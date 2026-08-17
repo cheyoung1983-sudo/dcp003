@@ -59,9 +59,14 @@ export default function SmartTriageChat({ deviceModel = '', onApplyRecommendatio
         }),
       });
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server returned status ${res.status}: ${errorText}`);
+      }
+
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
-        throw new Error(`Server returned non-JSON response (${res.status})`);
+        throw new Error(`Server returned non-JSON response format.`);
       }
 
       const data = await res.json();

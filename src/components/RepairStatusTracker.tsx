@@ -20,7 +20,7 @@ import {
   Camera,
   Radio
 } from 'lucide-react';
-import QRScannerModal from './QRScannerModal.tsx';
+import QRScannerModal from './QrScannerModal.tsx';
 import NFCScannerModal from './NFCScannerModal.tsx';
 import WarrantyTrackerCard from './WarrantyTrackerCard.tsx';
 import RepairTimeEstimator from './RepairTimeEstimator.tsx';

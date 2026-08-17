@@ -1953,26 +1953,23 @@ Return ONLY a valid JSON object matching this schema (no markdown code fences):
 
   // AI Recommended Diagnostic Path Endpoint
   app.post('/api/ai/diagnostic-path', aiRateLimiter, async (req, res) => {
-    const parseResult = DiagnosticPathSchema.safeParse(req.body);
-    const { 
-      repairNotes = '', 
-      deviceManufacturer = 'Unknown', 
-      deviceModel = 'Device', 
-      symptoms = [], 
-      telemetry 
-    } = parseResult.success ? parseResult.data : {
-      repairNotes: '',
-      deviceManufacturer: 'Unknown',
-      deviceModel: 'Device',
-      symptoms: [],
-      telemetry: undefined
-    };
-
     try {
-      const openai = getOpenAI();
-      if (openai) {
-        try {
-          const prompt = `
+      const parseResult = DiagnosticPathSchema.safeParse(req.body);
+      const {
+        repairNotes = '',
+        deviceManufacturer = 'Unknown',
+        deviceModel = 'Device',
+        symptoms = [],
+        telemetry
+      } = parseResult.success ? parseResult.data : {
+        repairNotes: '',
+        deviceManufacturer: 'Unknown',
+        deviceModel: 'Device',
+        symptoms: [],
+        telemetry: undefined
+      };
+
+      const prompt = `
 You are the Lead Master Bench Technician at D&CP Spokane Repair Lab (IPC-A-610 Certified).
 Analyze the technician's intake notes, selected symptoms, hardware telemetry, and device details to generate a precise, step-by-step Recommended Diagnostic Path.
 
@@ -2016,12 +2013,44 @@ Produce a structured JSON plan strictly matching this format:
 }
 `;
 
+      // 1. Try Gemini
+      const gemini = getGemini();
+      if (gemini) {
+        try {
+          const response = await withTimeout(
+            gemini.models.generateContent({
+              model: 'gemini-3.7-flash',
+              contents: prompt,
+            }),
+            6000,
+            null
+          );
+
+          const replyText = response?.text;
+          if (replyText) {
+            try {
+              const cleanJson = replyText.replace(/```json\n?|\n?```/g, '').trim();
+              const parsed = JSON.parse(cleanJson);
+              return res.json({ success: true, path: parsed, modelUsed: 'gemini-3.7-flash' });
+            } catch (pErr) {
+              console.warn('Gemini JSON parse failed for diagnostic path:', pErr);
+            }
+          }
+        } catch (geminiErr) {
+          console.warn('Gemini diagnostic path call failed, trying OpenAI:', geminiErr);
+        }
+      }
+
+      // 2. Try OpenAI
+      const openai = getOpenAI();
+      if (openai) {
+        try {
           const aiPromise = openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
               {
                 role: 'system',
-                content: 'You are the Lead Master Bench Technician at D&CP Spokane Repair Lab. Return ONLY valid JSON matching the requested diagnostic path schema.'
+                content: 'You are the Lead Master Bench Technician at D&CP Spokane Repair Lab. Return ONLY valid JSON.'
               },
               {
                 role: 'user',
@@ -2037,14 +2066,14 @@ Produce a structured JSON plan strictly matching this format:
 
           if (replyText) {
             const parsed = JSON.parse(replyText);
-            return res.json({ success: true, path: parsed });
+            return res.json({ success: true, path: parsed, modelUsed: 'gpt-4o-mini' });
           }
         } catch (aiErr) {
           console.warn('OpenAI diagnostic path API call failed, falling back to rule-based engine:', aiErr);
         }
       }
 
-      // Fallback rule-based diagnostic path generator when OPENAI_API_KEY is omitted or failed
+      // 3. Fallback rule-based diagnostic path generator
       const notesLower = (repairNotes || '').toLowerCase();
       let primaryDiagnosis = "Power & Charge Rail Delivery Interruption";
       let complexityLevel = "Tier 1 (Standard Assembly)";
@@ -2076,7 +2105,8 @@ Produce a structured JSON plan strictly matching this format:
         }
       ];
 
-      if (notesLower.includes('screen') || notesLower.includes('crack') || notesLower.includes('display') || notesLower.includes('lines') || notesLower.includes('black') || symptoms.some(s => s.toLowerCase().includes('screen') || s.toLowerCase().includes('display'))) {
+      const symptomStr = Array.isArray(symptoms) ? symptoms.join(' ').toLowerCase() : '';
+      if (notesLower.includes('screen') || notesLower.includes('crack') || notesLower.includes('display') || notesLower.includes('lines') || notesLower.includes('black') || symptomStr.includes('screen') || symptomStr.includes('display')) {
         primaryDiagnosis = "Display OLED Panel / Digitizer Flex Damage";
         complexityLevel = "Tier 2 (Display Renewal)";
         confidenceScore = 94;
@@ -2156,31 +2186,15 @@ Produce a structured JSON plan strictly matching this format:
             "Thermal Conductive Pad",
             "Replacement 0402 SMD Capacitors"
           ]
-        }
+        },
+        modelUsed: 'rule-based'
       });
-    } catch (error) {
-      console.error('Diagnostic Path API Error:', error);
-      res.json({
-        success: true,
-        path: {
-          primaryDiagnosis: "Bench Diagnostic Verification",
-          confidenceScore: 85,
-          complexityLevel: "Tier 1 (Standard Assembly)",
-          estimatedBenchTimeMinutes: 20,
-          technicianBriefing: `Diagnostic verification for ${deviceManufacturer} ${deviceModel}. Proceed with standard multimeter probe.`,
-          diagnosticSteps: [
-            {
-              stepNumber: 1,
-              actionTitle: "Power Rail & Current Check",
-              instructions: "Connect to bench power supply and verify current draw.",
-              expectedReading: "Nominal 1.0A - 2.0A",
-              toolRequired: "DC Bench Power Supply"
-            }
-          ],
-          requiredTools: ["Digital Multimeter", "Precision Drivers"],
-          riskPrecautions: ["Follow ESD safety protocols"],
-          partsLikelyNeeded: ["OEM Flex / Connector"]
-        }
+    } catch (error: any) {
+      console.error('Diagnostic Path API Fatal Error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Internal Laboratory Diagnostic Error',
+        message: error.message
       });
     }
   });
