@@ -42,7 +42,7 @@
     "jose": "^6.2.8",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
-    "next": "15.1.0",
+    "next": "15.1.11",
     "openai": "^7.4.0",
     "pg": "^8.23.0",
     "qrcode": "^1.5.4",
@@ -68,5 +68,12 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.3",
     "vitest": "^4.1.10"
+  },
+  "allowScripts": {
+    "@google/genai": true,
+    "browser-tabs-lock": true,
+    "esbuild": true,
+    "sharp": true,
+    "protobufjs": true
   }
 }
