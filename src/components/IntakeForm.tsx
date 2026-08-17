@@ -289,10 +289,16 @@ export default function IntakeForm() {
             setValue('deviceModel', ticket.deviceModel, { shouldValidate: true });
           }
           if (ticket.serviceTier) {
+<<<<<<< HEAD
             if (ticket.serviceTier === 'TIER_1_POWER_PORT_REFRESH') setValue('serviceTier', ServiceTier.TIER_1, { shouldValidate: true });
             else if (ticket.serviceTier === 'TIER_2_DISPLAY_RENEWAL') setValue('serviceTier', ServiceTier.TIER_2, { shouldValidate: true });
             else if (ticket.serviceTier === 'TIER_3_MICRO_SOLDERING') setValue('serviceTier', ServiceTier.TIER_3, { shouldValidate: true });
             else if (ticket.serviceTier === 'TIER_4_CLEANROOM_DATA_RECOVERY') setValue('serviceTier', ServiceTier.TIER_4, { shouldValidate: true });
+=======
+            if (ticket.serviceTier === 'TIER_1_POWER_PORT_REFRESH' || ticket.serviceTier === 'TIER_1_POWER') setValue('serviceTier', ServiceTier.TIER_1_POWER, { shouldValidate: true });
+            else if (ticket.serviceTier === 'TIER_2_DISPLAY_RENEWAL' || ticket.serviceTier === 'TIER_2_DISPLAY') setValue('serviceTier', ServiceTier.TIER_2_DISPLAY, { shouldValidate: true });
+            else if (ticket.serviceTier === 'TIER_3_MICRO_SOLDERING' || ticket.serviceTier === 'TIER_3_BOARD' || ticket.serviceTier === 'TIER_4_CLEANROOM_DATA_RECOVERY') setValue('serviceTier', ServiceTier.TIER_3_BOARD, { shouldValidate: true });
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
           }
           if (ticket.issueTranscript || ticket.triageSummary) {
             const issueText = `[ElevenLabs Voice Intake Ref: ${ticket.ticketNumber}]\nSpoken Issue: "${ticket.issueTranscript}"\nSuspected Fault: ${ticket.suspectedFault}\nTechnician Triage: ${ticket.triageSummary}`;

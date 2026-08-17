@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { query } from '../src/lib/db';
+=======
+import { query } from '../src/lib/serverDb.ts';
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 import dotenv from 'dotenv';
 import path from 'path';
 

@@ -17,7 +17,11 @@ interface CheckoutProps {
 let stripePromise: Promise<StripeJS | null> | null = null;
 
 function getStripePromise() {
+<<<<<<< HEAD
   const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
+=======
+  const publishableKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   if (!stripePromise && publishableKey) {
     stripePromise = loadStripe(publishableKey);
   }
@@ -31,11 +35,19 @@ export default function Checkout({
   amountInCents = 14900,
   onComplete
 }: CheckoutProps) {
+<<<<<<< HEAD
   const [publishableKeyPresent, setPublishableKeyPresent] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
     const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+=======
+  const [publishableKeyPresent, setPublishableKeyPresent] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     setPublishableKeyPresent(Boolean(key));
   }, []);
 

@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 // src/components/SignInButton.tsx
 import { signIn } from "next-auth/react";
 import React from "react";
@@ -19,6 +20,13 @@ export default function SignInButton() {
       }
     };
   }, []);
+=======
+import React from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+
+export default function SignInButton() {
+  const { loginWithRedirect } = useAuth0();
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
   const onClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -28,17 +36,29 @@ export default function SignInButton() {
           window.grecaptcha.enterprise.ready(async () => {
             const token = await window.grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
             console.log('reCAPTCHA enterprise token generated:', token);
+<<<<<<< HEAD
             if (window.onSubmit) {
               window.onSubmit(token);
             }
+=======
+            loginWithRedirect();
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             resolve();
           });
         });
       } else {
+<<<<<<< HEAD
         await signIn("auth0");
       }
     } catch (err) {
       console.error("Failed to initiate sign‑in or reCAPTCHA verification:", err);
+=======
+        loginWithRedirect();
+      }
+    } catch (err) {
+      console.error("Failed to initiate sign-in:", err);
+      loginWithRedirect();
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     }
   };
 
@@ -54,3 +74,7 @@ export default function SignInButton() {
     </button>
   );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

@@ -48,6 +48,7 @@ import LabBenchParticles from './components/LabBenchParticles.tsx';
 import VoiceIntakeModal, { VoiceIntakeTicket } from './components/VoiceIntakeModal.tsx';
 import { useFounderAnimationSpeed } from './hooks/useFounderAnimationSpeed.ts';
 import ryanYoungImage from './assets/images/regenerated_image_1786855284519.jpg';
+<<<<<<< HEAD
 
 // Code-split dynamic views with React.lazy for optimized bundle performance
 const IntakeForm = lazy(() => import('./components/IntakeForm.tsx'));
@@ -71,6 +72,33 @@ const VoiceToCircuitAgentHub = lazy(() => import('./components/VoiceToCircuitAge
 const ElevenAgentInspector = lazy(() => import('./components/ElevenAgentInspector.tsx'));
 const Auth0FlowsHub = lazy(() => import('./components/Auth0FlowsHub.tsx'));
 const ElevenKnowledgeAndToolsHub = lazy(() => import('./components/ElevenKnowledgeAndToolsHub.tsx'));
+=======
+import { lazyWithRetry } from './utils/lazyRetry.ts';
+
+// Code-split dynamic views with React.lazy and resilient chunk load retry
+const IntakeForm = lazyWithRetry(() => import('./components/IntakeForm.tsx'));
+const HardwareDiagnosticTool = lazyWithRetry(() => import('./components/HardwareDiagnosticTool.tsx'));
+const FeaturedProducts = lazyWithRetry(() => import('./components/FeaturedProducts.tsx'));
+const AboutUs = lazyWithRetry(() => import('./components/AboutUs.tsx'));
+const Reviews = lazyWithRetry(() => import('./components/Reviews.tsx'));
+const RepairStatusTracker = lazyWithRetry(() => import('./components/RepairStatusTracker.tsx'));
+const RepairEstimateCalculator = lazyWithRetry(() => import('./components/RepairEstimateCalculator.tsx'));
+const ContactSupport = lazyWithRetry(() => import('./components/ContactSupport.tsx'));
+const RepairAcademy = lazyWithRetry(() => import('./components/RepairAcademy.tsx'));
+const ServiceBooking = lazyWithRetry(() => import('./components/ServiceBooking.tsx'));
+const RepairAnalytics = lazyWithRetry(() => import('./components/RepairAnalytics.tsx'));
+const SupportedDevicesDatabase = lazyWithRetry(() => import('./components/SupportedDevicesDatabase.tsx'));
+const CompanyBlueprintGovernance = lazyWithRetry(() => import('./components/CompanyBlueprintGovernance.tsx'));
+const ElevenLabsVoiceGenerator = lazyWithRetry(() => import('./components/ElevenLabsVoiceGenerator.tsx'));
+const ElevenLabsProceduresManager = lazyWithRetry(() => import('./components/ElevenLabsProceduresManager.tsx'));
+const ElevenLabsConversationFlow = lazyWithRetry(() => import('./components/ElevenLabsConversationFlow.tsx'));
+const ElevenLabsVoiceStudioSettings = lazyWithRetry(() => import('./components/ElevenLabsVoiceStudioSettings.tsx'));
+const VoiceToCircuitAgentHub = lazyWithRetry(() => import('./components/VoiceToCircuitAgentHub.tsx'));
+const ElevenAgentInspector = lazyWithRetry(() => import('./components/ElevenAgentInspector.tsx'));
+const Auth0FlowsHub = lazyWithRetry(() => import('./components/Auth0FlowsHub.tsx'));
+const ElevenKnowledgeAndToolsHub = lazyWithRetry(() => import('./components/ElevenKnowledgeAndToolsHub.tsx'));
+const ClassyOverviewView = lazyWithRetry(() => import('./components/ClassyOverviewView.tsx'));
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
 function TabLoadingSkeleton() {
   return (
@@ -87,7 +115,11 @@ function TabLoadingSkeleton() {
 }
 
 export default function App() {
+<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState<'home' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools'>('home');
+=======
+  const [activeTab, setActiveTab] = useState<'home' | 'classy_hub' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools'>('home');
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFounderBioExpanded, setIsFounderBioExpanded] = useState(false);
   const [isVoiceIntakeOpen, setIsVoiceIntakeOpen] = useState(false);
@@ -95,6 +127,10 @@ export default function App() {
 
   const tabs = [
     { id: 'home', label: 'Laboratory Store', icon: Smartphone },
+<<<<<<< HEAD
+=======
+    { id: 'classy_hub', label: 'Federal & Enterprise Hub', icon: Award },
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     { id: 'intake', label: 'Device Intake', icon: Microscope },
     { id: 'hardware_diag', label: 'Hardware Diag Port', icon: Terminal },
     { id: 'eleven_tts', label: 'Voice AI Studio', icon: Mic },
@@ -518,6 +554,24 @@ export default function App() {
               </motion.div>
             )}
 
+<<<<<<< HEAD
+=======
+            {activeTab === 'classy_hub' && (
+              <motion.div
+                key="classy_hub"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="max-w-7xl mx-auto px-4"
+              >
+                <ClassyOverviewView 
+                  onNavigateToIntake={() => setActiveTab('intake')}
+                  onNavigateToBooking={() => setActiveTab('booking')}
+                />
+              </motion.div>
+            )}
+
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             {activeTab === 'intake' && (
               <motion.div
                 key="intake"
@@ -766,6 +820,10 @@ export default function App() {
               <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">Service Map</h4>
               <ul className="space-y-4 text-sm font-bold text-slate-400">
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('home')}>Store</li>
+<<<<<<< HEAD
+=======
+                <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('classy_hub')}>Federal & Enterprise Hub</li>
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('intake')}>Intake</li>
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('booking')}>Book Drop-Off</li>
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('analytics')}>Repair Telemetry</li>

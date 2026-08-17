@@ -60,3 +60,136 @@ export interface CapturedPhoto {
   notes?: string;
   timestamp: string;
 }
+<<<<<<< HEAD
+=======
+
+export type ServiceCategory = 'all' | 'micro-soldering' | 'high-velocity' | 'mobile-data-security' | 'federal-gsa' | 'board-diagnostics';
+
+export interface ServiceItem {
+  id: string;
+  title: string;
+  category: ServiceCategory;
+  shortDescription: string;
+  fullDescription: string;
+  iconName: string;
+  deliverables: string[];
+  keyMetrics: { label: string; value: string }[];
+  caseStudyRefId?: string;
+  tags: string[];
+  marginProfit?: string;
+}
+
+export type CaseStudyCategory = 'all' | 'micro-soldering' | 'data-recovery' | 'mobile-security' | 'federal-gsa';
+
+export interface CaseStudy {
+  id: string;
+  title: string;
+  clientName: string;
+  industry: string;
+  category: CaseStudyCategory;
+  summary: string;
+  challenge: string;
+  solution: string;
+  impactMetrics: { label: string; value: string; trend?: string }[];
+  image: string;
+  featured: boolean;
+  year: string;
+  testimonial?: {
+    quote: string;
+    author: string;
+    role: string;
+    company: string;
+  };
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  bio: string;
+  technicalBiography?: string;
+  militaryService?: string;
+  education?: string;
+  researchExperience?: string;
+  seattleExperience?: string;
+  photo: string;
+  linkedInUrl?: string;
+  twitterUrl?: string;
+  email: string;
+  expertise: string[];
+  location: string;
+}
+
+export type InsightCategory = 'all' | 'federal-compliance' | 'technical-micro-soldering' | 'tax-engineering' | 'operational-strategy';
+
+export interface InsightPost {
+  id: string;
+  title: string;
+  category: InsightCategory;
+  excerpt: string;
+  content: string;
+  author: {
+    name: string;
+    role: string;
+    avatar: string;
+  };
+  date: string;
+  readTime: string;
+  image: string;
+  featured?: boolean;
+  tags: string[];
+}
+
+export interface OfficeLocation {
+  id: string;
+  city: string;
+  country: string;
+  address: string;
+  phone: string;
+  email: string;
+  tz: string;
+  isHeadquarters?: boolean;
+  coordinates: { lat: number; lng: number };
+}
+
+export interface FederalCredentials {
+  uei: string;
+  ein: string;
+  ubi: string;
+  naicsCode: string;
+  naicsDescription: string;
+  samStatus: string;
+  demographics: string[];
+  sbaStatus: string;
+}
+
+export interface InvestmentPayloadItem {
+  category: string;
+  allocation: number;
+  title: string;
+  purpose: string;
+  keyAssets: string[];
+}
+
+export interface ClientProject {
+  id: string;
+  name: string;
+  status: 'In Progress' | 'Inspection' | 'Completed' | 'Pending Board Audit';
+  progress: number;
+  leadPartner: string;
+  nextMilestone: string;
+  targetCompletion: string;
+  recentDeliverable: string;
+}
+
+export interface ClientMessage {
+  id: string;
+  senderName: string;
+  senderRole: string;
+  timestamp: string;
+  content: string;
+  isFromClient: boolean;
+}
+
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

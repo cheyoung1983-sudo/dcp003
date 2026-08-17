@@ -22,7 +22,11 @@ import * as dotenvLocal from "dotenv";
 dotenv.config();
 dotenvLocal.config({ path: ".env.local", override: true });
 
+<<<<<<< HEAD
 import { getDbPool } from "../src/lib/db";
+=======
+import { getDbPool } from "../src/lib/serverDb.ts";
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
 const REQUIRED_VARS = ["SQL_HOST", "SQL_USER", "SQL_DB_NAME", "AWS_REGION"] as const;
 

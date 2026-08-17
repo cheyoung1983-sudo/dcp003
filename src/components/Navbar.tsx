@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Wrench, Cpu, User, LogOut } from 'lucide-react';
@@ -10,6 +11,15 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user, isLoading } = useUser();
+=======
+import { Menu, X, Wrench, Cpu, User, LogOut } from 'lucide-react';
+import { useAuth0 } from '@auth0/auth0-react';
+
+export function Navbar({ onBookClick }: { onBookClick: () => void }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  const { user, isLoading, logout } = useAuth0();
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
   const navItems = [
     { name: 'Home', href: '/' },
@@ -24,16 +34,27 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           <div className="flex items-center">
+<<<<<<< HEAD
             <Link href="/" className="flex-shrink-0 flex items-center">
+=======
+            <a href="/" className="flex-shrink-0 flex items-center">
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
               <Wrench className="h-8 w-8 text-blue-500 mr-2" />
               <div className="flex flex-col">
                 <span className="font-black text-xl tracking-tighter text-white leading-none">DISPLAY & CELL PROS</span>
                 <span className="text-[10px] font-bold text-blue-400 tracking-[0.2em] uppercase mt-0.5 font-mono">Mobile Technical Lab</span>
               </div>
+<<<<<<< HEAD
             </Link>
             <div className="hidden md:ml-10 md:flex md:items-center md:space-x-1">
               {navItems.map((item) => (
                 <Link
+=======
+            </a>
+            <div className="hidden md:ml-10 md:flex md:items-center md:space-x-1">
+              {navItems.map((item) => (
+                <a
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                   key={item.name}
                   href={item.href}
                   className={`px-3 py-2 rounded-lg text-sm font-bold transition-all ${
@@ -43,12 +64,20 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
                   }`}
                 >
                   {item.name}
+<<<<<<< HEAD
                 </Link>
+=======
+                </a>
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
               ))}
             </div>
           </div>
           <div className="hidden md:flex items-center gap-3">
+<<<<<<< HEAD
             <Link
+=======
+            <a
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
               href="/lab"
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all border font-mono ${
                 pathname === '/lab'
@@ -57,7 +86,11 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
               }`}
             >
               <Cpu size={14} /> Lab Portal
+<<<<<<< HEAD
             </Link>
+=======
+            </a>
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-slate-800 animate-pulse" />
@@ -65,18 +98,30 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
               <div className="flex items-center gap-3 ml-2">
                 <div className="flex flex-col items-end">
                   <span className="text-[10px] font-bold text-white leading-none">{user.name}</span>
+<<<<<<< HEAD
                   <Link href="/auth/logout" className="text-[9px] font-bold text-slate-500 hover:text-red-400 uppercase tracking-widest mt-1">Logout</Link>
                 </div>
                 <div className="w-9 h-9 rounded-full border border-slate-700 p-0.5 bg-slate-800">
                   <img
                     src={user.picture || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232563eb'/%3E%3Cpath d='M50 45c7.5 0 13.64-6.14 13.64-13.64S57.5 17.72 50 17.72s-13.64 6.14-13.64 13.64S42.5 45 50 45zm0 6.82c-9.09 0-27.28 4.56-27.28 13.64v3.41c0 1.88 1.53 3.41 3.41 3.41h47.74c1.88 0 3.41-1.53 3.41-3.41v-3.41c0-9.08-18.19-13.64-27.28-13.64z' fill='%23fff'/%3E%3C/svg%3E"}
+=======
+                  <button onClick={() => logout?.()} className="text-[9px] font-bold text-slate-500 hover:text-red-400 uppercase tracking-widest mt-1">Logout</button>
+                </div>
+                <div className="w-9 h-9 rounded-full border border-slate-700 p-0.5 bg-slate-800">
+                  <img
+                    src={user.picture || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232563eb'/%3E%3Cpath d='M50 45c7.5 0 13.64-6.14 13.64-13.64S57.5 17.72 50 17.72s-13.64 6.14-13.64S42.5 45 50 45zm0 6.82c-9.09 0-27.28 4.56-27.28 13.64v3.41c0 1.88 1.53 3.41 3.41 3.41h47.74c1.88 0 3.41-1.53 3.41-3.41v-3.41c0-9.08-18.19-13.64-27.28-13.64z' fill='%23fff'/%3E%3C/svg%3E"}
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                     alt={user.name || "Profile"}
                     className="w-full h-full rounded-full object-cover"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       const target = e.currentTarget;
                       target.onerror = null;
+<<<<<<< HEAD
                       target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232563eb'/%3E%3Cpath d='M50 45c7.5 0 13.64-6.14 13.64-13.64S57.5 17.72 50 17.72s-13.64 6.14-13.64 13.64S42.5 45 50 45zm0 6.82c-9.09 0-27.28 4.56-27.28 13.64v3.41c0 1.88 1.53 3.41 3.41 3.41h47.74c1.88 0 3.41-1.53 3.41-3.41v-3.41c0-9.08-18.19-13.64-27.28-13.64z' fill='%23fff'/%3E%3C/svg%3E";
+=======
+                      target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232563eb'/%3E%3Cpath d='M50 45c7.5 0 13.64-6.14 13.64-13.64S57.5 17.72 50 17.72s-13.64 6.14-13.64S42.5 45 50 45zm0 6.82c-9.09 0-27.28 4.56-27.28 13.64v3.41c0 1.88 1.53 3.41 3.41 3.41h47.74c1.88 0 3.41-1.53 3.41-3.41v-3.41c0-9.08-18.19-13.64-27.28-13.64z' fill='%23fff'/%3E%3C/svg%3E";
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                     }}
                   />
                 </div>
@@ -109,7 +154,11 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
         <div className="md:hidden bg-slate-800 border-b border-slate-700">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
+<<<<<<< HEAD
               <Link
+=======
+              <a
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
@@ -118,14 +167,21 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
                 }`}
               >
                 {item.name}
+<<<<<<< HEAD
               </Link>
             ))}
             <Link
+=======
+              </a>
+            ))}
+            <a
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
               href="/lab"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2 block px-3 py-3 rounded-md text-base font-bold text-blue-400 bg-slate-900 border border-slate-755 mb-2"
             >
               <Cpu size={18} /> Diagnostics Lab Portal (Beta)
+<<<<<<< HEAD
             </Link>
 
             {user ? (
@@ -136,6 +192,17 @@ export function Navbar({ onBookClick }: { onBookClick: () => void }) {
               >
                 <LogOut size={18} /> Sign Out ({user.name})
               </a>
+=======
+            </a>
+
+            {user ? (
+               <button
+                onClick={() => { logout?.(); setMobileMenuOpen(false); }}
+                className="w-full text-left flex items-center gap-2 block px-3 py-3 rounded-md text-base font-medium text-red-400 bg-slate-900 border border-red-900/30 mb-2"
+              >
+                <LogOut size={18} /> Sign Out ({user.name})
+              </button>
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             ) : (
               <a
                 href="/auth/login"

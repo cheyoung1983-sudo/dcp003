@@ -677,3 +677,8 @@ export function useDatabase(): UseDatabaseReturn {
 // Alias for convenience
 export const useOfflineDatabase = useDatabase;
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

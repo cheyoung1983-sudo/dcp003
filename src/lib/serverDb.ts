@@ -373,3 +373,13 @@ export async function runSupportedDevicesIndexMigration(): Promise<MigrationResu
     };
   }
 }
+<<<<<<< HEAD
+=======
+
+export const getDbPool = getDatabasePool;
+export const queryWithToken = query;
+export const pool = {
+  query: (sql: string, args: any[] = []) => query(sql, args),
+};
+
+>>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

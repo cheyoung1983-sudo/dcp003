@@ -1,49 +1,14 @@
 {
-<<<<<<< HEAD
-  "name": "Display & Cell Pros LLC Repair Portal & Diagnostic Lab",
-  "short_name": "D&CP Lab",
-  "description": "Professional mobile device diagnostics, real-time repair quoting, and bench QA portal for Spokane HQ Lab.",
-  "start_url": "/",
-=======
   "id": "/?source=pwa",
   "short_name": "D&CP Repair",
   "name": "D&CP LLC Repair Portal & Diagnostic Lab",
   "description": "Offline-capable device repair intake, WebUSB diagnostic port monitor, and bench QA portal for Spokane HQ Lab.",
   "start_url": "/",
   "scope": "/",
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   "display": "standalone",
   "orientation": "any",
   "background_color": "#020617",
   "theme_color": "#0f172a",
-<<<<<<< HEAD
-  "icons": [
-    {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/pwa-192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/pwa-512.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
-    }
-  ]
-}
-=======
   "categories": ["business", "utilities", "productivity"],
   "icons": [
     {
@@ -91,4 +56,3 @@
   ]
 }
 
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
