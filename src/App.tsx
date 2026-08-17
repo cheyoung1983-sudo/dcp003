@@ -48,30 +48,31 @@ import LabBenchParticles from './components/LabBenchParticles.tsx';
 import VoiceIntakeModal, { VoiceIntakeTicket } from './components/VoiceIntakeModal.tsx';
 import { useFounderAnimationSpeed } from './hooks/useFounderAnimationSpeed.ts';
 import ryanYoungImage from './assets/images/regenerated_image_1786855284519.jpg';
+import { lazyWithRetry } from './utils/lazyRetry.ts';
 
-// Code-split dynamic views with React.lazy for optimized bundle performance
-const IntakeForm = lazy(() => import('./components/IntakeForm.tsx'));
-const HardwareDiagnosticTool = lazy(() => import('./components/HardwareDiagnosticTool.tsx'));
-const FeaturedProducts = lazy(() => import('./components/FeaturedProducts.tsx'));
-const AboutUs = lazy(() => import('./components/AboutUs.tsx'));
-const Reviews = lazy(() => import('./components/Reviews.tsx'));
-const RepairStatusTracker = lazy(() => import('./components/RepairStatusTracker.tsx'));
-const RepairEstimateCalculator = lazy(() => import('./components/RepairEstimateCalculator.tsx'));
-const ContactSupport = lazy(() => import('./components/ContactSupport.tsx'));
-const RepairAcademy = lazy(() => import('./components/RepairAcademy.tsx'));
-const ServiceBooking = lazy(() => import('./components/ServiceBooking.tsx'));
-const RepairAnalytics = lazy(() => import('./components/RepairAnalytics.tsx'));
-const SupportedDevicesDatabase = lazy(() => import('./components/SupportedDevicesDatabase.tsx'));
-const CompanyBlueprintGovernance = lazy(() => import('./components/CompanyBlueprintGovernance.tsx'));
-const ElevenLabsVoiceGenerator = lazy(() => import('./components/ElevenLabsVoiceGenerator.tsx'));
-const ElevenLabsProceduresManager = lazy(() => import('./components/ElevenLabsProceduresManager.tsx'));
-const ElevenLabsConversationFlow = lazy(() => import('./components/ElevenLabsConversationFlow.tsx'));
-const ElevenLabsVoiceStudioSettings = lazy(() => import('./components/ElevenLabsVoiceStudioSettings.tsx'));
-const VoiceToCircuitAgentHub = lazy(() => import('./components/VoiceToCircuitAgentHub.tsx'));
-const ElevenAgentInspector = lazy(() => import('./components/ElevenAgentInspector.tsx'));
-const Auth0FlowsHub = lazy(() => import('./components/Auth0FlowsHub.tsx'));
-const ElevenKnowledgeAndToolsHub = lazy(() => import('./components/ElevenKnowledgeAndToolsHub.tsx'));
-const ClassyOverviewView = lazy(() => import('./components/ClassyOverviewView.tsx'));
+// Code-split dynamic views with React.lazy and resilient chunk load retry
+const IntakeForm = lazyWithRetry(() => import('./components/IntakeForm.tsx'));
+const HardwareDiagnosticTool = lazyWithRetry(() => import('./components/HardwareDiagnosticTool.tsx'));
+const FeaturedProducts = lazyWithRetry(() => import('./components/FeaturedProducts.tsx'));
+const AboutUs = lazyWithRetry(() => import('./components/AboutUs.tsx'));
+const Reviews = lazyWithRetry(() => import('./components/Reviews.tsx'));
+const RepairStatusTracker = lazyWithRetry(() => import('./components/RepairStatusTracker.tsx'));
+const RepairEstimateCalculator = lazyWithRetry(() => import('./components/RepairEstimateCalculator.tsx'));
+const ContactSupport = lazyWithRetry(() => import('./components/ContactSupport.tsx'));
+const RepairAcademy = lazyWithRetry(() => import('./components/RepairAcademy.tsx'));
+const ServiceBooking = lazyWithRetry(() => import('./components/ServiceBooking.tsx'));
+const RepairAnalytics = lazyWithRetry(() => import('./components/RepairAnalytics.tsx'));
+const SupportedDevicesDatabase = lazyWithRetry(() => import('./components/SupportedDevicesDatabase.tsx'));
+const CompanyBlueprintGovernance = lazyWithRetry(() => import('./components/CompanyBlueprintGovernance.tsx'));
+const ElevenLabsVoiceGenerator = lazyWithRetry(() => import('./components/ElevenLabsVoiceGenerator.tsx'));
+const ElevenLabsProceduresManager = lazyWithRetry(() => import('./components/ElevenLabsProceduresManager.tsx'));
+const ElevenLabsConversationFlow = lazyWithRetry(() => import('./components/ElevenLabsConversationFlow.tsx'));
+const ElevenLabsVoiceStudioSettings = lazyWithRetry(() => import('./components/ElevenLabsVoiceStudioSettings.tsx'));
+const VoiceToCircuitAgentHub = lazyWithRetry(() => import('./components/VoiceToCircuitAgentHub.tsx'));
+const ElevenAgentInspector = lazyWithRetry(() => import('./components/ElevenAgentInspector.tsx'));
+const Auth0FlowsHub = lazyWithRetry(() => import('./components/Auth0FlowsHub.tsx'));
+const ElevenKnowledgeAndToolsHub = lazyWithRetry(() => import('./components/ElevenKnowledgeAndToolsHub.tsx'));
+const ClassyOverviewView = lazyWithRetry(() => import('./components/ClassyOverviewView.tsx'));
 
 function TabLoadingSkeleton() {
   return (

@@ -22,6 +22,21 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error in Display & Cell Pros App:', error, errorInfo);
+
+    // Auto-reload once if this is a stale chunk dynamic import error
+    const isChunkError =
+      error?.name === 'ChunkLoadError' ||
+      /Failed to fetch dynamically imported module/i.test(error?.message || '') ||
+      /Loading chunk .* failed/i.test(error?.message || '') ||
+      /error loading dynamically imported module/i.test(error?.message || '');
+
+    if (isChunkError && typeof window !== 'undefined') {
+      const reloaded = sessionStorage.getItem('chunk_boundary_reload');
+      if (!reloaded) {
+        sessionStorage.setItem('chunk_boundary_reload', 'true');
+        window.location.reload();
+      }
+    }
   }
 
   public render() {
