@@ -32,14 +32,18 @@ import {
 } from './src/lib/schemas.ts';
 
 export const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+
+interface CustomRequest extends express.Request {
+  rawBody?: Buffer;
+}
 
 // Attach HTTP Security Headers Middleware
 app.use(securityHeadersMiddleware);
 
 app.use(express.json({ 
   limit: '50mb',
-  verify: (req: any, _res, buf) => {
+  verify: (req: CustomRequest, _res, buf) => {
     req.rawBody = buf;
   }
 }));
@@ -189,14 +193,14 @@ app.get('/api/auth/rbac/config', (_req, res) => {
     configuration: [
       {
         _id: 'v1',
-        apikey: '66cb7c53a6b208edaff503f67bf39038d49948109fff330389e2761c6b3a6af5',
+        apikey: process.env.AUTH0_RBAC_API_KEY,
         rolesInToken: true,
         rolesPassthrough: true
       }
     ],
     permissions: [
       {
-        _id: '8df20543-aa89-4ddb-aa83-cb00cab1801b',
+        _id: process.env.AUTH0_PERMISSION_ID,
         name: 'dcp',
         description: 'dcp1',
         applicationId: 'iHyCQzrHYenv4lrkCFy4v9528jtJUUHl',
@@ -205,10 +209,10 @@ app.get('/api/auth/rbac/config', (_req, res) => {
     ],
     groups: [
       {
-        _id: 'f80d5dc6-aa81-4a1e-89ef-46cafa97b541',
+        _id: process.env.AUTH0_GROUP_ID,
         name: 'SuperAdmin',
         description: 'Root',
-        members: ['google-oauth2|102574138357203183279']
+        members: [process.env.AUTH0_ADMIN_USER_ID]
       }
     ]
   });
@@ -216,8 +220,11 @@ app.get('/api/auth/rbac/config', (_req, res) => {
 
 app.post('/api/auth/rbac/verify', (req, res) => {
   const { sub, email, groups = [], permissions = [] } = req.body || {};
-  const isSuperAdminMember = sub === 'google-oauth2|102574138357203183279' || 
-    (email && email.toLowerCase() === 'cheyoung1983@gmail.com') ||
+  const adminId = process.env.AUTH0_ADMIN_USER_ID;
+  const adminEmail = process.env.AUTH0_ADMIN_EMAIL;
+
+  const isSuperAdminMember = sub === adminId ||
+    (email && adminEmail && email.toLowerCase() === adminEmail.toLowerCase()) ||
     groups.includes('SuperAdmin');
 
   const hasDcp = permissions.includes('dcp') || isSuperAdminMember;
@@ -235,22 +242,26 @@ app.post('/api/auth/rbac/verify', (req, res) => {
 
 // GitHub OAuth Endpoints
 app.get('/api/auth/github/config', (_req, res) => {
-  const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23lifKkuO7pQzIVrlG';
-  const hasSecret = Boolean(process.env.GITHUB_CLIENT_SECRET || 'a4815ae2b8c48a371ec2f6118994bbcff14d81fb');
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const hasSecret = Boolean(process.env.GITHUB_CLIENT_SECRET);
   res.json({
     status: 'ok',
     configured: hasSecret && Boolean(clientId),
     clientId,
     appName: 'Dcp',
-    owner: 'cheyoung1983-sudo',
+    owner: process.env.GITHUB_REPO_OWNER || 'cheyoung1983-sudo',
     scope: 'read:user user:email repo',
   });
 });
 
 app.get('/api/auth/github/url', (req, res) => {
-  const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23lifKkuO7pQzIVrlG';
+  const clientId = process.env.GITHUB_CLIENT_ID;
   const redirectUri = (req.query.redirect_uri as string) || 
     (process.env.APP_URL ? `${process.env.APP_URL}/auth/github/callback` : `${req.protocol}://${req.get('host')}/auth/github/callback`);
+
+  if (!clientId) {
+    return res.status(500).json({ error: 'GITHUB_CLIENT_ID not configured' });
+  }
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -262,6 +273,27 @@ app.get('/api/auth/github/url', (req, res) => {
   const authUrl = `https://github.com/login/oauth/authorize?${params.toString()}`;
   res.json({ url: authUrl, redirectUri });
 });
+
+interface GithubTokenResponse {
+  access_token?: string;
+  token_type?: string;
+  scope?: string;
+  error?: string;
+  error_description?: string;
+}
+
+interface GithubUserResponse {
+  id: number;
+  login: string;
+  name?: string;
+  avatar_url?: string;
+  email?: string;
+  bio?: string;
+  company?: string;
+  location?: string;
+  public_repos?: number;
+  html_url?: string;
+}
 
 const handleGithubCallback = async (req: express.Request, res: express.Response) => {
   const { code, error, error_description } = req.query;
@@ -296,8 +328,12 @@ const handleGithubCallback = async (req: express.Request, res: express.Response)
   }
 
   try {
-    const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23lifKkuO7pQzIVrlG';
-    const clientSecret = process.env.GITHUB_CLIENT_SECRET || 'a4815ae2b8c48a371ec2f6118994bbcff14d81fb';
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('GitHub OAuth credentials not configured');
+    }
 
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -313,7 +349,7 @@ const handleGithubCallback = async (req: express.Request, res: express.Response)
       }),
     });
 
-    const tokenData = await tokenResponse.json() as any;
+    const tokenData = await tokenResponse.json() as GithubTokenResponse;
 
     if (tokenData.error || !tokenData.access_token) {
       throw new Error(tokenData.error_description || tokenData.error || 'Failed to exchange code for GitHub token');
@@ -327,7 +363,7 @@ const handleGithubCallback = async (req: express.Request, res: express.Response)
       },
     });
 
-    const userData = await userResponse.json() as any;
+    const userData = await userResponse.json() as GithubUserResponse;
 
     const payload = {
       type: 'OAUTH_AUTH_SUCCESS',
@@ -531,7 +567,7 @@ const handleIncomingWebhook = async (req: express.Request, res: express.Response
   const signature = req.headers['x-hub-signature-256'] as string;
   const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
 
-  const rawBody = (req as any).rawBody;
+  const rawBody = (req as CustomRequest).rawBody;
   const isVerified = verifyGithubWebhookSignature(rawBody, signature, webhookSecret);
 
   if (webhookSecret && !isVerified) {
