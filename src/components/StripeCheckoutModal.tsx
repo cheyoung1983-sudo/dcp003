@@ -6,7 +6,7 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import { CreditCard, X, ShieldCheck, Lock, Sparkles } from 'lucide-react';
 
-const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6BPlnIgMOtOk39OwIXtHNYLOnkg5MwMIKpQERpiEBEETRMrAbGwFCfe53GWrfE7ScHMbK0oVZ00F5g3Bz84';
+const publishableKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
 const stripePromise = loadStripe(publishableKey);
 
 interface StripeCheckoutModalProps {

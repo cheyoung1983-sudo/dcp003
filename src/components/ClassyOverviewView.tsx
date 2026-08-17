@@ -20,7 +20,10 @@ interface ClassyOverviewViewProps {
   onNavigateToBooking?: () => void;
 }
 
-export const ClassyOverviewView: React.FC<ClassyOverviewViewProps> = () => {
+export const ClassyOverviewView: React.FC<ClassyOverviewViewProps> = ({
+  onNavigateToIntake,
+  onNavigateToBooking
+}) => {
   const [showEstimatorModal, setShowEstimatorModal] = useState(false);
   const [showClientPortal, setShowClientPortal] = useState(false);
   const [showLoadoutModal, setShowLoadoutModal] = useState(false);

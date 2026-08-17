@@ -185,9 +185,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // C. STATIC ASSETS (Icons, Images, CSS, JS, SVGs): Stale-While-Revalidate
+  // C. JAVASCRIPT & CSS CHUNKS (Vite hashed bundles): Network-first with Cache fallback
+  if (url.pathname.match(/\.(js|mjs|css)$/i) || url.pathname.includes('/assets/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
+              cache.put(event.request, responseToCache).catch(() => {});
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // D. STATIC MEDIA ASSETS (Icons, Images, SVGs): Stale-While-Revalidate
   if (
-    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|gif|ico|css|js)$/i) ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|gif|ico)$/i) ||
     STATIC_ASSETS.includes(url.pathname)
   ) {
     event.respondWith(
