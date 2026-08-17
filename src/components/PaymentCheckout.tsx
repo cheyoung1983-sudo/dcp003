@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { CreditCard, ShieldCheck } from 'lucide-react';
 
-const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
-  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
-  : null;
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
+const stripePromise = loadStripe(stripePublicKey);
 
 export const PaymentCheckout: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -97,7 +96,7 @@ export const PaymentCheckout: React.FC = () => {
 
         <button
           onClick={handleCheckout}
-          disabled={loading || amount <= 0 || !import.meta.env.VITE_STRIPE_PUBLIC_KEY}
+          disabled={loading || amount <= 0 || !stripePublicKey}
           className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
@@ -110,7 +109,7 @@ export const PaymentCheckout: React.FC = () => {
           )}
         </button>
 
-        {!import.meta.env.VITE_STRIPE_PUBLIC_KEY && (
+        {!stripePublicKey && (
           <p className="text-[10px] text-amber-400 text-center font-semibold">
             Stripe keys are missing from environment variables.
           </p>
