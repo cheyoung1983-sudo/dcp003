@@ -13,7 +13,7 @@ import {
   Zap,
   Wrench
 } from 'lucide-react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 
 export interface SmartTriageResult {
   suspectedFault: string;
@@ -105,7 +105,7 @@ export default function SmartTriageChat({ deviceModel = '', onApplyRecommendatio
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20">
-                Gemini AI Triage
+                OpenAI Smart Triage
               </span>
               <span className="text-xs text-slate-400 font-mono">Spokane Bench Assistant</span>
             </div>
@@ -117,7 +117,7 @@ export default function SmartTriageChat({ deviceModel = '', onApplyRecommendatio
       </div>
 
       <p className="text-xs text-slate-300 leading-relaxed relative z-10 font-medium">
-        Describe the device symptoms (e.g., liquid exposure, black screen with vibration, warm back glass, 0.45A ammeter draw). The Gemini AI engine will classify the likely fault and suggest immediate DIY steps.
+        Describe the device symptoms (e.g., liquid exposure, black screen with vibration, warm back glass, 0.45A ammeter draw). The OpenAI engine will classify the likely fault and suggest immediate DIY steps.
       </p>
 
       {/* Quick Prompts */}

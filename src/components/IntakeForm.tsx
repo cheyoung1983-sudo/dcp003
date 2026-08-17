@@ -26,7 +26,15 @@ import {
   TrendingUp,
   Camera,
   Image as ImageIcon,
-  Tag
+  Tag,
+  Barcode,
+  QrCode,
+  ScanLine,
+  CheckSquare,
+  Wrench,
+  AlertTriangle,
+  Download,
+  FileJson
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -34,19 +42,24 @@ import {
   IntakeFormSchema, 
   Manufacturer, 
   ServiceTier 
-} from '../types';
-import { cn } from '../lib/utils';
-import { calculateQuote, PricingBreakdown } from '../lib/pricing';
-import AIDiagnostic from './AIDiagnostic';
-import DeviceCameraCapture, { CapturedPhoto } from './DeviceCameraCapture';
-import TechnicianChecklist from './TechnicianChecklist';
-import SmartTriageChat from './SmartTriageChat';
-import { useToast } from './Toast';
-import SymptomChecklist, { DIAGNOSTIC_SYMPTOMS, SymptomItem } from './SymptomChecklist';
-import DevicePhotoCaptureInput from './DevicePhotoCaptureInput';
-import CommonRepairChecklist from './CommonRepairChecklist';
-import RecommendedDiagnosticPath from './RecommendedDiagnosticPath';
-import DeviceModelAutocomplete from './DeviceModelAutocomplete';
+} from '../types.ts';
+import { cn } from '../lib/utils.ts';
+import { calculateQuote, PricingBreakdown } from '../lib/pricing.ts';
+import { downloadDatabaseBackup, saveOfflineRepairIntake } from '../lib/db.ts';
+import AIDiagnostic from './AIDiagnostic.tsx';
+import DeviceCameraCapture, { CapturedPhoto } from './DeviceCameraCapture.tsx';
+import TechnicianChecklist from './TechnicianChecklist.tsx';
+import SmartTriageChat from './SmartTriageChat.tsx';
+import { useToast } from './Toast.tsx';
+import SymptomChecklist, { DIAGNOSTIC_SYMPTOMS, SymptomItem } from './SymptomChecklist.tsx';
+import DevicePhotoCaptureInput from './DevicePhotoCaptureInput.tsx';
+import CommonRepairChecklist from './CommonRepairChecklist.tsx';
+import RecommendedDiagnosticPath from './RecommendedDiagnosticPath.tsx';
+import DeviceModelAutocomplete from './DeviceModelAutocomplete.tsx';
+import BarcodeScannerModal, { ScannedHardwareData } from './BarcodeScannerModal.tsx';
+import HardwareDiagnosticTool from './HardwareDiagnosticTool.tsx';
+import DiagnosticChecklist, { FailurePointItem, COMMON_HARDWARE_FAILURE_POINTS } from './DiagnosticChecklist.tsx';
+import { broadcastTechnicianIntakeAlert } from '../lib/technicianEvents.ts';
 
 const STEPS = [
   { id: 1, name: 'Reconnaissance', icon: Smartphone },
@@ -64,6 +77,7 @@ export default function IntakeForm() {
     invoiceUrl: string; 
     attachedPhotoCount?: number; 
     attachedCategories?: string[]; 
+    identifiedFailureCount?: number;
   } | null>(null);
   const [quote, setQuote] = useState<PricingBreakdown | null>(null);
   const [history, setHistory] = useState<any[]>([]);
@@ -71,7 +85,67 @@ export default function IntakeForm() {
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
   const [devicePhotos, setDevicePhotos] = useState<CapturedPhoto[]>([]);
   const [selectedSymptomIds, setSelectedSymptomIds] = useState<string[]>([]);
-  const [triageSubTab, setTriageSubTab] = useState<'telemetry' | 'pre_checks' | 'smart_triage' | 'diag_path' | 'camera' | 'checklist'>('telemetry');
+  const [selectedFailurePointIds, setSelectedFailurePointIds] = useState<string[]>([]);
+  const [customFailureNotes, setCustomFailureNotes] = useState<string>('');
+  const [triageSubTab, setTriageSubTab] = useState<'telemetry' | 'diag_checklist' | 'hardware_diag' | 'pre_checks' | 'smart_triage' | 'diag_path' | 'camera' | 'checklist'>('telemetry');
+  const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+
+  const handleBarcodeScanSuccess = (data: ScannedHardwareData) => {
+    let appliedUpdates: string[] = [];
+
+    // 1. Handle IMEI
+    if (data.imei) {
+      setValue('imei', data.imei, { shouldValidate: true, shouldDirty: true });
+      appliedUpdates.push(`IMEI: ${data.imei}`);
+    } else if (data.type === 'imei' && data.rawValue) {
+      const digits = data.rawValue.replace(/[^0-9]/g, '');
+      if (digits.length === 15) {
+        setValue('imei', digits, { shouldValidate: true, shouldDirty: true });
+        appliedUpdates.push(`IMEI: ${digits}`);
+      }
+    }
+
+    // 2. Handle Manufacturer & Model if decoded or auto-inferred
+    if (data.manufacturer) {
+      const mfrLower = data.manufacturer.toLowerCase();
+      if (mfrLower.includes('apple') || mfrLower.includes('iphone') || mfrLower.includes('ipad')) {
+        setValue('deviceManufacturer', Manufacturer.APPLE, { shouldValidate: true, shouldDirty: true });
+      } else if (mfrLower.includes('samsung') || mfrLower.includes('galaxy')) {
+        setValue('deviceManufacturer', Manufacturer.SAMSUNG, { shouldValidate: true, shouldDirty: true });
+      } else {
+        setValue('deviceManufacturer', Manufacturer.OTHER, { shouldValidate: true, shouldDirty: true });
+      }
+    }
+
+    if (data.deviceModel) {
+      setValue('deviceModel', data.deviceModel, { shouldValidate: true, shouldDirty: true });
+      appliedUpdates.push(`Model: ${data.deviceModel}`);
+    }
+
+    // 3. Handle Ticket ID / Serial
+    if (data.ticketId) {
+      const existing = watch('customerReportedIssue') || '';
+      const ticketRef = `[Scanned Work Order Ticket Ref: ${data.ticketId}]`;
+      if (!existing.includes(ticketRef)) {
+        setValue('customerReportedIssue', existing ? `${ticketRef}\n${existing}` : ticketRef, { shouldValidate: true, shouldDirty: true });
+      }
+      appliedUpdates.push(`Ticket Ref: ${data.ticketId}`);
+    } else if (data.serialNumber && !data.imei) {
+      // If pure serial number without 15-digit IMEI
+      const existing = watch('customerReportedIssue') || '';
+      const serialRef = `[Device Serial Number: ${data.serialNumber}]`;
+      if (!existing.includes(serialRef)) {
+        setValue('customerReportedIssue', existing ? `${serialRef}\n${existing}` : serialRef, { shouldValidate: true, shouldDirty: true });
+      }
+      appliedUpdates.push(`Serial: ${data.serialNumber}`);
+    }
+
+    if (appliedUpdates.length > 0) {
+      showToast(`Scanned Optical Barcode/QR: ${appliedUpdates.join(' • ')}`, 'success');
+    } else {
+      showToast(`Scanned value: ${data.rawValue}`, 'info');
+    }
+  };
 
   const handleApplyChecklistToNotes = (notes: string) => {
     const existing = watch('customerReportedIssue') || '';
@@ -127,9 +201,10 @@ export default function IntakeForm() {
   const s2Progress = (() => {
     let p = 0;
     if (formData.serviceTier) p += 25;
-    if (formData.customerReportedIssue && formData.customerReportedIssue.trim().length > 3) p += 45;
+    if (formData.customerReportedIssue && formData.customerReportedIssue.trim().length > 3) p += 35;
     if (selectedSymptomIds && selectedSymptomIds.length > 0) p += 15;
-    if (formData.telemetry) p += 15;
+    if (selectedFailurePointIds && selectedFailurePointIds.length > 0) p += 15;
+    if (formData.telemetry) p += 10;
     return Math.min(100, p);
   })();
 
@@ -178,6 +253,12 @@ export default function IntakeForm() {
           if (parsed.selectedSymptomIds && Array.isArray(parsed.selectedSymptomIds)) {
             setSelectedSymptomIds(parsed.selectedSymptomIds);
           }
+          if (parsed.selectedFailurePointIds && Array.isArray(parsed.selectedFailurePointIds)) {
+            setSelectedFailurePointIds(parsed.selectedFailurePointIds);
+          }
+          if (parsed.customFailureNotes) {
+            setCustomFailureNotes(parsed.customFailureNotes);
+          }
           setDraftRestored(true);
           if (parsed.savedAt) {
             setLastSavedTime(new Date(parsed.savedAt).toLocaleTimeString());
@@ -187,10 +268,50 @@ export default function IntakeForm() {
         console.error('Failed to restore draft intake form:', e);
       }
     }
-    setIsDraftLoaded(true);
-  }, [reset]);
 
-  // useEffect 2: Listen for form input changes and save them into localStorage
+    // Check for incoming voice intake ticket from ElevenLabs voice studio
+    const pendingVoiceTicketStr = localStorage.getItem('dcp_pending_voice_intake');
+    if (pendingVoiceTicketStr) {
+      try {
+        const ticket = JSON.parse(pendingVoiceTicketStr);
+        if (ticket) {
+          if (ticket.deviceManufacturer) {
+            const mLower = ticket.deviceManufacturer.toLowerCase();
+            if (mLower.includes('apple') || mLower.includes('iphone') || mLower.includes('ipad')) {
+              setValue('deviceManufacturer', Manufacturer.APPLE, { shouldValidate: true });
+            } else if (mLower.includes('samsung') || mLower.includes('galaxy')) {
+              setValue('deviceManufacturer', Manufacturer.SAMSUNG, { shouldValidate: true });
+            } else {
+              setValue('deviceManufacturer', Manufacturer.OTHER, { shouldValidate: true });
+            }
+          }
+          if (ticket.deviceModel) {
+            setValue('deviceModel', ticket.deviceModel, { shouldValidate: true });
+          }
+          if (ticket.serviceTier) {
+            if (ticket.serviceTier === 'TIER_1_POWER_PORT_REFRESH') setValue('serviceTier', ServiceTier.TIER_1, { shouldValidate: true });
+            else if (ticket.serviceTier === 'TIER_2_DISPLAY_RENEWAL') setValue('serviceTier', ServiceTier.TIER_2, { shouldValidate: true });
+            else if (ticket.serviceTier === 'TIER_3_MICRO_SOLDERING') setValue('serviceTier', ServiceTier.TIER_3, { shouldValidate: true });
+            else if (ticket.serviceTier === 'TIER_4_CLEANROOM_DATA_RECOVERY') setValue('serviceTier', ServiceTier.TIER_4, { shouldValidate: true });
+          }
+          if (ticket.issueTranscript || ticket.triageSummary) {
+            const issueText = `[ElevenLabs Voice Intake Ref: ${ticket.ticketNumber}]\nSpoken Issue: "${ticket.issueTranscript}"\nSuspected Fault: ${ticket.suspectedFault}\nTechnician Triage: ${ticket.triageSummary}`;
+            setValue('customerReportedIssue', issueText, { shouldValidate: true });
+          }
+          if (ticket.customerEmail) setValue('customerEmail', ticket.customerEmail, { shouldValidate: true });
+          if (ticket.customerName) setValue('customerName', ticket.customerName, { shouldValidate: true });
+          
+          showToast(`Voice Intake Ticket ${ticket.ticketNumber} loaded into form!`, 'success');
+          localStorage.removeItem('dcp_pending_voice_intake');
+        }
+      } catch (voiceErr) {
+        console.warn('Error applying pending voice intake ticket:', voiceErr);
+      }
+    }
+    setIsDraftLoaded(true);
+  }, [reset, setValue, showToast]);
+
+  // useEffect 2: Listen for form input changes and save them into localStorage & SQLite
   useEffect(() => {
     if (!isDraftLoaded) return;
     if (step < 5) {
@@ -200,12 +321,40 @@ export default function IntakeForm() {
         formData,
         devicePhotos,
         selectedSymptomIds,
+        selectedFailurePointIds,
+        customFailureNotes,
         savedAt: now.toISOString(),
       };
       localStorage.setItem('dcp_intake_draft', JSON.stringify(draftPayload));
       setLastSavedTime(now.toLocaleTimeString());
+
+      if (formData.deviceModel || formData.imei || formData.customerName) {
+        saveOfflineRepairIntake({
+          id: 'current_intake_draft',
+          ...formData,
+          photos: devicePhotos,
+          status: 'draft',
+        }).catch(() => {});
+      }
     }
-  }, [formData, devicePhotos, selectedSymptomIds, step, isDraftLoaded]);
+  }, [formData, devicePhotos, selectedSymptomIds, selectedFailurePointIds, customFailureNotes, step, isDraftLoaded]);
+
+  const handleExportBackup = async (format: 'json' | 'csv') => {
+    try {
+      if (formData.deviceModel || formData.imei || formData.customerName) {
+        await saveOfflineRepairIntake({
+          id: 'current_intake_draft',
+          ...formData,
+          photos: devicePhotos,
+          status: 'draft',
+        });
+      }
+      const res = await downloadDatabaseBackup(format);
+      showToast(`Exported ${res.count} record(s) to ${res.filename}`, 'success');
+    } catch {
+      showToast('Failed to generate database export backup', 'error');
+    }
+  };
 
   useEffect(() => {
     if (formData.serviceTier && formData.destinationZipCode) {
@@ -266,9 +415,38 @@ export default function IntakeForm() {
     showToast('Cleared all pre-selected diagnostic symptoms.', 'info');
   };
 
+  const handleToggleFailurePoint = (item: FailurePointItem) => {
+    const isCurrentlySelected = selectedFailurePointIds.includes(item.id);
+    const nextSelected = isCurrentlySelected
+      ? selectedFailurePointIds.filter((id) => id !== item.id)
+      : [...selectedFailurePointIds, item.id];
+
+    setSelectedFailurePointIds(nextSelected);
+
+    if (!isCurrentlySelected) {
+      if (item.recommendedTier === ServiceTier.TIER_3_BOARD) {
+        setValue('serviceTier', ServiceTier.TIER_3_BOARD, { shouldValidate: true });
+      } else if (item.recommendedTier === ServiceTier.TIER_2_DISPLAY && formData.serviceTier !== ServiceTier.TIER_3_BOARD) {
+        setValue('serviceTier', ServiceTier.TIER_2_DISPLAY, { shouldValidate: true });
+      }
+      showToast(`Logged failure point: "${item.title}"`, 'info');
+    } else {
+      showToast(`Deselected failure point: "${item.title}"`, 'info');
+    }
+  };
+
+  const handleApplyDiagnosticChecklistToNotes = (formattedSummary: string) => {
+    const existing = watch('customerReportedIssue') || '';
+    const updated = existing ? `${existing.trim()}\n\n${formattedSummary}` : formattedSummary;
+    setValue('customerReportedIssue', updated, { shouldValidate: true, shouldDirty: true });
+    showToast('Merged Diagnostic Checklist failure points into Issue Description.', 'success');
+  };
+
   const clearDraft = () => {
     localStorage.removeItem('dcp_intake_draft');
     setSelectedSymptomIds([]);
+    setSelectedFailurePointIds([]);
+    setCustomFailureNotes('');
     setDevicePhotos([]);
     reset({
       deviceManufacturer: Manufacturer.APPLE,
@@ -374,6 +552,8 @@ export default function IntakeForm() {
     });
     setDevicePhotos([]);
     setSelectedSymptomIds([]);
+    setSelectedFailurePointIds([]);
+    setCustomFailureNotes('');
     setStep(1);
     setDraftRestored(false);
     setLastSavedTime(null);
@@ -383,9 +563,25 @@ export default function IntakeForm() {
   const onSubmit = async (data: IntakeFormData) => {
     setSubmitting(true);
     try {
+      const selectedFailurePointsData = selectedFailurePointIds.map(id => {
+        const found = COMMON_HARDWARE_FAILURE_POINTS.find(i => i.id === id);
+        return found ? {
+          id: found.id,
+          title: found.title,
+          category: found.category,
+          severity: found.severity,
+          subsystem: found.subsystem,
+          componentRef: found.componentRef,
+          recommendedTier: found.recommendedTier,
+        } : { id, title: id };
+      });
+
       const payload = {
         ...data,
         devicePhotos,
+        selectedFailurePointIds,
+        selectedFailurePoints: selectedFailurePointsData,
+        customFailureNotes,
         photoMetadata: {
           totalCount: devicePhotos.length,
           categories: Array.from(new Set(devicePhotos.map(p => p.category))),
@@ -417,13 +613,18 @@ export default function IntakeForm() {
           invoiceUrl: res.invoiceUrl,
           attachedPhotoCount: res.attachedPhotoCount !== undefined ? res.attachedPhotoCount : devicePhotos.length,
           attachedCategories: res.attachedCategories || Array.from(new Set(devicePhotos.map(p => p.category))),
+          identifiedFailureCount: selectedFailurePointIds.length,
         });
         
         // Persist to local history
+        const generatedTicketNumber = `DCP-${Math.floor(8800 + Math.random() * 1199)}`;
         const newEntry = {
           ...data,
           devicePhotos,
+          selectedFailurePoints: selectedFailurePointsData,
+          customFailureNotes,
           id: res.draftOrderId,
+          ticketNumber: generatedTicketNumber,
           date: new Date().toISOString(),
           quote
         };
@@ -431,7 +632,20 @@ export default function IntakeForm() {
         setHistory(updatedHistory);
         localStorage.setItem('dcp_repairs', JSON.stringify(updatedHistory));
         
-        showToast(`Device intake synchronized with Spokane Lab (${devicePhotos.length} damage photos attached).`, 'success');
+        // Broadcast real-time technician intake alert across tabs and live session
+        broadcastTechnicianIntakeAlert({
+          draftOrderId: res.draftOrderId,
+          ticketNumber: generatedTicketNumber,
+          customerName: data.customerName || 'Intake Client',
+          deviceModel: data.deviceModel || 'Handheld Unit',
+          deviceManufacturer: data.deviceManufacturer || 'Device',
+          serviceTier: data.serviceTier || 'Tier 2 (Display Renewal)',
+          issueDescription: data.customerReportedIssue || 'Intake diagnostic assessment requested.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          attachedPhotoCount: devicePhotos.length
+        });
+
+        showToast(`Device intake synchronized with Spokane Lab (${devicePhotos.length} photos, ${selectedFailurePointIds.length} failure points attached).`, 'success');
         setStep(5);
       }
     } catch (error) {
@@ -636,7 +850,7 @@ export default function IntakeForm() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <form onSubmit={handleSubmit(onSubmit)} className="lg:col-span-2 bg-white border border-slate-100 rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-8 md:p-12 overflow-hidden min-h-[650px] flex flex-col">
           {step < 5 && (
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-8 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold text-slate-700">
@@ -648,16 +862,40 @@ export default function IntakeForm() {
                   </span>
                 )}
               </div>
-              {(formData.deviceModel || formData.imei || formData.customerName || draftRestored) && (
-                <button
-                  type="button"
-                  onClick={clearDraft}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-600 transition-all text-xs font-semibold"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  Reset Form
-                </button>
-              )}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => handleExportBackup('json')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-slate-700 hover:bg-white hover:text-blue-600 transition-all text-[11px]"
+                    title="Download SQLite database records as JSON backup"
+                  >
+                    <Download className="w-3 h-3 text-blue-600" />
+                    <span>Backup (JSON)</span>
+                  </button>
+                  <span className="text-slate-300">|</span>
+                  <button
+                    type="button"
+                    onClick={() => handleExportBackup('csv')}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-slate-700 hover:bg-white hover:text-emerald-600 transition-all text-[11px]"
+                    title="Download SQLite database records as CSV spreadsheet"
+                  >
+                    <Download className="w-3 h-3 text-emerald-600" />
+                    <span>CSV</span>
+                  </button>
+                </div>
+
+                {(formData.deviceModel || formData.imei || formData.customerName || draftRestored) && (
+                  <button
+                    type="button"
+                    onClick={clearDraft}
+                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 hover:bg-red-50 text-slate-500 hover:text-red-600 transition-all text-xs font-semibold"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    Reset Form
+                  </button>
+                )}
+              </div>
             </div>
           )}
           <AnimatePresence mode="wait">
@@ -669,9 +907,19 @@ export default function IntakeForm() {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-8 flex-1"
             >
-              <div>
-                <h2 className="text-3xl font-playfair font-black text-slate-900 mb-2">Device Reconnaissance</h2>
-                <p className="text-slate-500">Identify the hardware unit and authenticate its global identifier.</p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-playfair font-black text-slate-900 mb-2">Device Reconnaissance</h2>
+                  <p className="text-slate-500">Identify the hardware unit and authenticate its global identifier.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsBarcodeScannerOpen(true)}
+                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs flex items-center gap-2 shadow-md shadow-slate-900/10 transition-all self-start sm:self-auto cursor-pointer"
+                >
+                  <Barcode className="w-4 h-4 text-blue-400" />
+                  <span>Scan Barcode / Ticket</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -702,13 +950,33 @@ export default function IntakeForm() {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400">IMEI (15 Digits)</label>
-                  <input 
-                    {...register('imei')}
-                    placeholder="Enter 15-digit IMEI"
-                    maxLength={15}
-                    className="w-full h-12 px-4 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-slate-900 focus:bg-white outline-none transition-all font-mono tracking-widest text-lg"
-                  />
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">IMEI (15 Digits)</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsBarcodeScannerOpen(true)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <ScanLine className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Scan Barcode / QR with Camera</span>
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      {...register('imei')}
+                      placeholder="Enter 15-digit IMEI"
+                      maxLength={15}
+                      className="w-full h-12 pl-4 pr-12 rounded-xl border-2 border-slate-100 bg-slate-50 focus:border-slate-900 focus:bg-white outline-none transition-all font-mono tracking-widest text-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsBarcodeScannerOpen(true)}
+                      title="Open Optical Scanner"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    >
+                      <Barcode className="w-5 h-5" />
+                    </button>
+                  </div>
                   {errors.imei && <p className="text-red-500 text-xs mt-1">{errors.imei.message}</p>}
                 </div>
 
@@ -749,11 +1017,13 @@ export default function IntakeForm() {
               <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
                 {[
                   { id: 'telemetry', label: '1. Service & Telemetry' },
-                  { id: 'pre_checks', label: '2. Common Pre-Checks' },
-                  { id: 'smart_triage', label: '3. Smart Triage (AI)' },
-                  { id: 'diag_path', label: '4. Diagnostic Path (AI)' },
-                  { id: 'camera', label: `5. Photos (${devicePhotos.length})` },
-                  { id: 'checklist', label: '6. Tech QA Checklist' },
+                  { id: 'diag_checklist', label: `2. Diagnostic Checklist (${selectedFailurePointIds.length})` },
+                  { id: 'hardware_diag', label: '3. WebUSB / Serial Port' },
+                  { id: 'pre_checks', label: '4. Common Pre-Checks' },
+                  { id: 'smart_triage', label: '5. Smart Triage (AI)' },
+                  { id: 'diag_path', label: '6. Diagnostic Path (AI)' },
+                  { id: 'camera', label: `7. Photos (${devicePhotos.length})` },
+                  { id: 'checklist', label: '8. Tech QA Checklist' },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -772,6 +1042,39 @@ export default function IntakeForm() {
 
               {triageSubTab === 'telemetry' && (
                 <div className="space-y-6">
+                  {/* Quick Hardware Diagnostic Checklist Summary & Fast Access Banner */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg border border-slate-700/50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-400/30">
+                        <CheckSquare className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-bold text-white">Hardware Diagnostic Checklist</h4>
+                          <span className={cn(
+                            "text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border",
+                            selectedFailurePointIds.length > 0
+                              ? "bg-blue-500/30 text-blue-200 border-blue-400/40"
+                              : "bg-slate-800 text-slate-400 border-slate-700"
+                          )}>
+                            {selectedFailurePointIds.length} Failure Points Flagged
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-0.5">
+                          Select verified hardware failure points (Display, Board, Power, Biometrics) to pre-classify lab ticket and pricing.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTriageSubTab('diag_checklist')}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 self-start sm:self-auto shrink-0 shadow-md cursor-pointer"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      <span>{selectedFailurePointIds.length > 0 ? 'Edit Diagnostic Checklist' : 'Open Diagnostic Checklist'}</span>
+                    </button>
+                  </div>
+
                   {/* Clickable Diagnostic Symptom Pre-Selection Checklist */}
                   <SymptomChecklist
                     selectedSymptomIds={selectedSymptomIds}
@@ -923,6 +1226,43 @@ export default function IntakeForm() {
                 </div>
               </div>
             )}
+
+              {triageSubTab === 'diag_checklist' && (
+                <DiagnosticChecklist
+                  selectedIds={selectedFailurePointIds}
+                  onToggleFailurePoint={handleToggleFailurePoint}
+                  onSelectMultiple={(ids) => setSelectedFailurePointIds(ids)}
+                  onClearAll={() => {
+                    setSelectedFailurePointIds([]);
+                    showToast('Cleared all selected hardware failure points.', 'info');
+                  }}
+                  currentServiceTier={formData.serviceTier}
+                  onApplyRecommendedTier={(tier) => {
+                    setValue('serviceTier', tier, { shouldValidate: true });
+                    showToast(`Applied recommended tier: ${tier}`, 'success');
+                  }}
+                  onApplyToIssueNotes={handleApplyDiagnosticChecklistToNotes}
+                  customNotes={customFailureNotes}
+                  onCustomNotesChange={setCustomFailureNotes}
+                />
+              )}
+
+              {triageSubTab === 'hardware_diag' && (
+                <div className="space-y-4">
+                  <HardwareDiagnosticTool
+                    onApplyDiagnosticCode={(code, description) => {
+                      const existing = watch('customerReportedIssue') || '';
+                      const diagEntry = `[WebUSB/Serial Diagnostic Code: ${code} - ${description}]`;
+                      if (!existing.includes(code)) {
+                        setValue('customerReportedIssue', existing ? `${existing.trim()}\n${diagEntry}` : diagEntry, { shouldValidate: true, shouldDirty: true });
+                        showToast(`Applied ${code} to Issue Description notes.`, 'success');
+                      } else {
+                        showToast(`Diagnostic code ${code} is already in the issue notes.`, 'info');
+                      }
+                    }}
+                  />
+                </div>
+              )}
 
               {triageSubTab === 'pre_checks' && (
                 <CommonRepairChecklist
@@ -1137,6 +1477,94 @@ export default function IntakeForm() {
                   </div>
                 )}
 
+                {/* Hardware Diagnostic Checklist Identified Failure Points Review Card */}
+                <div className="md:col-span-2 bg-white rounded-3xl p-6 md:p-8 border-2 border-slate-900/10 shadow-lg shadow-slate-100 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-200">
+                        <CheckSquare className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-base font-bold text-slate-900">Diagnostic Checklist: Identified Failure Points</h4>
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-mono font-bold rounded-full">
+                            {selectedFailurePointIds.length} FLAGGED
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Hardware failure points and subsystem components flagged for repair validation
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep(2);
+                        setTriageSubTab('diag_checklist');
+                      }}
+                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      <span>{selectedFailurePointIds.length > 0 ? 'Edit Failure Points' : '+ Flag Failure Points'}</span>
+                    </button>
+                  </div>
+
+                  {selectedFailurePointIds.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                      {selectedFailurePointIds.map((id) => {
+                        const item = COMMON_HARDWARE_FAILURE_POINTS.find(i => i.id === id);
+                        if (!item) {
+                          return (
+                            <div key={id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-bold text-slate-700">
+                              Custom Failure Point: {id}
+                            </div>
+                          );
+                        }
+                        return (
+                          <div key={item.id} className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between gap-2">
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-bold text-slate-900 truncate">{item.title}</span>
+                                <span className={cn(
+                                  "text-[9px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0",
+                                  item.severity === 'critical' ? "bg-rose-50 text-rose-700 border-rose-200" :
+                                  item.severity === 'major' ? "bg-amber-50 text-amber-700 border-amber-200" :
+                                  "bg-blue-50 text-blue-700 border-blue-200"
+                                )}>
+                                  {item.severity}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-500 line-clamp-1">{item.subsystem}</p>
+                            </div>
+                            {item.componentRef && (
+                              <div className="text-[9px] font-mono text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200/60 self-start">
+                                Ref: {item.componentRef}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
+                      <p className="text-xs text-slate-500">
+                        No specific hardware failure points selected yet. Technicians can log common failure points before submitting the ticket.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStep(2);
+                          setTriageSubTab('diag_checklist');
+                        }}
+                        className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-1"
+                      >
+                        Launch Diagnostic Checklist &rarr;
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 {/* Camera Intake Attached Photos Review Section */}
                 <div className="md:col-span-2 bg-slate-900 text-white rounded-3xl p-6 md:p-8 space-y-4 shadow-xl">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
@@ -1230,18 +1658,22 @@ export default function IntakeForm() {
                 <p className="text-slate-500">Draft Order {result.draftOrderId} successfully provisioned in Shopify.</p>
               </div>
 
-              {/* Lab Photo Metadata Confirmation Box */}
+              {/* Lab Photo & Diagnostic Failure Points Confirmation Box */}
               <div className="w-full max-w-md bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Camera className="w-4 h-4 text-blue-600" />
-                    Spokane Lab Camera Metadata
+                    <CheckSquare className="w-4 h-4 text-blue-600" />
+                    Spokane Lab Telemetry & Triage
                   </span>
                   <span className="text-[10px] font-mono font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                     SYNCED
                   </span>
                 </div>
-                <div className="space-y-1 text-xs text-slate-600">
+                <div className="space-y-1.5 text-xs text-slate-600">
+                  <div className="flex justify-between">
+                    <span>Hardware Failure Points:</span>
+                    <span className="font-bold text-slate-900">{result.identifiedFailureCount || 0} flagged</span>
+                  </div>
                   <div className="flex justify-between">
                     <span>Attached Photos:</span>
                     <span className="font-bold text-slate-900">{result.attachedPhotoCount || 0} photo(s)</span>
@@ -1378,6 +1810,14 @@ export default function IntakeForm() {
           </div>
         </aside>
       </div>
+
+      {/* Optical Barcode / QR Scanner Modal for Hardware Serial & IMEI */}
+      <BarcodeScannerModal
+        isOpen={isBarcodeScannerOpen}
+        onClose={() => setIsBarcodeScannerOpen(false)}
+        onScanSuccess={handleBarcodeScanSuccess}
+        targetField="imei"
+      />
     </div>
   );
 }

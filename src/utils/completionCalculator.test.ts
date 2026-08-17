@@ -1,4 +1,5 @@
-import { calculateDynamicCompletionDate } from './completionCalculator';
+import { describe, it, expect } from 'vitest';
+import { calculateDynamicCompletionDate } from './completionCalculator.ts';
 
 describe('calculateDynamicCompletionDate', () => {
   it('calculates completion correctly for Tier 1 service', () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 import { 
   Play, 
   Pause, 
@@ -27,7 +27,9 @@ import {
   Sparkle, 
   Microscope, 
   Flame,
-  ArrowRight
+  ArrowRight,
+  Github,
+  RefreshCw
 } from 'lucide-react';
 
 export interface TutorialScene {
@@ -223,6 +225,7 @@ export default function RepairAcademy({ onSelectIntake }: { onSelectIntake?: () 
   // Custom AI Video Generator State
   const [customTopic, setCustomTopic] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSyncingGithub, setIsSyncingGithub] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   // Interactive Video Player State
@@ -456,7 +459,7 @@ export default function RepairAcademy({ onSelectIntake }: { onSelectIntake?: () 
     if (!topic) return;
 
     setIsGenerating(true);
-    showToast(`Initializing Gemini AI Video Generation for: "${topic}"...`, 'info');
+    showToast(`Initializing OpenAI Video Generation for: "${topic}"...`, 'info');
 
     try {
       const res = await fetch('/api/academy/generate-video', {
@@ -534,6 +537,38 @@ Need Professional Micro-soldering? Visit https://dcp-llc.com
     a.download = `DCP_Guide_${selectedTutorial.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
     a.click();
     showToast('Tutorial Guide downloaded to local device.', 'success');
+  };
+
+  const handleSyncSOPToGithub = async () => {
+    try {
+      setIsSyncingGithub(true);
+      const token = localStorage.getItem('dcp_github_token_stored') || undefined;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/api/github/sync/sop', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          title: selectedTutorial.title,
+          category: selectedTutorial.category,
+          difficulty: selectedTutorial.difficulty,
+          estimatedTime: selectedTutorial.estimatedTime,
+          markdownContent: `# ${selectedTutorial.title}\n\n**Category**: ${selectedTutorial.category} | **Difficulty**: ${selectedTutorial.difficulty} | **Est. Time**: ${selectedTutorial.estimatedTime}\n\n## Overview\n${selectedTutorial.description}\n\n## Required Tools\n${selectedTutorial.requiredTools.map(t => `- ${t}`).join('\n')}\n\n## Safety Protocols\n${selectedTutorial.safetyWarnings.map(w => `> ⚠️ ${w}`).join('\n')}\n\n## Step-by-Step Procedure\n${selectedTutorial.scenes.map(s => `### Step ${s.stepNumber}: ${s.title}\n${s.narration}\n\n*Pro-Tip: ${s.actionTip}*\n`).join('\n')}\n\n---\n*Spokane Micro-soldering Standard Operating Procedure - D&CP LLC*`
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        showToast(data.message || `Committed ${selectedTutorial.title} to GitHub repo docs/repairs/`, 'success');
+      } else {
+        throw new Error(data.error || 'Failed to sync SOP to GitHub');
+      }
+    } catch (e: any) {
+      showToast(e.message || 'Error syncing SOP to GitHub', 'error');
+    } finally {
+      setIsSyncingGithub(false);
+    }
   };
 
   const categories = ['All', 'Cleanliness', 'Display', 'ESD', 'Power', 'Tools'];
@@ -860,10 +895,19 @@ Need Professional Micro-soldering? Visit https://dcp-llc.com
             </div>
 
             {/* Action Buttons */}
-            <div className="pt-2 space-y-3">
+            <div className="pt-2 space-y-2.5">
+              <button
+                onClick={handleSyncSOPToGithub}
+                disabled={isSyncingGithub}
+                className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
+              >
+                {isSyncingGithub ? <RefreshCw className="w-4 h-4 animate-spin text-slate-400" /> : <Github className="w-4 h-4" />}
+                <span>{isSyncingGithub ? 'Committing SOP to GitHub...' : 'Sync SOP to GitHub Repository'}</span>
+              </button>
+
               <button
                 onClick={handleDownloadGuide}
-                className="w-full py-3.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
                 Download Printable Repair Guide
@@ -872,7 +916,7 @@ Need Professional Micro-soldering? Visit https://dcp-llc.com
               {onSelectIntake && (
                 <button
                   onClick={onSelectIntake}
-                  className="w-full py-3.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs transition-all flex items-center justify-center gap-2 shadow"
                 >
                   <Wrench className="w-4 h-4" />
                   Request Pro Bench Intake Instead

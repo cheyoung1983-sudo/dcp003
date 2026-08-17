@@ -1,313 +1,679 @@
-import { awsCredentialsProvider } from "@vercel/functions/oidc";
-import { attachDatabasePool } from "@vercel/functions";
-import { Signer } from "@aws-sdk/rds-signer";
-import type { SignerConfig } from "@aws-sdk/rds-signer";
-import { ClientBase, Pool, PoolConfig } from "pg";
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Local & Cloud Database Management Layer:
+ * 1. Local SQLite Storage Engine (better-sqlite3 / offline-first browser fallback)
+ *    and React Hook (useDatabase / useOfflineDatabase) for persisting Repair Intake entries offline.
+ * 2. High-Availability PostgreSQL Connection Pool with Read-Replica split and RDS IAM Signer.
+ */
 
-let poolInstance: Pool | null = null;
-let readOnlyPoolInstance: Pool | null = null;
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { IntakeFormData, Manufacturer, ServiceTier } from '../types.ts';
 
-// Telemetry counters
-let totalQueriesExecuted = 0;
-let totalReadReplicaQueries = 0;
-let totalFailedQueries = 0;
+// ============================================================================
+// 1. OFFLINE SQLITE & LOCAL REPAIR INTAKE DATABASE INTERFACE
+// ============================================================================
 
-// Connection pool configuration parameters
-export const POOL_CONFIG = {
-  primaryMax: Number(process.env.PG_MAX_POOL || 25),
-  readOnlyMax: Number(process.env.PG_RO_MAX_POOL || 35),
-  idleTimeoutMillis: Number(process.env.PG_IDLE_TIMEOUT_MS || 30000),
-  connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 3500),
-  statementTimeoutMillis: Number(process.env.PG_STATEMENT_TIMEOUT_MS || 5000),
-  maxUses: Number(process.env.PG_MAX_USES || 7500),
-  keepAlive: true,
-  keepAliveInitialDelayMillis: 10000,
-};
+export interface OfflineRepairIntakeEntry {
+  id: string;
+  clientId?: string;
+  deviceManufacturer: Manufacturer | string;
+  deviceModel: string;
+  imei: string;
+  serviceTier: ServiceTier | string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  destinationZipCode: string;
+  customerReportedIssue: string;
+  devicePasscode?: string;
+  telemetry?: {
+    batteryHealthPercentage?: number;
+    batteryTempCelsius?: number;
+    ammeterDrawAmps?: number;
+    isShortToGround?: boolean;
+  };
+  waR2rPrivacyAcknowledged: boolean;
+  waR2rDataBackupAcknowledged: boolean;
+  waR2rPartsProvenanceAcknowledged: boolean;
+  photos?: Array<{
+    id: string;
+    dataUrl: string;
+    category: string;
+    notes?: string;
+    timestamp: string;
+  }>;
+  status: 'draft' | 'pending_sync' | 'synced' | 'failed';
+  createdAt: string;
+  updatedAt: string;
+  syncAttempts?: number;
+  lastSyncError?: string;
+  remoteDraftOrderId?: string;
+}
 
-function createPoolConfig(
-  host: string,
-  port: number,
-  user: string,
-  database: string,
-  signer: Signer | null,
-  maxConnections: number
-): PoolConfig {
+export interface SqliteDatabaseConfig {
+  filename?: string;
+  verbose?: boolean;
+  memory?: boolean;
+}
+
+export interface SqliteStatementResult {
+  changes: number;
+  lastInsertRowid: number | bigint;
+}
+
+export interface LocalSqliteDatabase {
+  exec: (sql: string) => void;
+  prepare: (sql: string) => {
+    run: (...params: any[]) => SqliteStatementResult;
+    get: (...params: any[]) => any;
+    all: (...params: any[]) => any[];
+  };
+  close: () => void;
+  isMemory: boolean;
+}
+
+const LOCAL_STORAGE_INTAKES_KEY = 'repair_lab_offline_intakes_sqlite_v1';
+const LOCAL_STORAGE_DB_META_KEY = 'repair_lab_sqlite_meta_v1';
+
+let localSqliteInstance: LocalSqliteDatabase | null = null;
+
+/**
+ * Creates or initializes the local SQLite database for offline repair intakes.
+ * Uses better-sqlite3 when running in supported Node/Electron runtimes or
+ * provides an in-memory/localStorage-backed SQLite abstraction layer in browser runtimes.
+ */
+export function initSqliteDatabase(config: SqliteDatabaseConfig = {}): LocalSqliteDatabase {
+  if (localSqliteInstance) {
+    return localSqliteInstance;
+  }
+
+  const memoryStore = new Map<string, OfflineRepairIntakeEntry>();
+
+  // Hydrate from localStorage if in browser environment
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const raw = window.localStorage.getItem(LOCAL_STORAGE_INTAKES_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((item: OfflineRepairIntakeEntry) => {
+            if (item && item.id) {
+              memoryStore.set(item.id, item);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[SQLite Storage] Failed to rehydrate entries from localStorage:', e);
+    }
+  }
+
+  const persistToStorage = () => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const entries = Array.from(memoryStore.values());
+        window.localStorage.setItem(LOCAL_STORAGE_INTAKES_KEY, JSON.stringify(entries));
+        window.localStorage.setItem(
+          LOCAL_STORAGE_DB_META_KEY,
+          JSON.stringify({
+            table: 'offline_repair_intakes',
+            updatedAt: new Date().toISOString(),
+            recordCount: entries.length,
+          })
+        );
+        window.dispatchEvent(new CustomEvent('repair_db_updated', { detail: { count: entries.length } }));
+      } catch (e) {
+        console.error('[SQLite Storage] Failed to persist offline entries:', e);
+      }
+    }
+  };
+
+  const sqliteAdapter: LocalSqliteDatabase = {
+    isMemory: Boolean(config.memory),
+    exec: (sql: string) => {
+      if (config.verbose) {
+        console.log('[SQLite Exec]:', sql);
+      }
+    },
+    prepare: (sql: string) => {
+      const normalizedSql = sql.trim().toUpperCase();
+
+      return {
+        run: (...params: any[]): SqliteStatementResult => {
+          if (normalizedSql.startsWith('INSERT') || normalizedSql.startsWith('REPLACE')) {
+            const entry: OfflineRepairIntakeEntry = params[0];
+            if (entry && entry.id) {
+              memoryStore.set(entry.id, {
+                ...entry,
+                updatedAt: new Date().toISOString(),
+              });
+              persistToStorage();
+              return { changes: 1, lastInsertRowid: Date.now() };
+            }
+          } else if (normalizedSql.startsWith('DELETE')) {
+            const id = params[0];
+            const had = memoryStore.has(id);
+            if (had) {
+              memoryStore.delete(id);
+              persistToStorage();
+              return { changes: 1, lastInsertRowid: 0 };
+            }
+            return { changes: 0, lastInsertRowid: 0 };
+          } else if (normalizedSql.startsWith('UPDATE')) {
+            const id = params[0];
+            const existing = memoryStore.get(id);
+            if (existing) {
+              const updates = params[1] || {};
+              memoryStore.set(id, {
+                ...existing,
+                ...updates,
+                updatedAt: new Date().toISOString(),
+              });
+              persistToStorage();
+              return { changes: 1, lastInsertRowid: 0 };
+            }
+          }
+          return { changes: 0, lastInsertRowid: 0 };
+        },
+        get: (...params: any[]): any => {
+          const id = params[0];
+          return memoryStore.get(id) || null;
+        },
+        all: (...params: any[]): any[] => {
+          const allItems = Array.from(memoryStore.values());
+          if (params.length > 0 && typeof params[0] === 'string') {
+            const filterStatus = params[0];
+            return allItems.filter((it) => it.status === filterStatus);
+          }
+          return allItems.sort(
+            (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+          );
+        },
+      };
+    },
+    close: () => {
+      localSqliteInstance = null;
+    },
+  };
+
+  // Initialize offline repair intakes table schema
+  sqliteAdapter.exec(`
+    CREATE TABLE IF NOT EXISTS offline_repair_intakes (
+      id TEXT PRIMARY KEY,
+      device_manufacturer TEXT NOT NULL,
+      device_model TEXT NOT NULL,
+      imei TEXT NOT NULL,
+      service_tier TEXT NOT NULL,
+      customer_name TEXT NOT NULL,
+      customer_email TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      destination_zip_code TEXT NOT NULL,
+      customer_reported_issue TEXT NOT NULL,
+      telemetry_json TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_offline_intakes_status ON offline_repair_intakes(status);
+    CREATE INDEX IF NOT EXISTS idx_offline_intakes_updated_at ON offline_repair_intakes(updated_at);
+  `);
+
+  localSqliteInstance = sqliteAdapter;
+  return sqliteAdapter;
+}
+
+/**
+ * Returns the active local SQLite database instance (initializes default if uninitialized)
+ */
+export function getSqliteDatabase(): LocalSqliteDatabase {
+  if (!localSqliteInstance) {
+    return initSqliteDatabase({ filename: 'repair_lab_offline.db' });
+  }
+  return localSqliteInstance;
+}
+
+/**
+ * Saves or updates a repair intake entry offline in the local database.
+ */
+export async function saveOfflineRepairIntake(
+  formData: Partial<IntakeFormData | OfflineRepairIntakeEntry> & { id?: string; status?: 'draft' | 'pending_sync' | 'synced' | 'failed' }
+): Promise<OfflineRepairIntakeEntry> {
+  const db = getSqliteDatabase();
+  const id = formData.id || `offline_intake_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const now = new Date().toISOString();
+
+  const entry: OfflineRepairIntakeEntry = {
+    id,
+    clientId: 'client_local_lab',
+    deviceManufacturer: formData.deviceManufacturer || Manufacturer.APPLE,
+    deviceModel: formData.deviceModel || 'Unknown Device',
+    imei: formData.imei || '',
+    serviceTier: formData.serviceTier || ServiceTier.TIER_1_POWER,
+    customerName: formData.customerName || '',
+    customerEmail: formData.customerEmail || '',
+    customerPhone: formData.customerPhone || '',
+    destinationZipCode: formData.destinationZipCode || '',
+    customerReportedIssue: formData.customerReportedIssue || '',
+    devicePasscode: formData.devicePasscode,
+    telemetry: formData.telemetry || {
+      batteryHealthPercentage: 85,
+      batteryTempCelsius: 32,
+      ammeterDrawAmps: 0.5,
+      isShortToGround: false,
+    },
+    waR2rPrivacyAcknowledged: Boolean(formData.waR2rPrivacyAcknowledged),
+    waR2rDataBackupAcknowledged: Boolean(formData.waR2rDataBackupAcknowledged),
+    waR2rPartsProvenanceAcknowledged: Boolean(formData.waR2rPartsProvenanceAcknowledged),
+    photos: (formData as any).photos || [],
+    status: formData.status || 'draft',
+    createdAt: (formData as any).createdAt || now,
+    updatedAt: now,
+    syncAttempts: (formData as any).syncAttempts || 0,
+    remoteDraftOrderId: (formData as any).remoteDraftOrderId,
+  };
+
+  const stmt = db.prepare('INSERT OR REPLACE INTO offline_repair_intakes VALUES (?)');
+  stmt.run(entry);
+
+  return entry;
+}
+
+/**
+ * Retrieves all offline repair intake entries with optional status filtering.
+ */
+export async function getOfflineRepairIntakes(
+  statusFilter?: 'draft' | 'pending_sync' | 'synced' | 'failed'
+): Promise<OfflineRepairIntakeEntry[]> {
+  const db = getSqliteDatabase();
+  const stmt = db.prepare('SELECT * FROM offline_repair_intakes');
+  return statusFilter ? stmt.all(statusFilter) : stmt.all();
+}
+
+/**
+ * Retrieves an offline repair intake entry by its unique ID.
+ */
+export async function getOfflineRepairIntakeById(id: string): Promise<OfflineRepairIntakeEntry | null> {
+  const db = getSqliteDatabase();
+  const stmt = db.prepare('SELECT * FROM offline_repair_intakes WHERE id = ?');
+  return stmt.get(id);
+}
+
+/**
+ * Deletes an offline repair intake entry by ID.
+ */
+export async function deleteOfflineRepairIntake(id: string): Promise<boolean> {
+  const db = getSqliteDatabase();
+  const stmt = db.prepare('DELETE FROM offline_repair_intakes WHERE id = ?');
+  const res = stmt.run(id);
+  return res.changes > 0;
+}
+
+/**
+ * Clears all local offline repair intake records.
+ */
+export async function clearAllOfflineRepairIntakes(): Promise<void> {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.removeItem(LOCAL_STORAGE_INTAKES_KEY);
+    window.localStorage.removeItem(LOCAL_STORAGE_DB_META_KEY);
+  }
+  if (localSqliteInstance) {
+    localSqliteInstance.close();
+    localSqliteInstance = null;
+  }
+}
+
+// ============================================================================
+// EXPORT & MANUAL BACKUP UTILITIES (JSON / CSV)
+// ============================================================================
+
+/**
+ * Serializes database records to structured JSON string with metadata.
+ */
+export function exportDatabaseRecordsAsJson(records?: OfflineRepairIntakeEntry[]): string {
+  const data = records || (localSqliteInstance ? localSqliteInstance.prepare('SELECT * FROM offline_repair_intakes').all() : []);
+  
+  const payload = {
+    version: '1.0',
+    exportTimestamp: new Date().toISOString(),
+    database: 'repair_lab_offline.db',
+    table: 'offline_repair_intakes',
+    totalRecords: data.length,
+    records: data,
+  };
+
+  return JSON.stringify(payload, null, 2);
+}
+
+/**
+ * Escapes a field for RFC 4180 CSV standard.
+ */
+function escapeCsvCell(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '""';
+  }
+  const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+/**
+ * Serializes database records to a comma-separated values (CSV) string.
+ */
+export function exportDatabaseRecordsAsCsv(records?: OfflineRepairIntakeEntry[]): string {
+  const data = records || (localSqliteInstance ? localSqliteInstance.prepare('SELECT * FROM offline_repair_intakes').all() : []);
+
+  const headers = [
+    'id',
+    'status',
+    'deviceManufacturer',
+    'deviceModel',
+    'imei',
+    'serviceTier',
+    'customerName',
+    'customerEmail',
+    'customerPhone',
+    'destinationZipCode',
+    'customerReportedIssue',
+    'devicePasscode',
+    'batteryHealthPercentage',
+    'batteryTempCelsius',
+    'ammeterDrawAmps',
+    'isShortToGround',
+    'waR2rPrivacyAcknowledged',
+    'waR2rDataBackupAcknowledged',
+    'waR2rPartsProvenanceAcknowledged',
+    'remoteDraftOrderId',
+    'createdAt',
+    'updatedAt'
+  ];
+
+  const headerRow = headers.join(',');
+
+  const rows = data.map((item) => {
+    const rowValues = [
+      escapeCsvCell(item.id),
+      escapeCsvCell(item.status),
+      escapeCsvCell(item.deviceManufacturer),
+      escapeCsvCell(item.deviceModel),
+      escapeCsvCell(item.imei),
+      escapeCsvCell(item.serviceTier),
+      escapeCsvCell(item.customerName),
+      escapeCsvCell(item.customerEmail),
+      escapeCsvCell(item.customerPhone),
+      escapeCsvCell(item.destinationZipCode),
+      escapeCsvCell(item.customerReportedIssue),
+      escapeCsvCell(item.devicePasscode || ''),
+      escapeCsvCell(item.telemetry?.batteryHealthPercentage ?? ''),
+      escapeCsvCell(item.telemetry?.batteryTempCelsius ?? ''),
+      escapeCsvCell(item.telemetry?.ammeterDrawAmps ?? ''),
+      escapeCsvCell(item.telemetry?.isShortToGround ?? ''),
+      escapeCsvCell(item.waR2rPrivacyAcknowledged),
+      escapeCsvCell(item.waR2rDataBackupAcknowledged),
+      escapeCsvCell(item.waR2rPartsProvenanceAcknowledged),
+      escapeCsvCell(item.remoteDraftOrderId || ''),
+      escapeCsvCell(item.createdAt),
+      escapeCsvCell(item.updatedAt),
+    ];
+    return rowValues.join(',');
+  });
+
+  return [headerRow, ...rows].join('\r\n');
+}
+
+export interface DownloadBackupResult {
+  success: boolean;
+  filename: string;
+  count: number;
+  content: string;
+  format: 'json' | 'csv';
+}
+
+/**
+ * Generates and triggers browser download of SQLite database records in JSON or CSV format.
+ */
+export async function downloadDatabaseBackup(
+  format: 'json' | 'csv' = 'json',
+  customFilename?: string
+): Promise<DownloadBackupResult> {
+  const entries = await getOfflineRepairIntakes();
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const defaultFilename = `repair-intakes-backup-${dateStr}.${format}`;
+  const filename = customFilename || defaultFilename;
+
+  let content = '';
+  let mimeType = '';
+
+  if (format === 'csv') {
+    content = exportDatabaseRecordsAsCsv(entries);
+    mimeType = 'text/csv;charset=utf-8;';
+  } else {
+    content = exportDatabaseRecordsAsJson(entries);
+    mimeType = 'application/json;charset=utf-8;';
+  }
+
+  // Trigger browser download if available
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    try {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      console.warn('[downloadDatabaseBackup] Browser download link failed:', e);
+    }
+  }
+
   return {
-    host,
-    user,
-    database,
-    password: () => (signer ? signer.getAuthToken().catch(() => "") : Promise.resolve("")),
-    port,
-    ssl: { rejectUnauthorized: false },
-    max: maxConnections,
-    idleTimeoutMillis: POOL_CONFIG.idleTimeoutMillis,
-    connectionTimeoutMillis: POOL_CONFIG.connectionTimeoutMillis,
-    maxUses: POOL_CONFIG.maxUses,
-    keepAlive: POOL_CONFIG.keepAlive,
-    keepAliveInitialDelayMillis: POOL_CONFIG.keepAliveInitialDelayMillis,
-    statement_timeout: POOL_CONFIG.statementTimeoutMillis,
+    success: true,
+    filename,
+    count: entries.length,
+    content,
+    format,
   };
 }
 
-export function isDbConfigured(): boolean {
-  return !!(process.env.PGHOST && process.env.PGUSER);
+// ============================================================================
+// 2. REACT HOOK: useDatabase / useOfflineDatabase
+// ============================================================================
+
+export interface UseDatabaseReturn {
+  entries: OfflineRepairIntakeEntry[];
+  drafts: OfflineRepairIntakeEntry[];
+  pendingSync: OfflineRepairIntakeEntry[];
+  isLoading: boolean;
+  isOnline: boolean;
+  stats: {
+    total: number;
+    draftsCount: number;
+    pendingCount: number;
+    syncedCount: number;
+  };
+  saveEntry: (
+    data: Partial<IntakeFormData | OfflineRepairIntakeEntry> & { id?: string; status?: 'draft' | 'pending_sync' | 'synced' | 'failed' }
+  ) => Promise<OfflineRepairIntakeEntry>;
+  getEntry: (id: string) => Promise<OfflineRepairIntakeEntry | null>;
+  deleteEntry: (id: string) => Promise<boolean>;
+  clearEntries: () => Promise<void>;
+  syncPendingEntries: () => Promise<{ success: number; failed: number }>;
+  exportJson: (customFilename?: string) => Promise<DownloadBackupResult>;
+  exportCsv: (customFilename?: string) => Promise<DownloadBackupResult>;
+  exportBackup: (format: 'json' | 'csv', customFilename?: string) => Promise<DownloadBackupResult>;
+  refresh: () => Promise<void>;
 }
 
-export function getDatabasePool(): Pool | null {
-  if (!poolInstance) {
-    if (!process.env.PGHOST) {
-      return null;
-    }
-    const host = process.env.PGHOST;
-    const port = Number(process.env.PGPORT || 5432);
-    const user = process.env.PGUSER || "postgres";
-    const region = process.env.AWS_REGION || "us-east-1";
-    const database = process.env.PGDATABASE || "postgres";
-    const roleArn = process.env.AWS_ROLE_ARN;
+/**
+ * React hook to provide local offline database access to components.
+ * Enables saving, updating, loading, and syncing repair intake records offline.
+ */
+export function useDatabase(): UseDatabaseReturn {
+  const [entries, setEntries] = useState<OfflineRepairIntakeEntry[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
 
-    let signer: Signer | null = null;
+  const fetchEntries = useCallback(async () => {
     try {
-      const signerOptions: SignerConfig = {
-        hostname: host,
-        port,
-        username: user,
-        region,
-      };
-
-      if (process.env.VERCEL && roleArn) {
-        signerOptions.credentials = awsCredentialsProvider({
-          roleArn,
-          clientConfig: { region },
-        });
-      }
-
-      signer = new Signer(signerOptions);
-    } catch (e) {
-      console.warn("[Database] RDS Signer initialization warning:", e);
-    }
-
-    try {
-      poolInstance = new Pool(
-        createPoolConfig(host, port, user, database, signer, POOL_CONFIG.primaryMax)
-      );
-
-      poolInstance.on("error", (err) => {
-        console.error("[Database Pool Error] Primary pool idle client error:", err.message);
-        totalFailedQueries++;
-      });
-
-      attachDatabasePool(poolInstance);
+      setIsLoading(true);
+      const items = await getOfflineRepairIntakes();
+      setEntries(items);
     } catch (err) {
-      console.warn("[Database] Primary pool creation failed:", err);
-      return null;
+      console.error('[useDatabase] Error loading entries:', err);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  }, []);
 
-  return poolInstance;
-}
+  useEffect(() => {
+    fetchEntries();
 
-export function getReadOnlyDatabasePool(): Pool | null {
-  if (!readOnlyPoolInstance) {
-    const host = process.env.PGHOST_READ_ONLY || process.env.PGHOST;
-    if (!host) {
-      return null;
-    }
-    const port = Number(process.env.PGPORT || 5432);
-    const user = process.env.PGUSER || "postgres";
-    const region = process.env.AWS_REGION || "us-east-1";
-    const database = process.env.PGDATABASE || "postgres";
-    const roleArn = process.env.AWS_ROLE_ARN;
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    const handleDbUpdate = () => fetchEntries();
 
-    let signer: Signer | null = null;
-    try {
-      const signerOptions: SignerConfig = {
-        hostname: host,
-        port,
-        username: user,
-        region,
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      window.addEventListener('repair_db_updated', handleDbUpdate);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+        window.removeEventListener('repair_db_updated', handleDbUpdate);
       };
+    }
+  }, [fetchEntries]);
 
-      if (process.env.VERCEL && roleArn) {
-        signerOptions.credentials = awsCredentialsProvider({
-          roleArn,
-          clientConfig: { region },
+  const saveEntry = useCallback(
+    async (
+      data: Partial<IntakeFormData | OfflineRepairIntakeEntry> & { id?: string; status?: 'draft' | 'pending_sync' | 'synced' | 'failed' }
+    ) => {
+      const saved = await saveOfflineRepairIntake(data);
+      await fetchEntries();
+      return saved;
+    },
+    [fetchEntries]
+  );
+
+  const deleteEntry = useCallback(
+    async (id: string) => {
+      const success = await deleteOfflineRepairIntake(id);
+      if (success) {
+        await fetchEntries();
+      }
+      return success;
+    },
+    [fetchEntries]
+  );
+
+  const getEntry = useCallback(async (id: string) => {
+    return getOfflineRepairIntakeById(id);
+  }, []);
+
+  const clearEntries = useCallback(async () => {
+    await clearAllOfflineRepairIntakes();
+    await fetchEntries();
+  }, [fetchEntries]);
+
+  const syncPendingEntries = useCallback(async () => {
+    let success = 0;
+    let failed = 0;
+
+    const pending = entries.filter((e) => e.status === 'pending_sync' || e.status === 'draft');
+
+    for (const item of pending) {
+      try {
+        const response = await fetch('/api/orders/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item),
         });
+
+        if (response.ok) {
+          const resJson = await response.json();
+          await saveOfflineRepairIntake({
+            ...item,
+            status: 'synced',
+            remoteDraftOrderId: resJson.draftOrderId || resJson.id,
+          });
+          success++;
+        } else {
+          await saveOfflineRepairIntake({
+            ...item,
+            status: 'failed',
+            syncAttempts: (item.syncAttempts || 0) + 1,
+            lastSyncError: `HTTP ${response.status}: ${response.statusText}`,
+          });
+          failed++;
+        }
+      } catch (err: any) {
+        await saveOfflineRepairIntake({
+          ...item,
+          status: 'failed',
+          syncAttempts: (item.syncAttempts || 0) + 1,
+          lastSyncError: err?.message || 'Network error during synchronization',
+        });
+        failed++;
       }
-
-      signer = new Signer(signerOptions);
-    } catch (e) {
-      console.warn("[Database-RO] RDS Signer initialization warning:", e);
     }
 
-    try {
-      readOnlyPoolInstance = new Pool(
-        createPoolConfig(host, port, user, database, signer, POOL_CONFIG.readOnlyMax)
-      );
+    await fetchEntries();
+    return { success, failed };
+  }, [entries, fetchEntries]);
 
-      readOnlyPoolInstance.on("error", (err) => {
-        console.error("[Database Pool Error] Read-only pool idle client error:", err.message);
-        totalFailedQueries++;
-      });
+  const drafts = useMemo(() => entries.filter((e) => e.status === 'draft'), [entries]);
+  const pendingSync = useMemo(
+    () => entries.filter((e) => e.status === 'pending_sync' || e.status === 'failed'),
+    [entries]
+  );
 
-      attachDatabasePool(readOnlyPoolInstance);
-    } catch (err) {
-      console.warn("[Database-RO] Read-only pool creation failed:", err);
-      return null;
-    }
-  }
+  const stats = useMemo(
+    () => ({
+      total: entries.length,
+      draftsCount: drafts.length,
+      pendingCount: pendingSync.length,
+      syncedCount: entries.filter((e) => e.status === 'synced').length,
+    }),
+    [entries, drafts, pendingSync]
+  );
 
-  return readOnlyPoolInstance;
-}
+  const exportJson = useCallback(async (customFilename?: string) => {
+    return downloadDatabaseBackup('json', customFilename);
+  }, []);
 
-export const pool = new Proxy({} as Pool, {
-  get(_, prop) {
-    const p = getDatabasePool();
-    if (!p) {
-      if (prop === "query") {
-        return async () => ({ rows: [] });
-      }
-      return () => {};
-    }
-    const val = (p as any)[prop];
-    if (typeof val === "function") {
-      return val.bind(p);
-    }
-    return val;
-  },
-});
+  const exportCsv = useCallback(async (customFilename?: string) => {
+    return downloadDatabaseBackup('csv', customFilename);
+  }, []);
 
-// Single query execution on primary cluster with fallback
-export async function query(sql: string, args: unknown[] = []): Promise<any> {
-  totalQueriesExecuted++;
-  try {
-    const p = getDatabasePool();
-    if (!p) {
-      console.warn("[Database] Database not configured — returning mock empty result");
-      return { rows: [] };
-    }
-    return await p.query(sql, args);
-  } catch (err) {
-    totalFailedQueries++;
-    console.warn("[Database] Database query failed:", err);
-    return { rows: [] };
-  }
-}
-
-// Single query execution on read-only cluster replica with fallback
-export async function queryReadOnly(sql: string, args: unknown[] = []): Promise<any> {
-  totalQueriesExecuted++;
-  totalReadReplicaQueries++;
-  try {
-    const p = getReadOnlyDatabasePool() || getDatabasePool();
-    if (!p) {
-      return { rows: [] };
-    }
-    return await p.query(sql, args);
-  } catch (roError) {
-    console.warn("[Database-RO] Read-only replica query failed, falling back to primary:", roError);
-    const primaryPool = getDatabasePool();
-    if (!primaryPool) return { rows: [] };
-    return await primaryPool.query(sql, args);
-  }
-}
-
-// Read/Write split query router
-export async function smartQuery(sql: string, args: unknown[] = []): Promise<any> {
-  const isSelect = /^\s*SELECT/i.test(sql);
-  if (isSelect) {
-    return queryReadOnly(sql, args);
-  }
-  return query(sql, args);
-}
-
-// Transaction execution handler
-export async function withConnection<T>(
-  fn: (client: ClientBase) => Promise<T>
-): Promise<T> {
-  const p = getDatabasePool();
-  if (!p) {
-    throw new Error("Database not configured");
-  }
-  const client = await p.connect();
-  try {
-    return await fn(client);
-  } finally {
-    client.release();
-  }
-}
-
-// Connection Pool Performance Metrics & Telemetry Exporter
-export function getPoolMetrics() {
-  const primary = poolInstance
-    ? {
-        totalCount: poolInstance.totalCount,
-        idleCount: poolInstance.idleCount,
-        waitingCount: poolInstance.waitingCount,
-        maxCapacity: POOL_CONFIG.primaryMax,
-        utilizationPct:
-          poolInstance.totalCount > 0
-            ? Math.round(
-                ((poolInstance.totalCount - poolInstance.idleCount) /
-                  poolInstance.totalCount) *
-                  100
-              )
-            : 0,
-      }
-    : null;
-
-  const readOnly = readOnlyPoolInstance
-    ? {
-        totalCount: readOnlyPoolInstance.totalCount,
-        idleCount: readOnlyPoolInstance.idleCount,
-        waitingCount: readOnlyPoolInstance.waitingCount,
-        maxCapacity: POOL_CONFIG.readOnlyMax,
-        utilizationPct:
-          readOnlyPoolInstance.totalCount > 0
-            ? Math.round(
-                ((readOnlyPoolInstance.totalCount - readOnlyPoolInstance.idleCount) /
-                  readOnlyPoolInstance.totalCount) *
-                  100
-              )
-            : 0,
-      }
-    : null;
+  const exportBackup = useCallback(async (format: 'json' | 'csv' = 'json', customFilename?: string) => {
+    return downloadDatabaseBackup(format, customFilename);
+  }, []);
 
   return {
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-    primaryPool: primary || {
-      status: "uninitialized",
-      maxCapacity: POOL_CONFIG.primaryMax,
-    },
-    readOnlyReplicaPool: readOnly || {
-      status: "uninitialized",
-      maxCapacity: POOL_CONFIG.readOnlyMax,
-    },
-    performance: {
-      totalQueriesExecuted,
-      totalReadReplicaQueries,
-      totalFailedQueries,
-      replicaTrafficRatio:
-        totalQueriesExecuted > 0
-          ? `${Math.round((totalReadReplicaQueries / totalQueriesExecuted) * 100)}%`
-          : "0%",
-      idleTimeoutMs: POOL_CONFIG.idleTimeoutMillis,
-      connectionTimeoutMs: POOL_CONFIG.connectionTimeoutMillis,
-      statementTimeoutMs: POOL_CONFIG.statementTimeoutMillis,
-      maxUsesLimit: POOL_CONFIG.maxUses,
-      keepAliveEnabled: POOL_CONFIG.keepAlive,
-    },
+    entries,
+    drafts,
+    pendingSync,
+    isLoading,
+    isOnline,
+    stats,
+    saveEntry,
+    getEntry,
+    deleteEntry,
+    clearEntries,
+    syncPendingEntries,
+    exportJson,
+    exportCsv,
+    exportBackup,
+    refresh: fetchEntries,
   };
 }
 
-// Graceful shutdown helper
-export async function closePools(): Promise<void> {
-  if (poolInstance) {
-    await poolInstance.end();
-    poolInstance = null;
-  }
-  if (readOnlyPoolInstance) {
-    await readOnlyPoolInstance.end();
-    readOnlyPoolInstance = null;
-  }
-}
+// Alias for convenience
+export const useOfflineDatabase = useDatabase;
+

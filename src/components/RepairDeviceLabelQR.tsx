@@ -23,7 +23,7 @@ import {
   Camera,
   FileText
 } from 'lucide-react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 
 interface RepairDeviceLabelQRProps {
   ticketNumber: string;

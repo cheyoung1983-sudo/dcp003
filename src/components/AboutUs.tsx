@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import ryanYoungImage from '../assets/images/regenerated_image_1786855284519.jpg';
+import FounderMessage from './FounderMessage.tsx';
 import { 
   MapPin, 
   Mail, 
@@ -16,17 +18,19 @@ import {
   Award,
   Terminal,
   Wrench,
-  GraduationCap
+  GraduationCap,
+  Sparkles,
+  Quote
 } from 'lucide-react';
 
 const TEAM = [
   {
-    name: "David Chen",
-    role: "Lead Systems Engineer",
-    bio: "With over 15 years in precision micro-electronics, David leads our Tier 3 intervention unit. He specializes in VDD_MAIN short isolation and BGA re-balling protocols for critical infrastructure devices.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
-    certs: ["IPC-A-610 Certified", "Apple Certified iOS Technician (ACiT)"],
-    expertise: ["BGA Reballing", "NAND Recovery", "Thermal Management"],
+    name: "Ryan Young",
+    role: "Founder & Lead Systems Engineer",
+    bio: "As the founder of Display & Cell Pros LLC, Ryan brings over 15 years in precision micro-electronics and component-level triage. As an Enrolled Tribal Member and Combat Veteran, he leads our Tier 3 intervention unit with uncompromising military-grade and federal-compliant standards (UEI: VAJXG5MNYQK8).",
+    image: ryanYoungImage,
+    certs: ["IPC-A-610 Master", "Combat Veteran / Enrolled Tribal Member", "UEI: VAJXG5MNYQK8"],
+    expertise: ["BGA Reballing", "NAND Recovery", "VDD_MAIN Short Isolation"],
     icon: Terminal
   },
   {
@@ -257,14 +261,109 @@ export default function AboutUs({ onOpenBlueprint }: { onOpenBlueprint?: () => v
         </div>
       </section>
 
-      {/* Meet the Team */}
+      {/* Meet the Team & Founder Spotlight */}
       <section className="space-y-16">
         <div className="text-center space-y-4">
-          <h2 className="text-sm font-black uppercase tracking-[0.3em] text-blue-600">The Engineering Unit</h2>
-          <p className="text-4xl font-playfair font-black text-slate-900">Meet the Team</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-blue-200">
+            <Sparkles className="w-3 h-3 text-blue-600 animate-spin" />
+            Founder & Master Architect Spotlight
+          </div>
+          <h2 className="text-4xl md:text-5xl font-playfair font-black text-slate-900">
+            The Mind Behind the Bench
+          </h2>
+          <p className="text-sm md:text-base text-slate-500 max-w-xl mx-auto font-medium">
+            "Precision micro-electronics is not just repair—it is the art of restoring critical digital infrastructure with uncompromising laboratory standards."
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        {/* Founder Hero Card with Extreme Flair */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="relative bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 text-white rounded-[3.5pax] md:rounded-[3.5rem] p-8 md:p-14 shadow-2xl overflow-hidden border border-slate-800"
+        >
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/20 blur-[140px] rounded-full pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+            <div className="lg:col-span-5 relative group">
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-[3rem] blur-md opacity-70 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
+              
+              <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-slate-900 border-2 border-white/20 shadow-2xl">
+                <img 
+                  src={ryanYoungImage} 
+                  alt="Ryan Young - Founder & Lead Systems Engineer"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
+                    <span className="text-xs font-bold tracking-wider text-emerald-400 font-mono">LAB BENCH #1 ACTIVE</span>
+                  </div>
+                  <span className="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-mono font-bold text-white border border-white/20">
+                    Spokane HQ
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7 space-y-8">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-mono font-bold rounded-full border border-blue-500/30">
+                    Lead Systems Engineer & Founder
+                  </span>
+                  <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold rounded-full border border-emerald-500/30">
+                    IPC-A-610 Master
+                  </span>
+                </div>
+                <h3 className="text-4xl md:text-5xl font-black tracking-tight text-white">
+                  Ryan Young
+                </h3>
+                <p className="text-slate-300 text-base md:text-lg leading-relaxed font-medium">
+                  As founder of Display & Cell Pros LLC (UEI: VAJXG5MNYQK8, EIN: 39-5018763, UBI: 605 985 265), Ryan brings 15+ years of precision micro-electronics and component-level triage to Washington State, championing federal compliance, combat veteran excellence, and advanced laboratory standards.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { label: "Experience", val: "15+ Years" },
+                  { label: "BGA Reballs", val: "4,500+" },
+                  { label: "Success Ratio", val: "99.4%" }
+                ].map((stat, sidx) => (
+                  <div key={sidx} className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-md">
+                    <div className="text-2xl font-black text-white">{stat.val}</div>
+                    <div className="text-[10px] text-slate-400 uppercase tracking-widest font-mono mt-0.5">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <p className="text-xs font-mono font-black text-slate-400 uppercase tracking-widest">Core Diagnostic Specializations</p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "VDD_MAIN Short Isolation",
+                    "BGA Re-balling & Stenciling",
+                    "NAND Flash Data Extraction",
+                    "FPC Connector Reconstruction",
+                    "OLED Multi-Spectral Calibration",
+                    "SAM.gov / State Procurement"
+                  ].map((spec, eidx) => (
+                    <span key={eidx} className="px-3 py-1.5 bg-white/10 text-slate-200 text-xs font-bold rounded-xl border border-white/15 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                      {spec}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Team Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-8">
           {TEAM.map((member, idx) => (
             <motion.div 
               key={idx}
@@ -333,6 +432,24 @@ export default function AboutUs({ onOpenBlueprint }: { onOpenBlueprint?: () => v
             </motion.div>
           ))}
         </div>
+      </section>
+
+      {/* Leadership Section */}
+      <section id="leadership" className="space-y-8 scroll-mt-28">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-blue-200">
+            <Sparkles className="w-3 h-3 text-blue-600" />
+            Executive Leadership & Founder
+          </div>
+          <h2 className="text-3xl md:text-4xl font-playfair font-black text-slate-900">
+            Leadership & Vision
+          </h2>
+          <p className="text-slate-500 max-w-xl mx-auto text-sm font-medium">
+            Guiding Display & Cell Pros LLC with combat veteran discipline, federal compliance standards, and precision micro-soldering excellence.
+          </p>
+        </div>
+
+        <FounderMessage onLearnMoreProtocol={onOpenBlueprint} />
       </section>
 
       {/* FAQ Section */}

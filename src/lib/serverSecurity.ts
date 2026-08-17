@@ -110,22 +110,21 @@ export function createRateLimiter(options: { maxRequests: number; windowMs: numb
 // ==========================================
 export function securityHeadersMiddleware(_req: Request, res: Response, next: NextFunction) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=*, microphone=*, geolocation=*');
   
-  // Set Content-Security-Policy to allow self, secure assets, fonts, and images
+  // Set Content-Security-Policy allowing AI Studio, Cloud Run iframe framing, assets, and secure websockets
   res.setHeader(
     'Content-Security-Policy',
     [
-      "default-src 'self'",
+      "default-src 'self' https: data: blob:",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com data:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:",
+      "font-src 'self' https://fonts.gstatic.com data: https:",
       "img-src 'self' data: blob: https://images.unsplash.com https:",
-      "connect-src 'self' https: wss:",
-      "frame-ancestors 'self'",
+      "connect-src 'self' https: wss: ws: http:",
+      "frame-ancestors 'self' https://ai.studio https://*.google.com https://*.run.app https://*.aistudio.google.com https://*.googleusercontent.com *",
       "base-uri 'self'",
       "form-action 'self'",
     ].join('; ')

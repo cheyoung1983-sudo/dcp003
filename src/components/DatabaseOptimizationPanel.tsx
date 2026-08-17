@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   Database, Zap, Server, CheckCircle2, Copy, Play, ArrowRight,
-  TrendingUp, RefreshCw, Cpu, Check, HardDrive
+  TrendingUp, RefreshCw, Cpu, Check, HardDrive, Download, FileJson,
+  FileSpreadsheet, FolderDown, ShieldCheck, AlertCircle
 } from 'lucide-react';
-import { useToast } from './Toast';
-import { REPAIR_DB_INDEX_RECOMMENDATIONS, POSTGRES_TABLE_SCHEMAS_DDL } from '../lib/dbOptimizations';
+import { useToast } from './Toast.tsx';
+import { REPAIR_DB_INDEX_RECOMMENDATIONS, POSTGRES_TABLE_SCHEMAS_DDL } from '../lib/dbOptimizations.ts';
+import { useDatabase, downloadDatabaseBackup } from '../lib/db.ts';
 
 interface PoolMetricsData {
   status: string;
@@ -45,6 +47,25 @@ export default function DatabaseOptimizationPanel() {
   const [benchmarkResult, setBenchmarkResult] = useState<any>(null);
   const [isRunningBenchmark, setIsRunningBenchmark] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'CRITICAL' | 'HIGH'>('ALL');
+  const [isExportingJson, setIsExportingJson] = useState(false);
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
+
+  const { entries, stats, exportJson, exportCsv } = useDatabase();
+
+  const handleExportBackup = async (format: 'json' | 'csv') => {
+    if (format === 'json') setIsExportingJson(true);
+    else setIsExportingCsv(true);
+
+    try {
+      const result = await (format === 'json' ? exportJson() : exportCsv());
+      showToast(`Exported ${result.count} SQLite record(s) to ${result.filename}`, 'success');
+    } catch {
+      showToast(`Failed to export SQLite database as ${format.toUpperCase()}`, 'error');
+    } finally {
+      if (format === 'json') setIsExportingJson(false);
+      else setIsExportingCsv(false);
+    }
+  };
 
   const fetchMetrics = async () => {
     setIsLoadingMetrics(true);
@@ -361,6 +382,80 @@ export default function DatabaseOptimizationPanel() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Local Offline SQLite Database & Manual Backup Management */}
+      <div className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-lg space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-black uppercase tracking-wider border border-emerald-200">
+              <HardDrive className="w-3.5 h-3.5" />
+              Local Storage Engine
+            </div>
+            <h3 className="text-xl font-bold text-slate-900">
+              SQLite Offline Intakes & Backup Export
+            </h3>
+            <p className="text-xs text-slate-500 font-medium max-w-2xl">
+              Technician repair intake drafts, WebUSB battery telemetry, and triage logs are buffered locally in SQLite storage with instant client-side manual backup exports in JSON and CSV formats.
+            </p>
+          </div>
+
+          {/* Backup Download Actions */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => handleExportBackup('json')}
+              disabled={isExportingJson}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-blue-600/10 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isExportingJson ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileJson className="w-3.5 h-3.5" />
+              )}
+              <span>Export JSON Backup</span>
+            </button>
+
+            <button
+              onClick={() => handleExportBackup('csv')}
+              disabled={isExportingCsv}
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-md shadow-emerald-600/10 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {isExportingCsv ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+              )}
+              <span>Export CSV File</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Local Storage Telemetry Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Local Records</span>
+            <div className="text-2xl font-black text-slate-900">{stats.total}</div>
+            <p className="text-[11px] text-slate-500">Stored in SQLite</p>
+          </div>
+
+          <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100 space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-700">Active Drafts</span>
+            <div className="text-2xl font-black text-amber-900">{stats.draftsCount}</div>
+            <p className="text-[11px] text-amber-700">In-progress bench jobs</p>
+          </div>
+
+          <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-blue-700">Pending Sync</span>
+            <div className="text-2xl font-black text-blue-900">{stats.pendingCount}</div>
+            <p className="text-[11px] text-blue-700">Awaiting cloud flush</p>
+          </div>
+
+          <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 space-y-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700">Synced to Spokane</span>
+            <div className="text-2xl font-black text-emerald-900">{stats.syncedCount}</div>
+            <p className="text-[11px] text-emerald-700">PostgreSQL mirrored</p>
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -58,7 +58,7 @@ const DROP_OFF_METHODS = [
   {
     id: 'in_person',
     title: 'In-Person Bench Consultation',
-    subtitle: 'Meet with Lead Engineer David Chen or Sarah Martinez',
+    subtitle: 'Meet with Founder & Lead Engineer Ryan Young or Sarah Martinez',
     icon: User,
     badge: 'Recommended',
     description: 'Direct 1-on-1 diagnostic intake at our Spokane Lab bench. Get immediate visual inspection and diagnostic feedback.'

@@ -13,7 +13,7 @@ import {
   Zap,
   Box
 } from 'lucide-react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 
 interface NFCScannerModalProps {
   isOpen: boolean;

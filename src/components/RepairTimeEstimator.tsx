@@ -18,7 +18,7 @@ import {
   ShieldCheck,
   BarChart3
 } from 'lucide-react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 
 interface HistoricalBenchmark {
   deviceType: string;

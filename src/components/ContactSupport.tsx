@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useToast } from './Toast';
-import LiveTechnicianChat from './LiveTechnicianChat';
+import { useToast } from './Toast.tsx';
+import LiveTechnicianChat from './LiveTechnicianChat.tsx';
 import { 
   Send, 
   User, 
@@ -146,7 +146,7 @@ export default function ContactSupport() {
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-bold">Live Technical Chat</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">Direct communication with Lead Systems Engineer David Chen during bench operation hours.</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">Direct communication with Founder & Lead Systems Engineer Ryan Young during bench operation hours.</p>
                   </div>
                 </div>
 

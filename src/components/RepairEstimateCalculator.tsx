@@ -14,10 +14,12 @@ import {
   Clock,
   Database,
   Sparkles,
-  Check
+  Check,
+  CreditCard
 } from 'lucide-react';
 import { ServiceTier, Manufacturer } from '../types';
 import { calculateQuote, PricingBreakdown, PRICING_TIERS } from '../lib/pricing';
+import StripeCheckoutModal from './StripeCheckoutModal.tsx';
 
 const ISSUES = [
   { 
@@ -52,6 +54,7 @@ export default function RepairEstimateCalculator() {
   // Additional Service Toggles
   const [rushPriority, setRushPriority] = useState(false);
   const [dataRecovery, setDataRecovery] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const quote: PricingBreakdown = useMemo(() => {
     return calculateQuote(selectedIssue.tier, zip, {
@@ -399,11 +402,29 @@ export default function RepairEstimateCalculator() {
                 </div>
               </div>
 
-              <button className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 group relative z-10">
-                Proceed to Triage
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              <div className="space-y-3 relative z-10">
+                <button
+                  onClick={() => setIsCheckoutOpen(true)}
+                  className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-2xl font-black text-base shadow-xl shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <CreditCard className="w-5 h-5" />
+                  <span>Pay with Stripe Checkout (${Math.round(quote.total)})</span>
+                </button>
+
+                <button className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black text-sm shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 group">
+                  <span>Proceed to Triage Booking</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
             </div>
+
+            <StripeCheckoutModal
+              isOpen={isCheckoutOpen}
+              onClose={() => setIsCheckoutOpen(false)}
+              productName={`Repair Quote: ${model} (${selectedIssue.id.toUpperCase()})`}
+              productDescription={`Tier ${selectedIssue.tier} Board Repair & Diagnostics`}
+              amount={Math.round(quote.total)}
+            />
 
             <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-lg shadow-slate-200/50 space-y-4">
               <div className="flex items-center gap-3">

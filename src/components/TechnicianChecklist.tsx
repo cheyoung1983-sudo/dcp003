@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   UserCheck
 } from 'lucide-react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 
 export interface ChecklistItem {
   id: string;

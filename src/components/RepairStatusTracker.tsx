@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useToast } from './Toast.tsx';
 import { 
   Search, 
   CheckCircle2, 
@@ -19,13 +20,15 @@ import {
   Camera,
   Radio
 } from 'lucide-react';
-import { useToast } from './Toast';
-import QRScannerModal from './QrScannerModal';
-import NFCScannerModal from './NFCScannerModal';
-import WarrantyTrackerCard from './WarrantyTrackerCard';
-import RepairTimeEstimator from './RepairTimeEstimator';
-import DynamicCompletionCard from './DynamicCompletionCard';
-import RepairDeviceLabelQR from './RepairDeviceLabelQR';
+import QRScannerModal from './QRScannerModal.tsx';
+import NFCScannerModal from './NFCScannerModal.tsx';
+import WarrantyTrackerCard from './WarrantyTrackerCard.tsx';
+import RepairTimeEstimator from './RepairTimeEstimator.tsx';
+import DynamicCompletionCard from './DynamicCompletionCard.tsx';
+import RepairDeviceLabelQR from './RepairDeviceLabelQR.tsx';
+import RepairDocumentation from './RepairDocumentation.tsx';
+import ClientProfileRepairOrders from './ClientProfileRepairOrders.tsx';
+import { Microscope, User } from 'lucide-react';
 
 interface TelemetrySummary {
   batteryHealthPercentage: number;
@@ -49,6 +52,7 @@ interface RepairTicket {
   serviceTier: string;
   currentStage: number; // 1 to 4
   estimatedCompletionDate: string;
+  estimated_completion?: string;
   technicianNotes: string;
   telemetrySummary: TelemetrySummary;
   lastUpdated: string;
@@ -77,6 +81,43 @@ export default function RepairStatusTracker() {
   const [nfcScanHistory, setNfcScanHistory] = useState<NfcScanLog[]>([]);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isNfcOpen, setIsNfcOpen] = useState(false);
+  const [isDocOpen, setIsDocOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'tracker' | 'client_profile'>('tracker');
+  const [isFaqChatOpen, setIsFaqChatOpen] = useState(false);
+  const [faqMessages, setFaqMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string; time: string }>>([
+    { sender: 'bot', text: 'Hello! I am your Spokane Micro-Soldering & Repair Lab Assistant. How can I help with your ticket or lab questions today?', time: 'Just now' }
+  ]);
+  const [faqInput, setFaqInput] = useState('');
+
+  const handleSendFaq = (questionText?: string) => {
+    const query = questionText || faqInput;
+    if (!query.trim()) return;
+
+    const userMsg = { sender: 'user' as const, text: query, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+    setFaqMessages(prev => [...prev, userMsg]);
+    if (!questionText) setFaqInput('');
+
+    setTimeout(() => {
+      let botReply = "Our Spokane bench technicians specialize in component-level micro-soldering, logic board diagnostics, and OEM restorations. Please provide your ticket number or drop-off receipt for exact bench status.";
+      const qLower = query.toLowerCase();
+
+      if (qLower.includes('how long') || qLower.includes('time') || qLower.includes('duration')) {
+        botReply = "Standard micro-soldering and logic board restorations typically take 3 to 5 business days. Expedited bench priority service reduces this to 24-48 hours with real-time oscilloscope telemetry updates.";
+      } else if (qLower.includes('warranty') || qLower.includes('guarantee') || qLower.includes('coverage')) {
+        botReply = "All completed repairs include our comprehensive 1-Year D&CP Limited Hardware Warranty covering replaced components, micro-joints, and logic board circuits against defect.";
+      } else if (qLower.includes('shipping') || qLower.includes('bin') || qLower.includes('status') || qLower.includes('drop')) {
+        botReply = "You can track your device anytime by entering your ticket number above, scanning your drop-off receipt QR code, or tapping your NFC bin tag at our Spokane intake counter.";
+      } else if (qLower.includes('part') || qLower.includes('oem') || qLower.includes('genuine')) {
+        botReply = "We strictly source 100% OEM-grade parts, donor ICs, and high-tolerance passive components to ensure uncompromised device longevity and stability.";
+      }
+
+      setFaqMessages(prev => [...prev, {
+        sender: 'bot',
+        text: botReply,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+    }, 600);
+  };
 
   useEffect(() => {
     // Load local history if available
@@ -185,8 +226,42 @@ export default function RepairStatusTracker() {
         <p className="text-slate-500 text-sm font-medium leading-relaxed">
           Monitor your device's restoration lifecycle in real-time with direct feeds from D&CP Spokane Laboratory hardware sensors.
         </p>
+
+        {/* View Mode Switcher */}
+        <div className="flex items-center justify-center pt-2">
+          <div className="bg-slate-200/80 p-1 rounded-2xl flex items-center gap-1 shadow-inner">
+            <button
+              onClick={() => setViewMode('tracker')}
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                viewMode === 'tracker' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>Live Ticket Tracker</span>
+            </button>
+            <button
+              onClick={() => setViewMode('client_profile')}
+              className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                viewMode === 'client_profile' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <User className="w-3.5 h-3.5 text-blue-400" />
+              <span>Client Profile & Orders History</span>
+            </button>
+          </div>
+        </div>
       </div>
 
+      {viewMode === 'client_profile' ? (
+        <ClientProfileRepairOrders 
+          onSelectTicket={(tNum) => {
+            setTicketInput(tNum);
+            setViewMode('tracker');
+            fetchTicketStatus(tNum);
+          }} 
+        />
+      ) : (
+      <>
       {/* Ticket Lookup Controls */}
       <div className="max-w-2xl mx-auto space-y-4">
         <form onSubmit={handleSearchSubmit} className="relative flex items-center shadow-lg shadow-slate-200/50 rounded-2xl bg-white border-2 border-slate-100 p-2 focus-within:border-slate-900 transition-all gap-2">
@@ -421,8 +496,8 @@ export default function RepairStatusTracker() {
               <div className="flex items-center gap-3 bg-slate-800/50 p-4 rounded-2xl border border-slate-800">
                 <Calendar className="w-5 h-5 text-amber-400" />
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Estimated Completion</span>
-                  <span className="font-bold text-white">{ticketData.estimatedCompletionDate}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Estimated Completion (DB Field)</span>
+                  <span className="font-bold text-white">{ticketData.estimated_completion || ticketData.estimatedCompletionDate}</span>
                 </div>
               </div>
             </div>
@@ -439,7 +514,7 @@ export default function RepairStatusTracker() {
             initialActiveTechs={ticketData.workloadFactors?.activeTechnicians ?? 3}
             initialPartsInStock={ticketData.workloadFactors?.partsInStock ?? true}
             onUpdateTicketDate={(newWindowStr) => {
-              setTicketData(prev => prev ? ({ ...prev, estimatedCompletionDate: newWindowStr }) : null);
+              setTicketData(prev => prev ? ({ ...prev, estimatedCompletionDate: newWindowStr, estimated_completion: newWindowStr }) : null);
             }}
           />
 
@@ -643,6 +718,15 @@ export default function RepairStatusTracker() {
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bench Lead Work Notes</span>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => setIsDocOpen(true)}
+                    className="px-3.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
+                    title="Log diagnostic readings, thermal captures & microscope photos"
+                  >
+                    <Microscope className="w-3.5 h-3.5" />
+                    <span>Open Diagnostic Log</span>
+                  </button>
                 </div>
 
                 <p className="text-sm font-medium text-slate-600 bg-slate-50 p-5 rounded-2xl leading-relaxed italic border-l-4 border-slate-900">
@@ -652,8 +736,11 @@ export default function RepairStatusTracker() {
 
               <div className="pt-4 flex items-center justify-between text-xs">
                 <span className="text-slate-400 font-medium">WA RCW 19.415 Compliant Laboratory</span>
-                <button className="text-blue-600 font-bold hover:underline flex items-center gap-1">
-                  Contact Lab Direct <ArrowRight className="w-3.5 h-3.5" />
+                <button
+                  onClick={() => setIsDocOpen(true)}
+                  className="text-blue-600 font-bold hover:underline flex items-center gap-1"
+                >
+                  View Steps & Evidence Photos <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -680,6 +767,8 @@ export default function RepairStatusTracker() {
           />
         </motion.div>
       )}
+      </>
+      )}
 
       {/* Camera QR Code Scanner Modal */}
       <QRScannerModal
@@ -701,6 +790,145 @@ export default function RepairStatusTracker() {
           fetchTicketStatus(nfcTicket);
         }}
       />
+
+      {/* Technician Diagnostic Documentation Modal */}
+      <AnimatePresence>
+        {isDocOpen && ticketData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-5xl my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <RepairDocumentation
+                initialTicketNumber={ticketData.ticketNumber}
+                customerName={ticketData.customerName}
+                deviceModel={ticketData.deviceModel}
+                serviceTier={ticketData.serviceTier}
+                onClose={() => setIsDocOpen(false)}
+                onSyncNotesToTracker={(updatedNotes) => {
+                  setTicketData((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          technicianNotes: updatedNotes,
+                          lastUpdated: 'Just now (Diagnostic Log)',
+                        }
+                      : null
+                  );
+                }}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Context-Aware FAQ Chatbot Widget (Bottom-Right) */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <AnimatePresence>
+          {isFaqChatOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-80 sm:w-96 flex flex-col overflow-hidden mb-4 max-h-[520px]"
+            >
+              {/* Chat Header */}
+              <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs shadow-sm">
+                    💬
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-xs text-white">Lab FAQ & Knowledge Assistant</h5>
+                    <p className="text-[10px] text-slate-400">Context-aware expert help</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsFaqChatOpen(false)}
+                  className="text-slate-400 hover:text-white p-1 rounded-lg transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="p-4 overflow-y-auto flex-1 space-y-3 bg-slate-50 text-xs min-h-[260px] max-h-[320px]">
+                {faqMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] p-3 rounded-2xl leading-relaxed ${
+                        msg.sender === 'user'
+                          ? 'bg-blue-600 text-white rounded-br-xs'
+                          : 'bg-white text-slate-800 border border-slate-200 rounded-bl-xs shadow-xs'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                    <span className="text-[9px] text-slate-400 mt-1 px-1 font-mono">
+                      {msg.time}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quick FAQ Pills */}
+              <div className="p-2.5 bg-white border-t border-slate-100 flex gap-1.5 overflow-x-auto text-[10px] scrollbar-none">
+                {[
+                  'How long for repair?',
+                  '1-Year Warranty?',
+                  'Are parts OEM?',
+                  'Bin tracking?'
+                ].map((pill, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSendFaq(pill)}
+                    className="whitespace-nowrap px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 rounded-full font-medium border border-slate-200 transition-all"
+                  >
+                    {pill}
+                  </button>
+                ))}
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+                <input
+                  type="text"
+                  value={faqInput}
+                  onChange={(e) => setFaqInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendFaq()}
+                  placeholder="Ask a question about repairs..."
+                  className="flex-1 bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900"
+                />
+                <button
+                  onClick={() => handleSendFaq()}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-xs"
+                >
+                  Send
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Toggle Floating Button */}
+        <button
+          onClick={() => setIsFaqChatOpen(!isFaqChatOpen)}
+          className="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-2xl flex items-center gap-2.5 font-bold text-xs transition-all hover:scale-105 active:scale-95 group border-2 border-white/20"
+          title="Open Lab FAQ Assistant"
+        >
+          <div className="relative">
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-blue-600 animate-pulse" />
+            💬
+          </div>
+          <span className="hidden sm:inline pr-1">Lab Help & FAQ</span>
+        </button>
+      </div>
     </div>
   );
 }

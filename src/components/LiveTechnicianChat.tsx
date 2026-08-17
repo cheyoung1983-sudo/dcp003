@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useToast } from './Toast';
+import ryanYoungAvatar from '../assets/images/regenerated_image_1786855284519.jpg';
+import { useToast } from './Toast.tsx';
 import { 
   Send, 
   User, 
@@ -40,11 +41,11 @@ export default function LiveTechnicianChat() {
     {
       id: 'init-1',
       sender: 'technician',
-      text: "Welcome to D&CP Spokane Lab Live Support. I'm David Chen, Lead Systems Engineer. How can our engineering team assist you today?",
+      text: "Welcome to D&CP Spokane Lab Live Support. I'm Ryan Young, Founder & Lead Systems Engineer. How can our engineering team assist you today?",
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      technicianName: "David Chen",
-      technicianTitle: "Lead Systems Engineer",
-      technicianAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
+      technicianName: "Ryan Young",
+      technicianTitle: "Founder & Lead Systems Engineer",
+      technicianAvatar: ryanYoungAvatar
     }
   ]);
 
@@ -129,9 +130,9 @@ export default function LiveTechnicianChat() {
           sender: 'technician',
           text: data.reply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          technicianName: data.technician?.name || "David Chen",
-          technicianTitle: data.technician?.title || "Lead Systems Engineer",
-          technicianAvatar: data.technician?.avatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
+          technicianName: data.technician?.name || "Ryan Young",
+          technicianTitle: data.technician?.title || "Founder & Lead Systems Engineer",
+          technicianAvatar: data.technician?.avatar || ryanYoungAvatar
         };
         setMessages(prev => [...prev, techMsg]);
       } else {
@@ -150,9 +151,9 @@ export default function LiveTechnicianChat() {
         sender: 'technician',
         text: "Chat cleared. D&CP Spokane Lab bench technicians are ready for your next question.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        technicianName: "David Chen",
-        technicianTitle: "Lead Systems Engineer",
-        technicianAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
+        technicianName: "Ryan Young",
+        technicianTitle: "Founder & Lead Systems Engineer",
+        technicianAvatar: ryanYoungAvatar
       }
     ]);
     showToast('Chat session reset.', 'info');
@@ -165,8 +166,8 @@ export default function LiveTechnicianChat() {
         <div className="flex items-center gap-4">
           <div className="relative">
             <img 
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200" 
-              alt="David Chen"
+              src={ryanYoungAvatar} 
+              alt="Ryan Young"
               className="w-12 h-12 rounded-2xl object-cover border-2 border-emerald-500/50"
               referrerPolicy="no-referrer"
               onError={(e) => {
@@ -187,7 +188,7 @@ export default function LiveTechnicianChat() {
                 Live
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-medium">David Chen & Sarah Martinez on Duty</p>
+            <p className="text-xs text-slate-400 font-medium">Ryan Young & Sarah Martinez on Duty</p>
           </div>
         </div>
 
@@ -267,7 +268,7 @@ export default function LiveTechnicianChat() {
           >
             {msg.sender === 'technician' && (
               <img 
-                src={msg.technicianAvatar || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"} 
+                src={msg.technicianAvatar || ryanYoungAvatar} 
                 alt={msg.technicianName || "Technician"} 
                 className="w-9 h-9 rounded-xl object-cover border border-slate-200 shrink-0 mt-1 shadow-sm"
                 referrerPolicy="no-referrer"
@@ -280,7 +281,7 @@ export default function LiveTechnicianChat() {
             <div className={`max-w-[80%] md:max-w-[70%] space-y-1 ${msg.sender === 'user' ? 'items-end text-right' : ''}`}>
               {msg.sender === 'technician' && (
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-bold text-slate-900">{msg.technicianName || 'David Chen'}</span>
+                  <span className="text-xs font-bold text-slate-900">{msg.technicianName || 'Ryan Young'}</span>
                   <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
                     {msg.technicianTitle || 'Lead Tech'}
                   </span>
@@ -313,7 +314,7 @@ export default function LiveTechnicianChat() {
               <Bot className="w-5 h-5 text-slate-600 animate-pulse" />
             </div>
             <div className="p-4 bg-white border border-slate-200/80 rounded-2xl rounded-tl-none flex items-center gap-2 shadow-sm">
-              <span className="text-xs text-slate-500 font-medium">David Chen is reviewing telemetry...</span>
+              <span className="text-xs text-slate-500 font-medium">Ryan Young is reviewing telemetry...</span>
               <div className="flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                 <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce [animation-delay:-0.15s]"></span>

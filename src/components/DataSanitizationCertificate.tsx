@@ -14,7 +14,7 @@ import {
   Award,
   Sparkles
 } from 'lucide-react';
-import { useToast } from './Toast';
+import { useToast } from './Toast.tsx';
 
 export interface SanitizationCertificate {
   auditId: string;
