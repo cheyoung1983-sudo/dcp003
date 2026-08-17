@@ -26,9 +26,12 @@ export default function RootLayout({
                 <span className="text-xs bg-blue-100 text-blue-800 font-medium px-2.5 py-0.5 rounded-full hidden sm:inline-block">Spokane, WA On-Site Repair</span>
               </div>
               <nav className="flex items-center space-x-6 text-sm font-medium text-slate-600">
+                <a href="/" className="hover:text-blue-600 transition-colors">Home</a>
+                <a href="/store" className="hover:text-blue-600 transition-colors">Store</a>
+                <a href="/cart" className="hover:text-blue-600 transition-colors">Cart</a>
+                <a href="/comments" className="hover:text-blue-600 transition-colors">Bench Logs</a>
                 <a href="#services" className="hover:text-blue-600 transition-colors">Services</a>
                 <a href="#quote" className="hover:text-blue-600 transition-colors">Instant Quote</a>
-                <a href="#verify" className="hover:text-blue-600 transition-colors">Secure Verification</a>
               </nav>
             </div>
           </header>
