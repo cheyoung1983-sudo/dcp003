@@ -274,8 +274,10 @@ const auth0FlowsData: Auth0Flow[] = [
     ],
     documentationUrls: [
       { title: 'Custom Token Exchange Overview', url: 'https://auth0.com/docs/authenticate/custom-token-exchange' },
-      { title: 'Configure Custom Token Exchange', url: 'https://auth0.com/docs/authenticate/custom-token-exchange/configure-custom-token-exchange' },
-      { title: 'CTE Example Use Cases', url: 'https://auth0.com/docs/authenticate/custom-token-exchange/cte-example-use-cases' }
+      { title: 'Configure Custom Token Exchange Profile', url: 'https://auth0.com/docs/authenticate/custom-token-exchange/configure-custom-token-exchange' },
+      { title: 'CTE Example Use Cases & Code Samples', url: 'https://auth0.com/docs/authenticate/custom-token-exchange/cte-example-use-cases' },
+      { title: 'MFA with Custom Token Exchange', url: 'https://auth0.com/docs/authenticate/custom-token-exchange/mfa-with-cte' },
+      { title: 'Attack Protection & Suspicious IP Throttling', url: 'https://auth0.com/docs/authenticate/custom-token-exchange/attack-protection-with-cte' }
     ]
   },
   {

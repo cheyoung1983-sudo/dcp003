@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ryanYoungAvatar from '../assets/images/regenerated_image_1786855284519.jpg';
 import { useToast } from './Toast.tsx';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 import { 
   Send, 
   User, 
@@ -165,16 +166,17 @@ export default function LiveTechnicianChat() {
       <div className="bg-slate-900 text-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 shrink-0">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img 
-              src={ryanYoungAvatar} 
-              alt="Ryan Young"
-              className="w-12 h-12 rounded-2xl object-cover border-2 border-emerald-500/50"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%3C%231e293b'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%3C%2310b981'/%3E%3Cpath d='M20 85 C20 62, 35 55, 50 55 C65 55, 80 62, 80 85 Z' fill='%3C%2310b981'/%3E%3C/svg%3E";
-              }}
-            />
-            <span className="absolute -bottom-1 -right-1 flex h-4 w-4">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-emerald-500/50 relative shrink-0">
+              <NextOptimizedImage 
+                src={ryanYoungAvatar} 
+                alt="Ryan Young"
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%2310b981'/%3E%3Cpath d='M20 85 C20 62, 35 55, 50 55 C65 55, 80 62, 80 85 Z' fill='%2310b981'/%3E%3C/svg%3E"
+              />
+            </div>
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 z-10">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-slate-900"></span>
             </span>
@@ -267,15 +269,16 @@ export default function LiveTechnicianChat() {
             className={`flex items-start gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}
           >
             {msg.sender === 'technician' && (
-              <img 
-                src={msg.technicianAvatar || ryanYoungAvatar} 
-                alt={msg.technicianName || "Technician"} 
-                className="w-9 h-9 rounded-xl object-cover border border-slate-200 shrink-0 mt-1 shadow-sm"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%3C%231e293b'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%3C%2338bdf8'/%3E%3Cpath d='M20 85 C20 62, 35 55, 50 55 C65 55, 80 62, 80 85 Z' fill='%3C%2338bdf8'/%3E%3C/svg%3E";
-                }}
-              />
+              <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-200 shrink-0 mt-1 shadow-sm relative">
+                <NextOptimizedImage 
+                  src={msg.technicianAvatar || ryanYoungAvatar} 
+                  alt={msg.technicianName || "Technician"} 
+                  width={36}
+                  height={36}
+                  className="w-full h-full object-cover"
+                  fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%2338bdf8'/%3E%3Cpath d='M20 85 C20 62, 35 55, 50 55 C65 55, 80 62, 80 85 Z' fill='%2338bdf8'/%3E%3C/svg%3E"
+                />
+              </div>
             )}
 
             <div className={`max-w-[80%] md:max-w-[70%] space-y-1 ${msg.sender === 'user' ? 'items-end text-right' : ''}`}>

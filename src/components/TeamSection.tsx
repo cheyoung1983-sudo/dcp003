@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Mail, Linkedin, MapPin, Award, ChevronRight, X, ShieldCheck, Wrench, Cpu } from 'lucide-react';
 import { TEAM_MEMBERS } from '../data/companyData';
 import { TeamMember } from '../types';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface TeamSectionProps {
   onOpenContact: () => void;
@@ -36,9 +37,11 @@ export const TeamSection: React.FC<TeamSectionProps> = ({ onOpenContact }) => {
             >
               {/* Photo */}
               <div className="relative h-72 w-full overflow-hidden bg-slate-900">
-                <img
+                <NextOptimizedImage
                   src={member.photo}
                   alt={member.name}
+                  width={500}
+                  height={500}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
@@ -122,9 +125,11 @@ export const TeamSection: React.FC<TeamSectionProps> = ({ onOpenContact }) => {
             </button>
 
             <div className="flex items-center gap-4">
-              <img
+              <NextOptimizedImage
                 src={selectedMember.photo}
                 alt={selectedMember.name}
+                width={80}
+                height={80}
                 className="w-16 h-16 rounded-xl object-cover object-top border border-slate-700"
               />
               <div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Briefcase, CheckCircle2 } from 'lucide-react';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface B2BViewProps {
   onBookClick: () => void;
@@ -51,13 +52,15 @@ export function B2BView({ onBookClick }: B2BViewProps) {
             </button>
           </div>
 
-          <div className="relative min-h-[300px] lg:min-h-full hidden lg:block">
-            <img
+          <div className="relative min-h-[300px] lg:min-h-full hidden lg:block overflow-hidden">
+            <NextOptimizedImage
               src="https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=800&q=80"
               alt="Corporate IT"
-              className="absolute inset-0 w-full h-full object-cover opacity-60"
+              fill={true}
+              className="w-full h-full object-cover opacity-60"
+              fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%231e293b'/%3E%3C/svg%3E"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-transparent to-transparent z-10"></div>
           </div>
         </div>
       </div>

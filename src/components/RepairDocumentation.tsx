@@ -36,6 +36,7 @@ import {
   Copy
 } from 'lucide-react';
 import { useToast } from './Toast.tsx';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 export type DiagnosticStepStatus = 'pass' | 'fault' | 'remediated' | 'in_progress';
 
@@ -1311,11 +1312,16 @@ export default function RepairDocumentation({
                   {/* Image Preview if available */}
                   {capturedPreview && (
                     <div className="flex items-center gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                      <img
-                        src={capturedPreview}
-                        alt="Preview"
-                        className="w-16 h-16 object-cover rounded-lg border border-slate-700"
-                      />
+                      <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-700 relative shrink-0">
+                        <NextOptimizedImage
+                          src={capturedPreview}
+                          alt="Preview"
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                          fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231e293b'/%3E%3C/svg%3E"
+                        />
+                      </div>
                       <div className="text-xs">
                         <span className="font-bold text-emerald-400 block">Captured Image Ready</span>
                         <span className="text-[11px] text-slate-400">Ready to link to Ticket #{ticketNumber}</span>
@@ -1357,25 +1363,26 @@ export default function RepairDocumentation({
                   className="relative aspect-video bg-slate-950 overflow-hidden cursor-pointer"
                   onClick={() => setLightboxPhoto(photo)}
                 >
-                  <img
+                  <NextOptimizedImage
                     src={photo.url}
                     alt={photo.caption}
-                    referrerPolicy="no-referrer"
+                    fill={true}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                   />
-                  <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                     <span className="px-3 py-1 bg-slate-900/90 text-white text-xs font-bold rounded-lg border border-slate-700 flex items-center gap-1.5">
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Full Resolution</span>
                     </span>
                   </div>
 
-                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-slate-900/90 text-emerald-400 text-[10px] font-bold rounded uppercase border border-slate-700 backdrop-blur-sm">
+                  <span className="absolute top-2 left-2 px-2 py-0.5 bg-slate-900/90 text-emerald-400 text-[10px] font-bold rounded uppercase border border-slate-700 backdrop-blur-sm z-10">
                     {photo.category}
                   </span>
 
                   {photo.linkedStepNumber && (
-                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-blue-900/90 text-blue-300 text-[10px] font-mono font-bold rounded border border-blue-700 backdrop-blur-sm">
+                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-blue-900/90 text-blue-300 text-[10px] font-mono font-bold rounded border border-blue-700 backdrop-blur-sm z-10">
                       Step #{photo.linkedStepNumber}
                     </span>
                   )}
@@ -1385,7 +1392,7 @@ export default function RepairDocumentation({
                       e.stopPropagation();
                       handleDeletePhoto(photo.id);
                     }}
-                    className="absolute top-2 right-2 p-1.5 bg-slate-950/80 hover:bg-red-600 text-slate-300 hover:text-white rounded-lg transition-all"
+                    className="absolute top-2 right-2 p-1.5 bg-slate-950/80 hover:bg-red-600 text-slate-300 hover:text-white rounded-lg transition-all z-10"
                     title="Delete Photo"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -1451,12 +1458,14 @@ export default function RepairDocumentation({
                 </button>
               </div>
 
-              <div className="aspect-video bg-black rounded-2xl overflow-hidden">
-                <img
+              <div className="aspect-video bg-black rounded-2xl overflow-hidden relative flex items-center justify-center p-2">
+                <NextOptimizedImage
                   src={lightboxPhoto.url}
                   alt={lightboxPhoto.caption}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-contain"
+                  width={800}
+                  height={450}
+                  className="max-h-full max-w-full object-contain"
+                  fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect width='600' height='400' fill='%230f172a'/%3E%3Ctext x='300' y='200' fill='%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='14'%3EPhoto Unavailable%3C/text%3E%3C/svg%3E"
                 />
               </div>
 

@@ -48,6 +48,7 @@ import {
 import { useSafeAuth0 } from './Auth0ProviderWithConfig.tsx';
 import { useToast } from './Toast.tsx';
 import { useDatabase } from '../lib/db.ts';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 import { calculateDynamicCompletionDate } from '../utils/completionCalculator.ts';
 
 export interface RepairOrderCost {
@@ -402,12 +403,16 @@ export default function ClientProfileRepairOrders({
           {/* Client Details */}
           <div className="flex items-start sm:items-center gap-5">
             {user?.picture ? (
-              <img 
-                src={user.picture} 
-                alt={resolvedName} 
-                referrerPolicy="no-referrer"
-                className="w-20 h-20 rounded-3xl object-cover border-2 border-blue-500/40 shadow-xl shrink-0"
-              />
+              <div className="w-20 h-20 rounded-3xl overflow-hidden border-2 border-blue-500/40 shadow-xl shrink-0 relative">
+                <NextOptimizedImage 
+                  src={user.picture} 
+                  alt={resolvedName} 
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                  fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232563eb'/%3E%3Cpath d='M50 45c7.5 0 13.64-6.14 13.64-13.64S57.5 17.72 50 17.72s-13.64 6.14-13.64S42.5 45 50 45zm0 6.82c-9.09 0-27.28 4.56-27.28 13.64v3.41c0 1.88 1.53 3.41 3.41 3.41h47.74c1.88 0 3.41-1.53 3.41-3.41v-3.41c0-9.08-18.19-13.64-27.28-13.64z' fill='%23fff'/%3E%3C/svg%3E"
+                />
+              </div>
             ) : (
               <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-3xl font-black shadow-xl shrink-0">
                 {resolvedName[0]?.toUpperCase() || 'C'}
@@ -843,13 +848,14 @@ export default function ClientProfileRepairOrders({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                     <div className="flex items-center gap-3">
                       <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-slate-200 shadow-xs shrink-0 bg-slate-100">
-                        <img 
+                        <NextOptimizedImage 
                           src={getDeviceThumbnail(order.deviceModel)} 
                           alt={order.deviceModel}
+                          fill={true}
                           className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
+                          fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e2e8f0'/%3E%3C/svg%3E"
                         />
-                        <div className="absolute inset-0 bg-slate-900/10 pointer-events-none" />
+                        <div className="absolute inset-0 bg-slate-900/10 pointer-events-none z-10" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">

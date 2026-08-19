@@ -31,6 +31,7 @@ import {
   Github,
   RefreshCw
 } from 'lucide-react';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 export interface TutorialScene {
   stepNumber: number;
@@ -972,22 +973,20 @@ Need Professional Micro-soldering? Visit https://dcp-llc.com
                     : 'border-slate-100 hover:border-slate-300 shadow-sm'
                 }`}
               >
-                <div className="relative aspect-video overflow-hidden group">
-                  <img 
+                <div className="relative aspect-video overflow-hidden group bg-slate-900">
+                  <NextOptimizedImage 
                     src={tut.thumbnailUrl} 
                     alt={tut.title}
+                    fill={true}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='350' viewBox='0 0 600 350'%3E%3Crect width='600' height='350' fill='%3C%230f172a'/%3E%3Crect x='200' y='100' width='200' height='150' rx='16' fill='%3C%231e293b' stroke='%3C%232563eb' stroke-width='4'/%3E%3Cpolygon points='280,145 340,175 280,205' fill='%3C%2338bdf8'/%3E%3Ctext x='300' y='290' text-anchor='middle' fill='%3C%2394a3b8' font-family='sans-serif' font-size='14' font-weight='bold'%3ERepair Tutorial Video%3C/text%3E%3C/svg%3E";
-                    }}
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='350' viewBox='0 0 600 350'%3E%3Crect width='600' height='350' fill='%230f172a'/%3E%3Crect x='200' y='100' width='200' height='150' rx='16' fill='%231e293b' stroke='%232563eb' stroke-width='4'/%3E%3Cpolygon points='280,145 340,175 280,205' fill='%2338bdf8'/%3E%3Ctext x='300' y='290' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='14' font-weight='bold'%3ERepair Tutorial Video%3C/text%3E%3C/svg%3E"
                   />
-                  <div className="absolute inset-0 bg-slate-950/40 group-hover:bg-slate-950/20 transition-all flex items-center justify-center">
+                  <div className="absolute inset-0 bg-slate-950/40 group-hover:bg-slate-950/20 transition-all flex items-center justify-center z-10">
                     <div className="w-12 h-12 rounded-2xl bg-white/90 text-slate-900 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                       <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
                   </div>
-                  <span className="absolute top-3 right-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-md text-white rounded-lg text-[9px] font-black uppercase tracking-wider">
+                  <span className="absolute top-3 right-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-md text-white rounded-lg text-[9px] font-black uppercase tracking-wider z-10">
                     {tut.estimatedTime}
                   </span>
                 </div>

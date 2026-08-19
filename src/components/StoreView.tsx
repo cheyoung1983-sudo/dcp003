@@ -8,6 +8,7 @@ import { shopifyFetch } from "@/lib/shopify";
 import { PRODUCTS_QUERY } from "@/lib/shopify-queries";
 import type { Product } from "@/lib/shopify-types";
 import AddToCartButton from "@/components/AddToCartButton";
+import NextOptimizedImage from "./NextOptimizedImage.tsx";
 
 export function StoreView() {
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
@@ -78,17 +79,19 @@ export function StoreView() {
                   className="h-52 overflow-hidden relative bg-slate-950 block"
                 >
                   {product.featuredImage ? (
-                    <img
+                    <NextOptimizedImage
                       src={product.featuredImage.url}
                       alt={product.featuredImage.altText || product.title}
+                      fill={true}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-700">
                       <ShoppingBag size={48} />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded text-emerald-400 border border-slate-700">
+                  <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded text-emerald-400 border border-slate-700 z-10">
                     {product.availableForSale ? "In Stock" : "Sold Out"}
                   </div>
                 </Link>
@@ -138,12 +141,14 @@ export function StoreView() {
                 className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden group flex flex-col"
               >
                 <div className="h-48 overflow-hidden relative">
-                  <img
+                  <NextOptimizedImage
                     src={product.img}
                     alt={product.name}
+                    fill={true}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                   />
-                  <div className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur text-xs font-bold px-2 py-1 rounded text-slate-300 border border-slate-700">
+                  <div className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur text-xs font-bold px-2 py-1 rounded text-slate-300 border border-slate-700 z-10">
                     {product.category}
                   </div>
                 </div>

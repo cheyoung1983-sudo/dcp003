@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { CapturedPhoto } from '../types.ts';
 import { useToast } from './Toast.tsx';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface DevicePhotoCaptureInputProps {
   photos: CapturedPhoto[];
@@ -332,17 +333,14 @@ export default function DevicePhotoCaptureInput({
                 className="group relative bg-white border border-slate-200 rounded-xl p-1.5 shadow-sm hover:border-blue-400 transition-all flex flex-col"
               >
                 <div className="relative aspect-square rounded-lg overflow-hidden bg-slate-100 mb-1.5">
-                  <img
+                  <NextOptimizedImage
                     src={photo.dataUrl}
                     alt={`Attached device photo - ${photo.category}`}
+                    fill={true}
                     className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%3C%231e293b'/%3E%3Ctext x='75' y='75' fill='%3C%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='10'%3EPhoto%3C/text%3E%3C/svg%3E";
-                    }}
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Crect width='150' height='150' fill='%231e293b'/%3E%3Ctext x='75' y='75' fill='%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='10'%3EPhoto%3C/text%3E%3C/svg%3E"
                   />
-                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 z-10">
                     <button
                       type="button"
                       onClick={() => setActivePreview(photo)}
@@ -403,12 +401,14 @@ export default function DevicePhotoCaptureInput({
                 </button>
               </div>
 
-              <div className="rounded-xl overflow-hidden bg-slate-950 max-h-[60vh] flex items-center justify-center">
-                <img
+              <div className="rounded-xl overflow-hidden bg-slate-950 max-h-[60vh] flex items-center justify-center p-2">
+                <NextOptimizedImage
                   src={activePreview.dataUrl}
                   alt={activePreview.category}
+                  width={500}
+                  height={400}
                   className="max-h-[60vh] w-auto object-contain"
-                  referrerPolicy="no-referrer"
+                  fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                 />
               </div>
 

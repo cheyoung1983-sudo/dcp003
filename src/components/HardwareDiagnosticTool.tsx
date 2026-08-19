@@ -24,7 +24,10 @@ import {
   Minimize2,
   Layers,
   ArrowRight,
-  HardDrive
+  HardDrive,
+  Server,
+  Wrench,
+  Clock
 } from 'lucide-react';
 import { useToast } from './Toast.tsx';
 
@@ -37,6 +40,21 @@ export interface DiagnosticLogEntry {
   code?: string;
   description?: string;
   severity?: 'normal' | 'warn' | 'critical';
+}
+
+export interface ServerDiagnosticAnalysis {
+  deviceModel: string;
+  highestSeverity: 'normal' | 'warn' | 'critical';
+  issuesCount: number;
+  detectedIssues: Array<{
+    code?: string;
+    severity: 'normal' | 'warn' | 'critical';
+    description: string;
+    remedy: string;
+    component: string;
+  }>;
+  estimatedBenchTimeMinutes: number;
+  labRecommendation: string;
 }
 
 export interface HardwareDiagnosticToolProps {
@@ -79,6 +97,11 @@ export default function HardwareDiagnosticTool({
   const [filterType, setFilterType] = useState<'all' | 'rx' | 'tx' | 'errors'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  // Server-aware diagnostic state
+  const [isServerAnalyzing, setIsServerAnalyzing] = useState<boolean>(false);
+  const [serverAnalysis, setServerAnalysis] = useState<ServerDiagnosticAnalysis | null>(null);
+  const [lastServerTriageTime, setLastServerTriageTime] = useState<string>('');
+
   const [logs, setLogs] = useState<DiagnosticLogEntry[]>([
     {
       id: 'init-1',
@@ -112,6 +135,39 @@ export default function HardwareDiagnosticTool({
   const serialReaderRef = useRef<any>(null);
   const serialWriterRef = useRef<any>(null);
   const logsEndRef = useRef<HTMLDivElement>(null);
+
+  // Server analysis dispatch function
+  const runServerDiagnostics = async () => {
+    setIsServerAnalyzing(true);
+    try {
+      const response = await fetch('/api/hardware-diagnostic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          deviceModel: deviceInfo?.name || 'Laboratory Hardware Device',
+          logEntries: logs,
+          isShortToGround: logs.some(l => l.code === 'ERR_0x3F' || l.data.includes('SHORT')),
+          vbusVoltage: logs.some(l => l.data.includes('VBUS=')) ? 9.02 : undefined,
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.analysis) {
+          setServerAnalysis(data.analysis);
+          setLastServerTriageTime(new Date().toLocaleTimeString());
+          showToast(`Server Triage Complete: ${data.analysis.highestSeverity.toUpperCase()} status analyzed.`, 'success');
+        }
+      } else {
+        showToast('Server diagnostics unreachable. Using local pattern matcher.', 'info');
+      }
+    } catch (err) {
+      console.warn('Server diagnostic error:', err);
+      showToast('Offline mode: Using local telemetry engine.', 'info');
+    } finally {
+      setIsServerAnalyzing(false);
+    }
+  };
 
   // Check browser capabilities on mount
   useEffect(() => {
@@ -409,8 +465,18 @@ export default function HardwareDiagnosticTool({
           </div>
         </div>
 
-        {/* Action Connect Buttons */}
+        {/* Action Connect & Server Triage Buttons */}
         <div className="flex items-center flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={runServerDiagnostics}
+            disabled={isServerAnalyzing}
+            className="px-3.5 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer disabled:opacity-50"
+          >
+            <Server className={`w-3.5 h-3.5 ${isServerAnalyzing ? 'animate-spin text-emerald-400' : 'text-emerald-400'}`} />
+            <span>{isServerAnalyzing ? 'Analyzing on Server...' : 'Server Triage Sync'}</span>
+          </button>
+
           {!isConnected ? (
             <>
               <button
@@ -657,6 +723,60 @@ export default function HardwareDiagnosticTool({
           ))}
         </div>
       </div>
+
+      {/* Server Telemetry Triage Results Card */}
+      {serverAnalysis && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3"
+        >
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+            <div className="flex items-center gap-2">
+              <Server className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-bold text-white">Server Laboratory Triage Report</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                serverAnalysis.highestSeverity === 'critical'
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                  : serverAnalysis.highestSeverity === 'warn'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+              }`}>
+                {serverAnalysis.highestSeverity} Status
+              </span>
+            </div>
+            {lastServerTriageTime && (
+              <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Synced at {lastServerTriageTime}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Laboratory Recommendation</span>
+              <p className="text-slate-300 leading-relaxed bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                {serverAnalysis.labRecommendation}
+              </p>
+            </div>
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bench Time & Target Components</span>
+              <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                <div className="flex justify-between text-slate-300">
+                  <span className="text-slate-400">Est. Bench Time:</span>
+                  <span className="font-mono font-bold text-amber-300">{serverAnalysis.estimatedBenchTimeMinutes} mins</span>
+                </div>
+                {serverAnalysis.detectedIssues[0] && (
+                  <div className="flex justify-between text-slate-300">
+                    <span className="text-slate-400">Target Part:</span>
+                    <span className="font-medium text-blue-300 truncate max-w-[180px]">{serverAnalysis.detectedIssues[0].component}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

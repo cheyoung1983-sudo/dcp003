@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Quote, Sparkles, ShieldCheck, Terminal, Award, CheckCircle2, ArrowRight } from 'lucide-react';
 import ryanYoungImage from '../assets/images/regenerated_image_1786855284519.jpg';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface FounderMessageProps {
   onLearnMoreProtocol?: () => void;
@@ -24,14 +25,14 @@ export default function FounderMessage({ onLearnMoreProtocol, className = '' }: 
               className="founder-img-wrapper relative w-56 sm:w-64 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-slate-800"
               style={{ aspectRatio: '4/5' }}
             >
-              <img 
+              <NextOptimizedImage 
                 src={ryanYoungImage} 
                 alt="Ryan Young - Founder & Lead Systems Engineer"
+                width={500}
+                height={625}
+                priority={true}
                 className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600";
-                }}
+                fallbackSrc="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
               <div className="absolute bottom-3 left-3 right-3 text-left">

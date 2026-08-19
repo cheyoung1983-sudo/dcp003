@@ -11,6 +11,7 @@ import {
 import { CASE_STUDIES } from '../data/companyData';
 import { CaseStudy, CaseStudyCategory } from '../types';
 import { useScrollReveal } from '../hooks/useScrollReveal';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface PortfolioSectionProps {
   onOpenContact: () => void;
@@ -83,15 +84,17 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({ onOpenContac
             >
               {/* Image Header with Overlay */}
               <div className="relative h-60 w-full overflow-hidden bg-slate-950">
-                <img
+                <NextOptimizedImage
                   src={cs.image}
                   alt={cs.title}
+                  fill={true}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                  fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect width='600' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent z-10" />
                 
                 {/* Year & Industry Badge */}
-                <div className="absolute top-4 left-4 flex items-center gap-2">
+                <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
                   <span className="px-2.5 py-1 rounded-md bg-slate-950/80 backdrop-blur-md text-[11px] font-mono font-semibold text-cyan-400 border border-slate-800">
                     {cs.industry}
                   </span>
@@ -156,11 +159,13 @@ export const PortfolioSection: React.FC<PortfolioSectionProps> = ({ onOpenContac
             </div>
 
             {/* Banner Image */}
-            <div className="h-48 w-full rounded-xl overflow-hidden">
-              <img
+            <div className="h-48 w-full rounded-xl overflow-hidden relative">
+              <NextOptimizedImage
                 src={selectedCaseStudy.image}
                 alt={selectedCaseStudy.title}
+                fill={true}
                 className="w-full h-full object-cover"
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect width='600' height='300' fill='%230f172a'/%3E%3C/svg%3E"
               />
             </div>
 

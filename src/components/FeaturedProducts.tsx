@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, ChevronRight, Star, Search, Filter } from 'lucide-react';
 import { cn } from '../lib/utils.ts';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 const PRODUCTS = [
   {
@@ -116,14 +117,13 @@ export default function FeaturedProducts() {
                 className="group cursor-pointer"
               >
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] mb-6 bg-slate-100 shadow-sm group-hover:shadow-xl group-hover:shadow-slate-200/50 transition-all">
-                  <img 
+                  <NextOptimizedImage 
                     src={product.image} 
                     alt={product.name}
+                    width={400}
+                    height={500}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'%3E%3Crect width='400' height='500' fill='%3C%230f172a'/%3E%3Crect x='100' y='120' width='200' height='260' rx='20' fill='%3C%231e293b' stroke='%3C%23334155' stroke-width='4'/%3E%3Ccircle cx='200' cy='150' r='8' fill='%3C%2338bdf8'/%3E%3Crect x='140' y='180' width='120' height='140' rx='8' fill='%3C%230284c7' opacity='0.3'/%3E%3Ctext x='200' y='420' text-anchor='middle' fill='%3C%2394a3b8' font-family='sans-serif' font-size='14' font-weight='bold'%3EPrecision Hardware Unit%3C/text%3E%3C/svg%3E";
-                    }}
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500'%3E%3Crect width='400' height='500' fill='%3C%230f172a'/%3E%3Crect x='100' y='120' width='200' height='260' rx='20' fill='%3C%231e293b' stroke='%3C%23334155' stroke-width='4'/%3E%3Ccircle cx='200' cy='150' r='8' fill='%3C%2338bdf8'/%3E%3Crect x='140' y='180' width='120' height='140' rx='8' fill='%3C%230284c7' opacity='0.3'/%3E%3Ctext x='200' y='420' text-anchor='middle' fill='%3C%2394a3b8' font-family='sans-serif' font-size='14' font-weight='bold'%3EPrecision Hardware Unit%3C/text%3E%3C/svg%3E"
                   />
                   <div className="absolute top-4 left-4">
                     <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-slate-900 shadow-sm">

@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { PenTool, RotateCcw, CheckCircle, FileCheck, Shield, Download, Trash2, Lock, UserCheck } from 'lucide-react';
 import { QuoteResponse } from '@/lib/types';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface SignatureCanvasProps {
   customerName: string;
@@ -313,7 +314,13 @@ export const SignatureCanvas: React.FC<SignatureCanvasProps> = ({
           </div>
 
           <div className="bg-white rounded-lg p-3 flex flex-col items-center justify-center border border-emerald-800/40 shadow-inner">
-            <img src={signedDataUrl} alt="Customer Signature" className="max-h-36 object-contain" />
+            <NextOptimizedImage 
+              src={signedDataUrl} 
+              alt="Customer Signature" 
+              width={300}
+              height={144}
+              className="max-h-36 object-contain" 
+            />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-1">

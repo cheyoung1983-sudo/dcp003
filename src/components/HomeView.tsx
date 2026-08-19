@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronRight, Cpu, MapPin, ShieldCheck } from 'lucide-react';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface HomeViewProps {
   onBookClick: () => void;
@@ -13,10 +14,13 @@ export function HomeView({ onBookClick, onLabClick }: HomeViewProps) {
       <div className="relative overflow-hidden bg-slate-900 border-b border-slate-850">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/90 to-transparent z-10"></div>
-          <img
+          <NextOptimizedImage
             src="https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?auto=format&fit=crop&w=1920&q=80"
             alt="Mobile Repair Tech"
+            fill={true}
+            priority={true}
             className="w-full h-full object-cover opacity-25"
+            fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400' viewBox='0 0 800 400'%3E%3Crect width='800' height='400' fill='%230f172a'/%3E%3C/svg%3E"
           />
         </div>
 

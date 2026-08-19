@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, Clock, ArrowRight, X, BookOpen, Share2 } from 'lucide-react';
 import { INSIGHTS_DATA } from '../data/companyData';
 import { InsightPost, InsightCategory } from '../types';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface InsightsSectionProps {
   onOpenContact: () => void;
@@ -88,12 +89,14 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onOpenContact 
               <div className="space-y-4">
                 {/* Image */}
                 <div className="h-48 w-full overflow-hidden relative">
-                  <img
+                  <NextOptimizedImage
                     src={article.image}
                     alt={article.title}
+                    fill={true}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'%3E%3Crect width='400' height='200' fill='%231e293b'/%3E%3C/svg%3E"
                   />
-                  <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded text-[10px] font-mono text-cyan-400 border border-slate-800 uppercase">
+                  <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded text-[10px] font-mono text-cyan-400 border border-slate-800 uppercase z-10">
                     {article.category.replace('-', ' ')}
                   </div>
                 </div>
@@ -116,11 +119,16 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onOpenContact 
               {/* Author & Read Action */}
               <div className="p-5 mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <img
-                    src={article.author.avatar}
-                    alt={article.author.name}
-                    className="w-7 h-7 rounded-full object-cover"
-                  />
+                  <div className="w-7 h-7 rounded-full overflow-hidden relative shrink-0">
+                    <NextOptimizedImage
+                      src={article.author.avatar}
+                      alt={article.author.name}
+                      width={28}
+                      height={28}
+                      className="w-full h-full rounded-full object-cover"
+                      fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%230891b2'/%3E%3C/svg%3E"
+                    />
+                  </div>
                   <div className="text-[11px]">
                     <div className="font-semibold text-slate-200">{article.author.name}</div>
                     <div className="text-[9px] text-slate-400">{article.author.role}</div>
@@ -160,11 +168,16 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onOpenContact 
               </h3>
 
               <div className="flex items-center gap-3 pt-2">
-                <img
-                  src={selectedArticle.author.avatar}
-                  alt={selectedArticle.author.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
+                <div className="w-10 h-10 rounded-full overflow-hidden relative shrink-0">
+                  <NextOptimizedImage
+                    src={selectedArticle.author.avatar}
+                    alt={selectedArticle.author.name}
+                    width={40}
+                    height={40}
+                    className="w-full h-full rounded-full object-cover"
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%230891b2'/%3E%3C/svg%3E"
+                  />
+                </div>
                 <div>
                   <div className="text-sm font-semibold text-white">{selectedArticle.author.name}</div>
                   <div className="text-xs text-slate-400">{selectedArticle.author.role}</div>
@@ -172,11 +185,13 @@ export const InsightsSection: React.FC<InsightsSectionProps> = ({ onOpenContact 
               </div>
             </div>
 
-            <div className="h-64 w-full rounded-xl overflow-hidden">
-              <img
+            <div className="h-64 w-full rounded-xl overflow-hidden relative">
+              <NextOptimizedImage
                 src={selectedArticle.image}
                 alt={selectedArticle.title}
+                fill={true}
                 className="w-full h-full object-cover"
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='300' viewBox='0 0 600 300'%3E%3Crect width='600' height='300' fill='%231e293b'/%3E%3C/svg%3E"
               />
             </div>
 

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useToast } from './Toast.tsx';
 import { CapturedPhoto } from '../types.ts';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 export type { CapturedPhoto };
 
@@ -280,16 +281,14 @@ export default function DeviceCameraCapture({ photos, onChange }: DeviceCameraCa
                 className="group relative bg-white border border-slate-200 rounded-2xl p-2 space-y-2 shadow-sm hover:shadow-md transition-all"
               >
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-100">
-                  <img
+                  <NextOptimizedImage
                     src={photo.dataUrl}
                     alt={`Device intake condition photo - ${photo.category}`}
+                    fill={true}
                     className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%3C%231e293b'/%3E%3Ctext x='100' y='100' fill='%3C%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='12'%3EPhoto Unavailable%3C/text%3E%3C/svg%3E";
-                    }}
+                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%231e293b'/%3E%3Ctext x='100' y='100' fill='%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='12'%3EPhoto Unavailable%3C/text%3E%3C/svg%3E"
                   />
-                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 z-10">
                     <button
                       type="button"
                       onClick={() => setActivePhotoPreview(photo)}
@@ -344,15 +343,14 @@ export default function DeviceCameraCapture({ photos, onChange }: DeviceCameraCa
               </span>
               <span className="text-xs text-slate-400 font-mono">{activePhotoPreview.timestamp}</span>
             </div>
-            <div className="max-h-[60vh] overflow-hidden rounded-2xl bg-slate-900 flex items-center justify-center">
-              <img
+            <div className="max-h-[60vh] overflow-hidden rounded-2xl bg-slate-900 flex items-center justify-center p-2">
+              <NextOptimizedImage
                 src={activePhotoPreview.dataUrl}
                 alt={`Enlarged device intake photo - ${activePhotoPreview.category}`}
+                width={600}
+                height={450}
                 className="max-h-[60vh] w-auto object-contain"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%3C%231e293b'/%3E%3Ctext x='200' y='150' fill='%3C%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='14'%3EEnlarged Photo Unavailable%3C/text%3E%3C/svg%3E";
-                }}
+                fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%230f172a'/%3E%3Ctext x='200' y='150' fill='%2394a3b8' text-anchor='middle' font-family='sans-serif' font-size='14'%3EEnlarged Photo Unavailable%3C/text%3E%3C/svg%3E"
               />
             </div>
             {activePhotoPreview.notes && (

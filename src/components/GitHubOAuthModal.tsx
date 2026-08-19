@@ -28,6 +28,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useToast } from './Toast.tsx';
+import NextOptimizedImage from './NextOptimizedImage.tsx';
 
 interface GitHubOAuthModalProps {
   isOpen: boolean;
@@ -468,12 +469,16 @@ export default function GitHubOAuthModal({ isOpen, onClose, initialTab = 'oauth'
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {gitHubUser.avatar_url ? (
-                      <img
-                        src={gitHubUser.avatar_url}
-                        alt={gitHubUser.login}
-                        className="w-12 h-12 rounded-xl border border-emerald-500/50 shadow-md"
-                        referrerPolicy="no-referrer"
-                      />
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-emerald-500/50 shadow-md relative shrink-0">
+                        <NextOptimizedImage
+                          src={gitHubUser.avatar_url}
+                          alt={gitHubUser.login}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                          fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2310b981'/%3E%3C/svg%3E"
+                        />
+                      </div>
                     ) : (
                       <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center font-bold">
                         <User className="w-6 h-6 text-emerald-400" />

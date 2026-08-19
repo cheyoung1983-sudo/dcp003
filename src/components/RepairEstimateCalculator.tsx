@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Calculator, 
@@ -15,7 +15,9 @@ import {
   Database,
   Sparkles,
   Check,
-  CreditCard
+  CreditCard,
+  Server,
+  RefreshCw
 } from 'lucide-react';
 import { ServiceTier, Manufacturer } from '../types';
 import { calculateQuote, PricingBreakdown, PRICING_TIERS } from '../lib/pricing';
@@ -56,13 +58,79 @@ export default function RepairEstimateCalculator() {
   const [dataRecovery, setDataRecovery] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  const quote: PricingBreakdown = useMemo(() => {
+  // Server-aware state
+  const [serverVerified, setServerVerified] = useState<boolean>(true);
+  const [isServerSyncing, setIsServerSyncing] = useState<boolean>(false);
+  const [serverTaxJurisdiction, setServerTaxJurisdiction] = useState<string>('Spokane City (9.1%)');
+  const [serverCalculatedAt, setServerCalculatedAt] = useState<string>('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Local fallback calculation
+  const localQuote: PricingBreakdown = useMemo(() => {
     return calculateQuote(selectedIssue.tier, zip, {
       model,
       isRush: rushPriority,
       isDataRecovery: dataRecovery
     });
   }, [selectedIssue, zip, model, rushPriority, dataRecovery]);
+
+  const [serverQuote, setServerQuote] = useState<PricingBreakdown | null>(null);
+
+  // Fetch server-calculated quote for live server verification
+  useEffect(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    setIsServerSyncing(true);
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await fetch('/api/repair-estimate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tier: selectedIssue.tier,
+            zip,
+            model,
+            isRush: rushPriority,
+            isDataRecovery: dataRecovery
+          }),
+          signal: controller.signal
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.quote) {
+            setServerQuote(data.quote);
+            setServerVerified(true);
+            if (data.quote.jurisdiction) {
+              setServerTaxJurisdiction(data.quote.jurisdiction);
+            }
+            if (data.calculatedAt) {
+              setServerCalculatedAt(new Date(data.calculatedAt).toLocaleTimeString());
+            }
+          }
+        } else {
+          setServerVerified(false);
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setServerVerified(false);
+        }
+      } finally {
+        setIsServerSyncing(false);
+      }
+    }, 150);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [selectedIssue, zip, model, rushPriority, dataRecovery]);
+
+  const quote = serverQuote || localQuote;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-12">
@@ -85,13 +153,24 @@ export default function RepairEstimateCalculator() {
         <div className="lg:col-span-2 space-y-8">
           {/* Device Selection */}
           <section className="bg-white border border-slate-100 rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/50 space-y-8">
-            <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
-              <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
-                <Smartphone className="w-6 h-6" />
+            <div className="flex items-center justify-between border-b border-slate-100 pb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
+                  <Smartphone className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Device Configuration</h3>
+                  <p className="text-xs font-medium text-slate-400">Select the hardware unit for triage</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-slate-900">Device Configuration</h3>
-                <p className="text-xs font-medium text-slate-400">Select the hardware unit for triage</p>
+
+              {/* Server Status Indicator */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors bg-slate-50 border-slate-200 text-slate-600">
+                <Server className={`w-3.5 h-3.5 ${isServerSyncing ? 'animate-spin text-blue-500' : serverVerified ? 'text-emerald-500' : 'text-amber-500'}`} />
+                <span className="text-[11px]">
+                  {isServerSyncing ? 'Syncing...' : serverVerified ? 'Server Verified' : 'Local Fallback'}
+                </span>
+                <span className={`w-2 h-2 rounded-full ${isServerSyncing ? 'bg-blue-400 animate-pulse' : serverVerified ? 'bg-emerald-500' : 'bg-amber-400'}`} />
               </div>
             </div>
 
@@ -397,10 +476,17 @@ export default function RepairEstimateCalculator() {
                   <span>${quote.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold text-emerald-400">
-                  <span className="uppercase tracking-widest">Sales Tax (Spokane)</span>
+                  <span className="uppercase tracking-widest">{serverTaxJurisdiction}</span>
                   <span>${quote.tax.toFixed(2)}</span>
                 </div>
               </div>
+
+              {serverCalculatedAt && (
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pt-1">
+                  <span>Server Verified at</span>
+                  <span>{serverCalculatedAt}</span>
+                </div>
+              )}
 
               <div className="space-y-3 relative z-10">
                 <button
