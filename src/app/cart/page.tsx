@@ -49,8 +49,8 @@ export default async function CartPage() {
         </Link>
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-x-auto shadow-xl">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl w-full min-w-[600px] overflow-x-auto shadow-xl">
+        <table className="w-full min-w-[600px] text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-800 bg-slate-950/60 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               <th className="py-3 px-4">Product</th>

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { ReactNode, createContext, useContext, useMemo } from 'react';
 import { Auth0Provider, useAuth0, User } from '@auth0/auth0-react';
 
@@ -6,6 +8,7 @@ interface Auth0ContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user?: User;
+  error?: Error;
   loginWithRedirect: (options?: any) => Promise<void>;
   loginWithPopup: (options?: any) => Promise<void>;
   logout: (options?: any) => Promise<void>;
@@ -30,6 +33,7 @@ function ConfiguredAuth0Consumer({ children }: { children: ReactNode }) {
     isAuthenticated: auth0.isAuthenticated,
     isLoading: auth0.isLoading,
     user: auth0.user,
+    error: auth0.error,
     loginWithRedirect: auth0.loginWithRedirect,
     loginWithPopup: auth0.loginWithPopup,
     logout: auth0.logout,
@@ -49,6 +53,7 @@ function FallbackAuth0Provider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     isLoading: false,
     user: undefined,
+    error: undefined,
     loginWithRedirect: async () => {
       alert('Auth0 is not configured yet. Please add VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID in your environment.');
     },

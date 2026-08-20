@@ -4,7 +4,7 @@ import {
   TURNAROUND_TREND_DATA_DAILY,
   TURNAROUND_TREND_DATA_WEEKLY,
   TURNAROUND_TREND_DATA_MONTHLY,
-} from '@/components/RepairAnalytics';
+} from '@/data/repairAnalyticsData';
 
 export interface AnalyticsSummary {
   totalRepairsMTD: number;

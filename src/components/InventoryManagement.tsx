@@ -918,8 +918,8 @@ export default function InventoryManagement() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="w-full min-w-[600px] overflow-x-auto">
+          <table className="w-full min-w-[600px] md:min-w-[800px] text-left text-xs">
             <thead>
               <tr className="border-b border-slate-800 text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                 <th className="pb-3 pr-4">SKU & Component</th>

@@ -1,8 +1,6 @@
+'use client';
+
 import React from 'react';
-<<<<<<< HEAD
-import Link from 'next/link';
-=======
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
 /**
  * Button that starts the Vercel OAuth flow.
@@ -14,19 +12,12 @@ export default function VercelLoginButton({
   userId?: string;
 }) {
   return (
-<<<<<<< HEAD
-    <Link
-=======
     <a
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
       href={`/api/auth/start?userId=${userId}`}
       className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 px-6 py-3 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
     >
       Sign in with Vercel
-<<<<<<< HEAD
-    </Link>
-=======
     </a>
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   );
 }
+

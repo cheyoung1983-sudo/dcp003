@@ -289,16 +289,13 @@ export default function IntakeForm() {
             setValue('deviceModel', ticket.deviceModel, { shouldValidate: true });
           }
           if (ticket.serviceTier) {
-<<<<<<< HEAD
-            if (ticket.serviceTier === 'TIER_1_POWER_PORT_REFRESH') setValue('serviceTier', ServiceTier.TIER_1, { shouldValidate: true });
-            else if (ticket.serviceTier === 'TIER_2_DISPLAY_RENEWAL') setValue('serviceTier', ServiceTier.TIER_2, { shouldValidate: true });
-            else if (ticket.serviceTier === 'TIER_3_MICRO_SOLDERING') setValue('serviceTier', ServiceTier.TIER_3, { shouldValidate: true });
-            else if (ticket.serviceTier === 'TIER_4_CLEANROOM_DATA_RECOVERY') setValue('serviceTier', ServiceTier.TIER_4, { shouldValidate: true });
-=======
-            if (ticket.serviceTier === 'TIER_1_POWER_PORT_REFRESH' || ticket.serviceTier === 'TIER_1_POWER') setValue('serviceTier', ServiceTier.TIER_1_POWER, { shouldValidate: true });
-            else if (ticket.serviceTier === 'TIER_2_DISPLAY_RENEWAL' || ticket.serviceTier === 'TIER_2_DISPLAY') setValue('serviceTier', ServiceTier.TIER_2_DISPLAY, { shouldValidate: true });
-            else if (ticket.serviceTier === 'TIER_3_MICRO_SOLDERING' || ticket.serviceTier === 'TIER_3_BOARD' || ticket.serviceTier === 'TIER_4_CLEANROOM_DATA_RECOVERY') setValue('serviceTier', ServiceTier.TIER_3_BOARD, { shouldValidate: true });
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
+            if (ticket.serviceTier === 'TIER_1_POWER_PORT_REFRESH' || ticket.serviceTier === 'TIER_1_POWER' || ticket.serviceTier === 'TIER_1') {
+              setValue('serviceTier', ServiceTier.TIER_1_POWER, { shouldValidate: true });
+            } else if (ticket.serviceTier === 'TIER_2_DISPLAY_RENEWAL' || ticket.serviceTier === 'TIER_2_DISPLAY' || ticket.serviceTier === 'TIER_2') {
+              setValue('serviceTier', ServiceTier.TIER_2_DISPLAY, { shouldValidate: true });
+            } else {
+              setValue('serviceTier', ServiceTier.TIER_3_BOARD, { shouldValidate: true });
+            }
           }
           if (ticket.issueTranscript || ticket.triageSummary) {
             const issueText = `[ElevenLabs Voice Intake Ref: ${ticket.ticketNumber}]\nSpoken Issue: "${ticket.issueTranscript}"\nSuspected Fault: ${ticket.suspectedFault}\nTechnician Triage: ${ticket.triageSummary}`;
@@ -1209,26 +1206,26 @@ export default function IntakeForm() {
                       model={formData.deviceModel}
                     />
                   </div>
+                </div>
 
-                  {/* Gemini Recommended Diagnostic Path in Telemetry view */}
-                  <div className="pt-4">
-                    <RecommendedDiagnosticPath
-                      repairNotes={watch('customerReportedIssue') || ''}
-                      deviceManufacturer={watch('deviceManufacturer') || ''}
-                      deviceModel={watch('deviceModel') || ''}
-                      symptoms={selectedSymptomIds.map(id => {
-                        const found = DIAGNOSTIC_SYMPTOMS.find(s => s.id === id);
-                        return found ? `${found.label} (${found.category})` : id;
-                      })}
-                      telemetry={formData.telemetry}
-                      onApplyPathToNotes={(formattedPath) => {
-                        const existing = watch('customerReportedIssue') || '';
-                        const updated = existing ? `${existing.trim()}\n\n${formattedPath}` : formattedPath;
-                        setValue('customerReportedIssue', updated, { shouldValidate: true, shouldDirty: true });
-                        showToast('Applied Recommended Diagnostic Path to Issue Description.', 'success');
-                      }}
-                    />
-                  </div>
+                {/* Gemini Recommended Diagnostic Path in Telemetry view - Full Workbench Width */}
+                <div className="pt-6 w-full">
+                  <RecommendedDiagnosticPath
+                    repairNotes={watch('customerReportedIssue') || ''}
+                    deviceManufacturer={watch('deviceManufacturer') || ''}
+                    deviceModel={watch('deviceModel') || ''}
+                    symptoms={selectedSymptomIds.map(id => {
+                      const found = DIAGNOSTIC_SYMPTOMS.find(s => s.id === id);
+                      return found ? `${found.label} (${found.category})` : id;
+                    })}
+                    telemetry={formData.telemetry}
+                    onApplyPathToNotes={(formattedPath) => {
+                      const existing = watch('customerReportedIssue') || '';
+                      const updated = existing ? `${existing.trim()}\n\n${formattedPath}` : formattedPath;
+                      setValue('customerReportedIssue', updated, { shouldValidate: true, shouldDirty: true });
+                      showToast('Applied Recommended Diagnostic Path to Issue Description.', 'success');
+                    }}
+                  />
                 </div>
               </div>
             )}

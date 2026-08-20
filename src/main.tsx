@@ -6,18 +6,6 @@ import { registerServiceWorker } from './registerServiceWorker.ts';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import { Auth0ProviderWithConfig } from './components/Auth0ProviderWithConfig.tsx';
 
-<<<<<<< HEAD
-// Prevent uncaught browser extension or message channel disconnects from crashing runtime
-if (typeof window !== 'undefined') {
-  window.addEventListener('unhandledrejection', (event) => {
-    if (
-      event.reason &&
-      (String(event.reason?.message || event.reason).includes('Could not establish connection') ||
-       String(event.reason?.message || event.reason).includes('Receiving end does not exist'))
-    ) {
-      event.preventDefault();
-      console.debug('[Browser Extension / Channel] Connection ignored:', event.reason);
-=======
 // Prevent uncaught browser extension disconnects and automatically recover from stale chunk loading errors
 if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (event) => {
@@ -62,22 +50,22 @@ if (typeof window !== 'undefined') {
         console.info('[DCP Runtime] Reloading to fetch latest application build chunks...');
         window.location.reload();
       }
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     }
   });
 }
 
 registerServiceWorker();
 
-const rootElement = document.getElementById('root')!;
-rootElement.dataset.mounted = 'true';
-
-createRoot(rootElement).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <Auth0ProviderWithConfig>
-        <App />
-      </Auth0ProviderWithConfig>
-    </ErrorBoundary>
-  </StrictMode>,
-);
+const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
+if (rootElement) {
+  rootElement.dataset.mounted = 'true';
+  createRoot(rootElement).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <Auth0ProviderWithConfig>
+          <App />
+        </Auth0ProviderWithConfig>
+      </ErrorBoundary>
+    </StrictMode>,
+  );
+}

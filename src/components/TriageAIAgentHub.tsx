@@ -82,10 +82,17 @@ export default function TriageAIAgentHub({ onNavigateTab, preloadedModel }: Tria
       id: 'init_welcome',
       role: 'agent',
       content: `Hello! I'm Ryan's **Lead Intake Specialist & Triage Concierge** for the Display & Cell Pros mobile laboratory in Spokane. \n\nI'm trained under our **L.E.A.R.N. Active Listening Protocol** and equipped with direct access to our live parts inventory, the D&CP pricing matrix ($50/hr labor + 80% parts markup), and Washington Right to Repair (RCW 19.415) standards.\n\nTell me what happened with your device or describe what it's doing (e.g. crunchy shattered glass, dying battery, or logic board reboot loop), and let's get you taken care of!`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: '10:00 AM',
       modelUsed: 'gemini-3.5-flash'
     }
   ]);
+
+  useEffect(() => {
+    setMessages(prev => prev.map(m => m.id === 'init_welcome' ? {
+      ...m,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    } : m));
+  }, []);
 
   const [inputQuery, setInputQuery] = useState('');
   const [isSending, setIsSending] = useState(false);

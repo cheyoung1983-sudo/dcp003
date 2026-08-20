@@ -1,10 +1,34 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import React from 'react';
 import './globals.css';
-import UserProviderWrapper from '@/components/UserProviderWrapper';
+import { Providers } from '@/components/Providers';
 
 export const metadata: Metadata = {
-  title: 'Display & Cell Pros LLC | Spokane On-Site Mobile Repair',
-  description: 'Professional on-site mobile electronics and smartphone repair services in Spokane, Washington and Spokane Valley.',
+  title: 'Display & Cell Pros LLC | Bench Repair Portal',
+  description: 'Offline-capable device repair intake, WebUSB diagnostic port monitor, and bench QA portal for Spokane HQ Lab.',
+  applicationName: 'D&CP Repair',
+  appleWebApp: {
+    capable: true,
+    title: 'D&CP Repair',
+    statusBarStyle: 'black-translucent',
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#0f172a',
 };
 
 export default function RootLayout({
@@ -13,35 +37,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full bg-[#fafafa]">
       <head>
-        <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
-        <UserProviderWrapper>
-          <header className="border-b border-slate-200 bg-white shadow-xs sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="font-bold text-xl tracking-tight text-blue-600">Display & Cell Pros LLC</span>
-                <span className="text-xs bg-blue-100 text-blue-800 font-medium px-2.5 py-0.5 rounded-full hidden sm:inline-block">Spokane, WA On-Site Repair</span>
-              </div>
-              <nav className="flex items-center space-x-6 text-sm font-medium text-slate-600">
-                <a href="#services" className="hover:text-blue-600 transition-colors">Services</a>
-                <a href="#quote" className="hover:text-blue-600 transition-colors">Instant Quote</a>
-                <a href="#verify" className="hover:text-blue-600 transition-colors">Secure Verification</a>
-              </nav>
-            </div>
-          </header>
-          <main className="flex-1">
-            {children}
-          </main>
-          <footer className="bg-slate-900 text-slate-400 py-8 border-t border-slate-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-sm">© {new Date().getFullYear()} Display & Cell Pros LLC. Serving Spokane, Washington & Spokane Valley.</p>
-              <p className="text-xs">Protected by reCAPTCHA Enterprise.</p>
-            </div>
-          </footer>
-        </UserProviderWrapper>
+      <body className="min-h-full font-jakarta text-slate-900 bg-[#fafafa] antialiased selection:bg-blue-600 selection:text-white">
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

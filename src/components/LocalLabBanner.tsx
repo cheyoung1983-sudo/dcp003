@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Clock, Navigation, Calendar, X, Sparkles, Building2 } from 'lucide-react';
@@ -7,6 +9,7 @@ interface LocalLabBannerProps {
 }
 
 export default function LocalLabBanner({ onBookDropOff }: LocalLabBannerProps) {
+  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [isLocalZone, setIsLocalZone] = useState<boolean>(false);
   const [timeZoneName, setTimeZoneName] = useState<string>('');
   const [labStatus, setLabStatus] = useState<{ isOpen: boolean; text: string }>({ isOpen: false, text: '' });
@@ -15,6 +18,7 @@ export default function LocalLabBanner({ onBookDropOff }: LocalLabBannerProps) {
   const [distanceKm, setDistanceKm] = useState<number | null>(null);
 
   useEffect(() => {
+    setIsMounted(true);
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
       setTimeZoneName(tz);
@@ -91,7 +95,7 @@ export default function LocalLabBanner({ onBookDropOff }: LocalLabBannerProps) {
     );
   };
 
-  if (!isLocalZone || isDismissed) return null;
+  if (!isMounted || !isLocalZone || isDismissed) return null;
 
   return (
     <AnimatePresence>

@@ -1,64 +1,33 @@
 "use client";
 
-<<<<<<< HEAD
-// src/components/SignInButton.tsx
-import { signIn } from "next-auth/react";
 import React from "react";
-
-/**
- * Simple sign‑in button used on the /auth/signin page.
- * Adjust the provider name ("auth0", "github", etc.) according to your NextAuth configuration.
- */
-export default function SignInButton() {
-  React.useEffect(() => {
-    window.onSubmit = async (token: string) => {
-      console.log('reCAPTCHA enterprise token generated via callback:', token);
-      try {
-        await signIn("auth0");
-      } catch (err) {
-        console.error("Failed to sign in:", err);
-      }
-    };
-  }, []);
-=======
-import React from "react";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useSafeAuth0 } from "./Auth0ProviderWithConfig";
 
 export default function SignInButton() {
-  const { loginWithRedirect } = useAuth0();
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
+  const { loginWithRedirect } = useSafeAuth0();
 
   const onClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.enterprise) {
+      if (typeof window !== 'undefined' && (window as any).grecaptcha && (window as any).grecaptcha.enterprise) {
         await new Promise<void>((resolve) => {
-          window.grecaptcha.enterprise.ready(async () => {
-            const token = await window.grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
-            console.log('reCAPTCHA enterprise token generated:', token);
-<<<<<<< HEAD
-            if (window.onSubmit) {
-              window.onSubmit(token);
+          (window as any).grecaptcha.enterprise.ready(async () => {
+            try {
+              const token = await (window as any).grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
+              console.log('reCAPTCHA enterprise token generated:', token);
+            } catch (recaptchaErr) {
+              console.warn('reCAPTCHA execution fallback:', recaptchaErr);
             }
-=======
             loginWithRedirect();
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             resolve();
           });
         });
       } else {
-<<<<<<< HEAD
-        await signIn("auth0");
-      }
-    } catch (err) {
-      console.error("Failed to initiate sign‑in or reCAPTCHA verification:", err);
-=======
         loginWithRedirect();
       }
     } catch (err) {
       console.error("Failed to initiate sign-in:", err);
       loginWithRedirect();
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     }
   };
 
@@ -74,7 +43,3 @@ export default function SignInButton() {
     </button>
   );
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

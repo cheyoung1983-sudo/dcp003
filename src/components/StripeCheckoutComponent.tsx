@@ -1,8 +1,13 @@
+'use client';
+
 import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { CreditCard } from 'lucide-react';
 
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
+const stripePublicKey = 
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) ||
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STRIPE_PUBLIC_KEY) ||
+  'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
 const stripePromise = loadStripe(stripePublicKey);
 
 interface StripeCheckoutComponentProps {

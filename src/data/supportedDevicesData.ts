@@ -24,6 +24,15 @@ export interface SupportedDeviceModel {
   featured?: boolean;
 }
 
+export const VID_PID_REGISTRY: Record<string, string> = {
+  '0x05AC:0x12A8': 'iPhone/iPad (Apple)',
+  '0x05AC:0x12AA': 'iPhone/iPad (Apple)',
+  '0x04E8:0x6860': 'Samsung Galaxy (Samsung)',
+  '0x18D1:0x4EE1': 'Google Pixel (Google)',
+  '0x2341:0x0043': 'Arduino Uno (Arduino)',
+  '0x1A86:0x7523': 'D&CP Bench Ammeter V2 (D&CP)',
+};
+
 export const SUPPORTED_DEVICES_DATABASE: SupportedDeviceModel[] = [
   // --- APPLE IPHONE ---
   {

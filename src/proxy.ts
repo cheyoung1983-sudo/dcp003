@@ -1,4 +1,3 @@
-import { auth0 } from "./lib/auth0";
 import { get } from "@vercel/edge-config";
 import { NextResponse } from 'next/server';
 import { validateLexicalPayload } from '@/lib/lexical-firewall';

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { BotMessageSquare } from 'lucide-react';
 
@@ -7,7 +9,9 @@ interface TriageAIWidgetProps {
 }
 
 export const TriageAIWidget: React.FC<TriageAIWidgetProps> = ({ onOpenContact }) => {
-  const agentId = import.meta.env.VITE_ELEVENLABS_AGENT_ID;
+  const agentId = 
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_ELEVENLABS_AGENT_ID) ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ELEVENLABS_AGENT_ID);
   const isConfigured = agentId && agentId !== 'REPLACE_WITH_YOUR_ELEVENLABS_AGENT_ID';
 
   useEffect(() => {

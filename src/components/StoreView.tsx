@@ -9,10 +9,13 @@ import { PRODUCTS_QUERY } from "@/lib/shopify-queries";
 import type { Product } from "@/lib/shopify-types";
 import AddToCartButton from "@/components/AddToCartButton";
 import NextOptimizedImage from "./NextOptimizedImage.tsx";
+import ShopifyCollectionEmbed from "./ShopifyCollectionEmbed";
+import ShopifyProductEmbed from "./ShopifyProductEmbed";
 
 export function StoreView() {
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [storeViewMode, setStoreViewMode] = useState<"catalog" | "shopify_collection" | "shopify_product">("catalog");
 
   useEffect(() => {
     async function loadProducts() {
@@ -45,16 +48,55 @@ export function StoreView() {
           </p>
         </div>
 
-        <Link
-          href="/cart"
-          className="flex items-center text-slate-200 bg-slate-800/80 hover:bg-slate-700 px-4 py-2.5 rounded-xl border border-slate-700 font-semibold text-sm transition-colors w-fit gap-2 shadow-md"
-        >
-          <ShoppingCart size={18} className="text-blue-400" />
-          <span>View Shopping Cart</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-slate-900 border border-slate-800 rounded-xl p-1">
+            <button
+              onClick={() => setStoreViewMode("catalog")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                storeViewMode === "catalog"
+                  ? "bg-blue-600 text-white shadow"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Native Store
+            </button>
+            <button
+              onClick={() => setStoreViewMode("shopify_collection")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                storeViewMode === "shopify_collection"
+                  ? "bg-cyan-600 text-white shadow"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Shopify Collection
+            </button>
+            <button
+              onClick={() => setStoreViewMode("shopify_product")}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                storeViewMode === "shopify_product"
+                  ? "bg-emerald-600 text-white shadow"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Featured Product
+            </button>
+          </div>
+
+          <Link
+            href="/cart"
+            className="flex items-center text-slate-200 bg-slate-800/80 hover:bg-slate-700 px-4 py-2.5 rounded-xl border border-slate-700 font-semibold text-sm transition-colors w-fit gap-2 shadow-md"
+          >
+            <ShoppingCart size={18} className="text-blue-400" />
+            <span>View Shopping Cart</span>
+          </Link>
+        </div>
       </div>
 
-      {loading ? (
+      {storeViewMode === "shopify_collection" ? (
+        <ShopifyCollectionEmbed />
+      ) : storeViewMode === "shopify_product" ? (
+        <ShopifyProductEmbed />
+      ) : loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
           <p className="text-sm font-mono">Fetching Shopify Storefront catalog...</p>

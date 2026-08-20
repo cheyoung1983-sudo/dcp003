@@ -38,17 +38,24 @@ const QUICK_PROMPTS = [
 
 export default function LiveTechnicianChat() {
   const { showToast } = useToast();
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'init-1',
       sender: 'technician',
       text: "Welcome to D&CP Spokane Lab Live Support. I'm Ryan Young, Founder & Lead Systems Engineer. How can our engineering team assist you today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: '10:00 AM',
       technicianName: "Ryan Young",
       technicianTitle: "Founder & Lead Systems Engineer",
       technicianAvatar: ryanYoungAvatar
     }
   ]);
+
+  useEffect(() => {
+    setMessages(prev => prev.map(m => m.id === 'init-1' ? {
+      ...m,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    } : m));
+  }, []);
 
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);

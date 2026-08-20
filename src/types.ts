@@ -60,8 +60,6 @@ export interface CapturedPhoto {
   notes?: string;
   timestamp: string;
 }
-<<<<<<< HEAD
-=======
 
 export type ServiceCategory = 'all' | 'micro-soldering' | 'high-velocity' | 'mobile-data-security' | 'federal-gsa' | 'board-diagnostics';
 
@@ -191,5 +189,3 @@ export interface ClientMessage {
   content: string;
   isFromClient: boolean;
 }
-
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

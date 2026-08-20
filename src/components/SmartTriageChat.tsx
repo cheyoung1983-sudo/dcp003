@@ -37,7 +37,7 @@ export default function SmartTriageChat({ deviceModel = '', onApplyRecommendatio
   const [triageResult, setTriageResult] = useState<SmartTriageResult | null>(null);
   const [history, setHistory] = useState<Array<{ role: 'user' | 'ai'; text: string; triage?: SmartTriageResult }>>([]);
 
-  const handleAnalyze = async (e?: React.FormEvent) => {
+  const handleAnalyze = async (e?: React.SyntheticEvent) => {
     if (e) e.preventDefault();
     if (!symptomInput.trim()) {
       showToast('Please describe the symptoms or issues experienced.', 'error');
@@ -139,19 +139,26 @@ export default function SmartTriageChat({ deviceModel = '', onApplyRecommendatio
         ))}
       </div>
 
-      {/* Input Form */}
-      <form onSubmit={handleAnalyze} className="relative z-10 flex gap-2">
+      {/* Input Container (div to avoid nested form inside parent IntakeForm) */}
+      <div className="relative z-10 flex gap-2">
         <input
           type="text"
           value={symptomInput}
           onChange={(e) => setSymptomInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAnalyze(e);
+            }
+          }}
           placeholder="Describe symptoms or observations..."
           className="w-full px-4 py-3 bg-slate-950/80 border border-indigo-500/30 rounded-2xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleAnalyze}
           disabled={loading}
-          className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-indigo-600/30 disabled:opacity-50"
+          className="px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold text-xs transition-all flex items-center gap-2 whitespace-nowrap shadow-lg shadow-indigo-600/30 disabled:opacity-50 cursor-pointer"
         >
           {loading ? (
             <RotateCw className="w-4 h-4 animate-spin" />
@@ -162,7 +169,7 @@ export default function SmartTriageChat({ deviceModel = '', onApplyRecommendatio
             </>
           )}
         </button>
-      </form>
+      </div>
 
       {/* Analysis Results Display */}
       {triageResult && (

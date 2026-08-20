@@ -8,7 +8,7 @@ import {
   TrendingUp, DollarSign, Zap, ShoppingCart, ChevronUp, ChevronDown,
   LogOut, Usb
 } from 'lucide-react';
-import { useUser } from '@auth0/nextjs-auth0/client';
+import { useSafeAuth0 } from '@/components/Auth0ProviderWithConfig';
 import { RdsDiagnosticPanel } from '../../components/RdsDiagnosticPanel';
 import CacheManagement from '../../components/CacheManagement';
 import { HardwareScanChart } from '../../components/HardwareScanChart';
@@ -77,7 +77,14 @@ interface WebUSBAPI {
 }
 
 export default function LabPortal() {
-  const { user: auth0User, isLoading: isAuth0Loading, error: auth0Error } = useUser();
+  const { 
+    user: auth0User, 
+    isLoading: isAuth0Loading, 
+    error: auth0Error,
+    isConfigured: isAuth0Configured,
+    loginWithPopup,
+    logout
+  } = useSafeAuth0();
 
   // State from App.tsx
   const [labTab, setLabTab] = useState<"triage" | "usb" | "pos" | "tax" | "postgres" | "settings">("triage");
@@ -346,13 +353,6 @@ Status: Physical hardware coupled over WebUSB link. Ready for triage calculation
   const fetchPOSLogs = async () => {};
   const handleApplyTemplate = (t: TicketTemplate) => {};
 
-  // Force login if not authenticated
-  useEffect(() => {
-    if (!isAuth0Loading && !auth0User) {
-      window.location.href = "/api/auth/login?returnTo=/lab";
-    }
-  }, [auth0User, isAuth0Loading]);
-
   if (isAuth0Loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -364,8 +364,14 @@ Status: Physical hardware coupled over WebUSB link. Ready for triage calculation
     );
   }
 
-  if (auth0Error) return <div className="p-8 text-red-500">Auth Error: {auth0Error.message}</div>;
-  if (!auth0User) return null; // Redirecting
+  if (auth0Error) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 my-8 bg-red-950/40 border border-red-800/60 rounded-2xl text-slate-200">
+        <h3 className="text-lg font-bold text-red-400 mb-2">Auth0 Authentication Warning</h3>
+        <p className="text-sm font-mono text-slate-300">{auth0Error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-in fade-in duration-300">
@@ -375,7 +381,7 @@ Status: Physical hardware coupled over WebUSB link. Ready for triage calculation
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
-            {auth0User.picture ? (
+            {auth0User?.picture ? (
               <img src={auth0User.picture} alt="Profile" className="w-full h-full rounded-full" referrerPolicy="no-referrer" />
             ) : (
               <User className="w-5 h-5" />
@@ -383,22 +389,34 @@ Status: Physical hardware coupled over WebUSB link. Ready for triage calculation
           </div>
           <div>
             <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              Authed: {auth0User.name || auth0User.email}
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-sm font-mono uppercase tracking-wider font-extrabold border border-emerald-500/30">LAB SESSION LOCKED</span>
+              {auth0User ? `Authed: ${auth0User.name || auth0User.email}` : 'Technician Lab Session (Spokane Tech Desk)'}
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-sm font-mono uppercase tracking-wider font-extrabold border border-emerald-500/30">
+                {auth0User ? 'LAB SESSION LOCKED' : 'DEV ACCESS ENABLED'}
+              </span>
             </h3>
             <p className="text-xs text-slate-400">
-              Logged in with technician credential {auth0User.email}. Backing up active Spokane WA tickets.
+              {auth0User ? `Logged in with technician credential ${auth0User.email}. Backing up active Spokane WA tickets.` : 'Operating in active bench technician diagnostic mode.'}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href="/api/auth/logout"
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-600 transition-colors flex items-center gap-2"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Disconnect
-          </a>
+          {auth0User ? (
+            <button
+              onClick={() => logout({ returnTo: window.location.origin })}
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-600 transition-colors flex items-center gap-2"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Disconnect
+            </button>
+          ) : (
+            <button
+              onClick={() => loginWithPopup()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg border border-blue-500 transition-colors flex items-center gap-2"
+            >
+              <User className="w-3.5 h-3.5" />
+              Technician Login
+            </button>
+          )}
         </div>
       </div>
 

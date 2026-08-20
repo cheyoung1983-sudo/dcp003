@@ -1,14 +1,18 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { WifiOff, HardDrive, Download } from 'lucide-react';
 import { downloadDatabaseBackup } from '../lib/db.ts';
 
 export default function OfflineStatusBanner() {
-  const [isOnline, setIsOnline] = useState<boolean>(
-    typeof navigator !== 'undefined' ? navigator.onLine : true
-  );
+  const [isMounted, setIsMounted] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -21,7 +25,7 @@ export default function OfflineStatusBanner() {
     };
   }, []);
 
-  if (isOnline) {
+  if (!isMounted || isOnline) {
     return null;
   }
 

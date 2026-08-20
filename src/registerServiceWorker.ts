@@ -1,6 +1,8 @@
 export function registerServiceWorker() {
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    if (import.meta.env.PROD) {
+    const isProd = process.env.NODE_ENV === 'production' || 
+                   (typeof import.meta !== 'undefined' && import.meta.env?.PROD);
+    if (isProd) {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')

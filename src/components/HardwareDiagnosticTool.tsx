@@ -105,14 +105,14 @@ export default function HardwareDiagnosticTool({
   const [logs, setLogs] = useState<DiagnosticLogEntry[]>([
     {
       id: 'init-1',
-      timestamp: new Date(Date.now() - 6000).toLocaleTimeString(),
+      timestamp: '10:00:00 AM',
       type: 'system',
       data: 'SYSTEM_BOOT: Spokane Bench Telemetry Port ready. Listening for WebUSB / Serial DTE.',
       severity: 'normal'
     },
     {
       id: 'init-2',
-      timestamp: new Date(Date.now() - 4000).toLocaleTimeString(),
+      timestamp: '10:00:02 AM',
       type: 'rx',
       data: '0x01 0x20 0x88 [STAT_0x01] PD_CONTRACT_ACTIVE 9.02V 2.18A',
       code: 'STAT_0x01',
@@ -121,7 +121,7 @@ export default function HardwareDiagnosticTool({
     },
     {
       id: 'init-3',
-      timestamp: new Date(Date.now() - 2000).toLocaleTimeString(),
+      timestamp: '10:00:04 AM',
       type: 'rx',
       data: '0x3F 0x00 0x02 [ERR_0x3F] VDD_MAIN_DROOP_DETECTED V=0.14V',
       code: 'ERR_0x3F',
@@ -129,6 +129,15 @@ export default function HardwareDiagnosticTool({
       severity: 'critical'
     }
   ]);
+
+  // Client-side mount sync for actual timestamps
+  useEffect(() => {
+    const now = new Date();
+    setLogs(prev => prev.map((log, idx) => ({
+      ...log,
+      timestamp: new Date(now.getTime() - (3 - idx) * 2000).toLocaleTimeString()
+    })));
+  }, []);
 
   const rawUsbDeviceRef = useRef<any>(null);
   const serialPortRef = useRef<any>(null);

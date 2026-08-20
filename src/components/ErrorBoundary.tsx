@@ -1,3 +1,5 @@
+'use client';
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -22,8 +24,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error in Display & Cell Pros App:', error, errorInfo);
-<<<<<<< HEAD
-=======
 
     // Auto-reload once if this is a stale chunk dynamic import error
     const isChunkError =
@@ -39,7 +39,6 @@ export class ErrorBoundary extends Component<Props, State> {
         window.location.reload();
       }
     }
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   }
 
   public render() {

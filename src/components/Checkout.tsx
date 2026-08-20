@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { loadStripe, Stripe as StripeJS } from '@stripe/stripe-js';
 import {
@@ -16,12 +18,18 @@ interface CheckoutProps {
 
 let stripePromise: Promise<StripeJS | null> | null = null;
 
+function getPublishableKey(): string {
+  return (
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) ||
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STRIPE_PUBLIC_KEY) ||
+    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_STRIPE_PUBLISHABLE_KEY) ||
+    'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E'
+  );
+}
+
 function getStripePromise() {
-<<<<<<< HEAD
-  const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '';
-=======
-  const publishableKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
+  const publishableKey = getPublishableKey();
   if (!stripePromise && publishableKey) {
     stripePromise = loadStripe(publishableKey);
   }
@@ -35,19 +43,11 @@ export default function Checkout({
   amountInCents = 14900,
   onComplete
 }: CheckoutProps) {
-<<<<<<< HEAD
-  const [publishableKeyPresent, setPublishableKeyPresent] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-=======
   const [publishableKeyPresent, setPublishableKeyPresent] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const key = import.meta.env.VITE_STRIPE_PUBLIC_KEY || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
+    const key = getPublishableKey();
     setPublishableKeyPresent(Boolean(key));
   }, []);
 

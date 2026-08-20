@@ -405,8 +405,8 @@ export function RdsDiagnosticPanel() {
               </div>
 
               {/* Table rendering */}
-              <div className="overflow-x-auto border border-slate-800 rounded-lg">
-                <table className="w-full text-left border-collapse font-mono text-xs">
+              <div className="w-full min-w-[600px] overflow-x-auto border border-slate-800 rounded-lg">
+                <table className="w-full min-w-[600px] text-left border-collapse font-mono text-xs">
                   <thead>
                     <tr className="bg-slate-900 text-slate-400 border-b border-slate-800">
                       <th className="p-2.5 font-bold">ID</th>

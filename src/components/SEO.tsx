@@ -1,10 +1,8 @@
+'use client';
+
 import { useEffect } from 'react';
 
-<<<<<<< HEAD
-export type TabType = 'home' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools';
-=======
 export type TabType = 'home' | 'classy_hub' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools';
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
 interface SEOProps {
   activeTab: TabType;
@@ -18,14 +16,11 @@ const TAB_META_MAP: Record<TabType, { title: string; description: string; keywor
     description: "Spokane's premier micro-soldering & electronics restoration lab. Explore certified refurbished devices, component intake, and precision repair services.",
     keywords: 'electronics repair, Spokane repair lab, micro-soldering, iPhone repair, MacBook logic board, refurbished phones'
   },
-<<<<<<< HEAD
-=======
   classy_hub: {
     title: 'Federal & Enterprise Hub | Display & Cell Pros LLC',
     description: 'Master contract dispatch, SAM.gov credentials, high-volume fleet triage, and certified laboratory restorations.',
     keywords: 'federal repair hub, enterprise fleet triage, SAM.gov repair, micro-soldering contract, D&CP LLC'
   },
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   intake: {
     title: 'Device Repair Intake & Diagnostic Ticket | D&CP LLC',
     description: 'Submit your device for component-level diagnosis, micro-soldering, OLED replacement, or liquid damage restoration with instant order sync.',

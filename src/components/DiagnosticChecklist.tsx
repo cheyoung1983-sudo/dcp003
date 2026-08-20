@@ -897,24 +897,31 @@ export default function DiagnosticChecklist({
         )}
       </div>
 
-      {/* Add Custom Failure Point Form */}
-      <form onSubmit={handleAddCustomFailure} className="pt-2 border-t border-slate-100 flex gap-2">
+      {/* Add Custom Failure Point Container (div to avoid nested form inside parent IntakeForm) */}
+      <div className="pt-2 border-t border-slate-100 flex gap-2">
         <input
           type="text"
           value={customFailureText}
           onChange={(e) => setCustomFailureText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleAddCustomFailure(e);
+            }
+          }}
           placeholder="+ Add custom diagnostic failure point (e.g., 'C3001 capacitor shorted on PP_GPU rail')..."
           className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-900 outline-none transition-all"
         />
         <button
-          type="submit"
+          type="button"
+          onClick={handleAddCustomFailure}
           disabled={!customFailureText.trim()}
           className="px-4 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Custom Point</span>
         </button>
-      </form>
+      </div>
 
       {/* Footer Summary & Action Bar */}
       <div className="pt-4 border-t border-slate-200 bg-slate-50 -mx-6 -mb-6 p-6 rounded-b-3xl flex flex-col md:flex-row md:items-center justify-between gap-4">

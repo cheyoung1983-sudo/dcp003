@@ -1,4 +1,6 @@
-import { useState, lazy, Suspense } from 'react';
+'use client';
+
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -48,57 +50,31 @@ import LabBenchParticles from './components/LabBenchParticles.tsx';
 import VoiceIntakeModal, { VoiceIntakeTicket } from './components/VoiceIntakeModal.tsx';
 import { useFounderAnimationSpeed } from './hooks/useFounderAnimationSpeed.ts';
 import ryanYoungImage from './assets/images/regenerated_image_1786855284519.jpg';
-<<<<<<< HEAD
-
-// Code-split dynamic views with React.lazy for optimized bundle performance
-const IntakeForm = lazy(() => import('./components/IntakeForm.tsx'));
-const HardwareDiagnosticTool = lazy(() => import('./components/HardwareDiagnosticTool.tsx'));
-const FeaturedProducts = lazy(() => import('./components/FeaturedProducts.tsx'));
-const AboutUs = lazy(() => import('./components/AboutUs.tsx'));
-const Reviews = lazy(() => import('./components/Reviews.tsx'));
-const RepairStatusTracker = lazy(() => import('./components/RepairStatusTracker.tsx'));
-const RepairEstimateCalculator = lazy(() => import('./components/RepairEstimateCalculator.tsx'));
-const ContactSupport = lazy(() => import('./components/ContactSupport.tsx'));
-const RepairAcademy = lazy(() => import('./components/RepairAcademy.tsx'));
-const ServiceBooking = lazy(() => import('./components/ServiceBooking.tsx'));
-const RepairAnalytics = lazy(() => import('./components/RepairAnalytics.tsx'));
-const SupportedDevicesDatabase = lazy(() => import('./components/SupportedDevicesDatabase.tsx'));
-const CompanyBlueprintGovernance = lazy(() => import('./components/CompanyBlueprintGovernance.tsx'));
-const ElevenLabsVoiceGenerator = lazy(() => import('./components/ElevenLabsVoiceGenerator.tsx'));
-const ElevenLabsProceduresManager = lazy(() => import('./components/ElevenLabsProceduresManager.tsx'));
-const ElevenLabsConversationFlow = lazy(() => import('./components/ElevenLabsConversationFlow.tsx'));
-const ElevenLabsVoiceStudioSettings = lazy(() => import('./components/ElevenLabsVoiceStudioSettings.tsx'));
-const VoiceToCircuitAgentHub = lazy(() => import('./components/VoiceToCircuitAgentHub.tsx'));
-const ElevenAgentInspector = lazy(() => import('./components/ElevenAgentInspector.tsx'));
-const Auth0FlowsHub = lazy(() => import('./components/Auth0FlowsHub.tsx'));
-const ElevenKnowledgeAndToolsHub = lazy(() => import('./components/ElevenKnowledgeAndToolsHub.tsx'));
-=======
 import { lazyWithRetry } from './utils/lazyRetry.ts';
 
 // Code-split dynamic views with React.lazy and resilient chunk load retry
-const IntakeForm = lazyWithRetry(() => import('./components/IntakeForm.tsx'));
-const HardwareDiagnosticTool = lazyWithRetry(() => import('./components/HardwareDiagnosticTool.tsx'));
-const FeaturedProducts = lazyWithRetry(() => import('./components/FeaturedProducts.tsx'));
-const AboutUs = lazyWithRetry(() => import('./components/AboutUs.tsx'));
-const Reviews = lazyWithRetry(() => import('./components/Reviews.tsx'));
-const RepairStatusTracker = lazyWithRetry(() => import('./components/RepairStatusTracker.tsx'));
-const RepairEstimateCalculator = lazyWithRetry(() => import('./components/RepairEstimateCalculator.tsx'));
-const ContactSupport = lazyWithRetry(() => import('./components/ContactSupport.tsx'));
-const RepairAcademy = lazyWithRetry(() => import('./components/RepairAcademy.tsx'));
-const ServiceBooking = lazyWithRetry(() => import('./components/ServiceBooking.tsx'));
-const RepairAnalytics = lazyWithRetry(() => import('./components/RepairAnalytics.tsx'));
-const SupportedDevicesDatabase = lazyWithRetry(() => import('./components/SupportedDevicesDatabase.tsx'));
-const CompanyBlueprintGovernance = lazyWithRetry(() => import('./components/CompanyBlueprintGovernance.tsx'));
-const ElevenLabsVoiceGenerator = lazyWithRetry(() => import('./components/ElevenLabsVoiceGenerator.tsx'));
-const ElevenLabsProceduresManager = lazyWithRetry(() => import('./components/ElevenLabsProceduresManager.tsx'));
-const ElevenLabsConversationFlow = lazyWithRetry(() => import('./components/ElevenLabsConversationFlow.tsx'));
-const ElevenLabsVoiceStudioSettings = lazyWithRetry(() => import('./components/ElevenLabsVoiceStudioSettings.tsx'));
-const VoiceToCircuitAgentHub = lazyWithRetry(() => import('./components/VoiceToCircuitAgentHub.tsx'));
-const ElevenAgentInspector = lazyWithRetry(() => import('./components/ElevenAgentInspector.tsx'));
-const Auth0FlowsHub = lazyWithRetry(() => import('./components/Auth0FlowsHub.tsx'));
-const ElevenKnowledgeAndToolsHub = lazyWithRetry(() => import('./components/ElevenKnowledgeAndToolsHub.tsx'));
-const ClassyOverviewView = lazyWithRetry(() => import('./components/ClassyOverviewView.tsx'));
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
+const IntakeForm = lazyWithRetry(() => import('./components/IntakeForm'));
+const HardwareDiagnosticTool = lazyWithRetry(() => import('./components/HardwareDiagnosticTool'));
+const FeaturedProducts = lazyWithRetry(() => import('./components/FeaturedProducts'));
+const AboutUs = lazyWithRetry(() => import('./components/AboutUs'));
+const Reviews = lazyWithRetry(() => import('./components/Reviews'));
+const RepairStatusTracker = lazyWithRetry(() => import('./components/RepairStatusTracker'));
+const RepairEstimateCalculator = lazyWithRetry(() => import('./components/RepairEstimateCalculator'));
+const ContactSupport = lazyWithRetry(() => import('./components/ContactSupport'));
+const RepairAcademy = lazyWithRetry(() => import('./components/RepairAcademy'));
+const ServiceBooking = lazyWithRetry(() => import('./components/ServiceBooking'));
+const RepairAnalytics = lazyWithRetry(() => import('./components/RepairAnalytics'));
+const SupportedDevicesDatabase = lazyWithRetry(() => import('./components/SupportedDevicesDatabase'));
+const CompanyBlueprintGovernance = lazyWithRetry(() => import('./components/CompanyBlueprintGovernance'));
+const ElevenLabsVoiceGenerator = lazyWithRetry(() => import('./components/ElevenLabsVoiceGenerator'));
+const ElevenLabsProceduresManager = lazyWithRetry(() => import('./components/ElevenLabsProceduresManager'));
+const ElevenLabsConversationFlow = lazyWithRetry(() => import('./components/ElevenLabsConversationFlow'));
+const ElevenLabsVoiceStudioSettings = lazyWithRetry(() => import('./components/ElevenLabsVoiceStudioSettings'));
+const VoiceToCircuitAgentHub = lazyWithRetry(() => import('./components/VoiceToCircuitAgentHub'));
+const ElevenAgentInspector = lazyWithRetry(() => import('./components/ElevenAgentInspector'));
+const Auth0FlowsHub = lazyWithRetry(() => import('./components/Auth0FlowsHub'));
+const ElevenKnowledgeAndToolsHub = lazyWithRetry(() => import('./components/ElevenKnowledgeAndToolsHub'));
+const ClassyOverviewView = lazyWithRetry(() => import('./components/ClassyOverviewView'));
 
 function TabLoadingSkeleton() {
   return (
@@ -114,23 +90,69 @@ function TabLoadingSkeleton() {
   );
 }
 
-export default function App() {
-<<<<<<< HEAD
-  const [activeTab, setActiveTab] = useState<'home' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools'>('home');
-=======
-  const [activeTab, setActiveTab] = useState<'home' | 'classy_hub' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools'>('home');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
+export type TabType = 
+  | 'home' 
+  | 'classy_hub' 
+  | 'intake' 
+  | 'hardware_diag' 
+  | 'matrix' 
+  | 'calc' 
+  | 'track' 
+  | 'booking' 
+  | 'analytics' 
+  | 'academy' 
+  | 'support' 
+  | 'about' 
+  | 'blueprint' 
+  | 'eleven_tts' 
+  | 'eleven_procedures' 
+  | 'eleven_flow' 
+  | 'eleven_voice_studio' 
+  | 'voice_to_circuit' 
+  | 'eleven_inspector' 
+  | 'auth0_flows' 
+  | 'eleven_kb_tools';
+
+interface AppProps {
+  initialTab?: TabType;
+}
+
+export default function App({ initialTab }: AppProps) {
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFounderBioExpanded, setIsFounderBioExpanded] = useState(false);
   const [isVoiceIntakeOpen, setIsVoiceIntakeOpen] = useState(false);
   const { speedPreset, setSpeedPreset, resetToDefault, duration, isOff, presets } = useFounderAnimationSpeed();
 
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.replace(/^\/+/, '');
+      const hash = window.location.hash.replace(/^#+/, '');
+      const target = hash || path;
+
+      if (target === 'lab' || target === 'hardware_diag' || target === 'hardware') setActiveTab('hardware_diag');
+      else if (target === 'store' || target === 'services') setActiveTab('home');
+      else if (target === 'b2b' || target === 'classy_hub') setActiveTab('classy_hub');
+      else if (target === 'intake') setActiveTab('intake');
+      else if (target === 'calc' || target === 'pricing') setActiveTab('calc');
+      else if (target === 'track' || target === 'status') setActiveTab('track');
+      else if (target === 'booking') setActiveTab('booking');
+      else if (target === 'analytics') setActiveTab('analytics');
+      else if (target === 'academy') setActiveTab('academy');
+      else if (target === 'blueprint') setActiveTab('blueprint');
+      else if (target === 'about' || target === 'privacy') setActiveTab('about');
+      else if (target === 'support') setActiveTab('support');
+    }
+  }, [initialTab]);
+
   const tabs = [
     { id: 'home', label: 'Laboratory Store', icon: Smartphone },
-<<<<<<< HEAD
-=======
     { id: 'classy_hub', label: 'Federal & Enterprise Hub', icon: Award },
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     { id: 'intake', label: 'Device Intake', icon: Microscope },
     { id: 'hardware_diag', label: 'Hardware Diag Port', icon: Terminal },
     { id: 'eleven_tts', label: 'Voice AI Studio', icon: Mic },
@@ -554,8 +576,6 @@ export default function App() {
               </motion.div>
             )}
 
-<<<<<<< HEAD
-=======
             {activeTab === 'classy_hub' && (
               <motion.div
                 key="classy_hub"
@@ -570,8 +590,6 @@ export default function App() {
                 />
               </motion.div>
             )}
-
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             {activeTab === 'intake' && (
               <motion.div
                 key="intake"
@@ -820,10 +838,7 @@ export default function App() {
               <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">Service Map</h4>
               <ul className="space-y-4 text-sm font-bold text-slate-400">
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('home')}>Store</li>
-<<<<<<< HEAD
-=======
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('classy_hub')}>Federal & Enterprise Hub</li>
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('intake')}>Intake</li>
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('booking')}>Book Drop-Off</li>
                 <li className="hover:text-slate-900 cursor-pointer transition-colors" onClick={() => setActiveTab('analytics')}>Repair Telemetry</li>
@@ -858,7 +873,7 @@ export default function App() {
           </div>
         </div>
       </footer>
-      {import.meta.env.PROD && typeof window !== 'undefined' && window.location.hostname.includes('vercel') && (
+      {process.env.NODE_ENV === 'production' && typeof window !== 'undefined' && window.location.hostname.includes('vercel') && (
         <>
           <Analytics />
           <SpeedInsights />

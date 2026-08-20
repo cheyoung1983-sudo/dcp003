@@ -50,7 +50,7 @@ export default function TriageAIAgentMaster({
       id: 'msg_welcome',
       role: 'assistant',
       content: "Hello! I am your Lead Triage & Quote AI Specialist for Display & Cell Pros LLC (D&CP). Our fully-equipped mobile lab van drives right to your driveway anywhere in Spokane or Spokane Valley. How can I help restore your device today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: '10:00 AM',
       modelUsed: 'gemini-3.5-flash',
       suggestedActions: [
         'Quote for iPhone 13 Screen',
@@ -60,6 +60,13 @@ export default function TriageAIAgentMaster({
       ]
     }
   ]);
+
+  useEffect(() => {
+    setMessages(prev => prev.map(m => m.id === 'msg_welcome' ? {
+      ...m,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    } : m));
+  }, []);
   const [chatInput, setChatInput] = useState('');
   const [chatModel, setChatModel] = useState<'gemini-3.5-flash' | 'gemini-3.1-flash-lite' | 'gemini-3.1-pro-preview'>('gemini-3.5-flash');
   const [isSending, setIsSending] = useState(false);
@@ -1297,8 +1304,8 @@ export default function TriageAIAgentMaster({
           </div>
 
           {/* Parts Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="w-full min-w-[600px] overflow-x-auto">
+            <table className="w-full min-w-[600px] text-left text-xs">
               <thead className="bg-slate-50 text-slate-400 uppercase tracking-wider text-[10px] font-mono border-b border-slate-200">
                 <tr>
                   <th className="py-3 px-4">Part Description</th>

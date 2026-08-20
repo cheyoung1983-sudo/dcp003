@@ -32,6 +32,7 @@ import {
   Database
 } from 'lucide-react';
 import { useToast } from './Toast.tsx';
+import { VID_PID_REGISTRY } from '../data/supportedDevicesData';
 
 interface TelemetryPoint {
   time: string;
@@ -81,6 +82,13 @@ export default function DiagnosticPortMonitor() {
   const [batteryCycles, setBatteryCycles] = useState<number>(412);
   const [internalResistance, setInternalResistance] = useState<number>(26.4); // mΩ
   const [isSweepingBattery, setIsSweepingBattery] = useState<boolean>(false);
+
+  useEffect(() => {
+    const key = `${vendorId}:${productId}`;
+    if (VID_PID_REGISTRY[key]) {
+      setDeviceName(VID_PID_REGISTRY[key]);
+    }
+  }, [vendorId, productId]);
 
   // Historical telemetry stream buffer
   const [telemetryHistory, setTelemetryHistory] = useState<TelemetryPoint[]>([]);

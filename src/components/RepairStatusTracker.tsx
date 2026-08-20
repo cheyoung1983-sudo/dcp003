@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast.tsx';
@@ -13,6 +15,7 @@ import {
   Activity, 
   Calendar,
   User,
+  Microscope,
   ArrowRight,
   ExternalLink,
   FileText,
@@ -28,11 +31,6 @@ import DynamicCompletionCard from './DynamicCompletionCard.tsx';
 import RepairDeviceLabelQR from './RepairDeviceLabelQR.tsx';
 import RepairDocumentation from './RepairDocumentation.tsx';
 import ClientProfileRepairOrders from './ClientProfileRepairOrders.tsx';
-<<<<<<< HEAD
-import { Microscope, User } from 'lucide-react';
-=======
-import { Microscope } from 'lucide-react';
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
 interface TelemetrySummary {
   batteryHealthPercentage: number;
