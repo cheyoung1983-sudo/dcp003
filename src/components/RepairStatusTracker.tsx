@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useToast } from './Toast.tsx';
@@ -15,7 +13,6 @@ import {
   Activity, 
   Calendar,
   User,
-  Microscope,
   ArrowRight,
   ExternalLink,
   FileText,
@@ -31,6 +28,7 @@ import DynamicCompletionCard from './DynamicCompletionCard.tsx';
 import RepairDeviceLabelQR from './RepairDeviceLabelQR.tsx';
 import RepairDocumentation from './RepairDocumentation.tsx';
 import ClientProfileRepairOrders from './ClientProfileRepairOrders.tsx';
+import { Microscope } from 'lucide-react';
 
 interface TelemetrySummary {
   batteryHealthPercentage: number;

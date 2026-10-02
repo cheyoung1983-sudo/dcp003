@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { Menu, X, Wrench, Cpu, User, LogOut } from 'lucide-react';
-import { useSafeAuth0 } from './Auth0ProviderWithConfig';
+import { useAuth0 } from '@auth0/auth0-react';
 
 export function Navbar({ onBookClick }: { onBookClick: () => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
-  const { user, isLoading, logout } = useSafeAuth0();
+  const { user, isLoading, logout } = useAuth0();
 
   const navItems = [
     { name: 'Home', href: '/' },

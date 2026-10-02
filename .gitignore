@@ -1,15 +1,6 @@
 node_modules/
-<<<<<<< HEAD
-.next/
-.vercel/
-.idea/
 build/
 dist/
-out/
-=======
-build/
-dist/
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 coverage/
 .DS_Store
 *.log
@@ -17,8 +8,3 @@ bun.lock
 bun.lockb
 .env*
 !.env.example
-<<<<<<< HEAD
-*.exe
-.vercel
-=======
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)

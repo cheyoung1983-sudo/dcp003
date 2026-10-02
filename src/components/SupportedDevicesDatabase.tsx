@@ -34,7 +34,6 @@ import {
 } from '../data/supportedDevicesData.ts';
 import { useToast } from './Toast.tsx';
 import { REPAIR_DB_INDEX_RECOMMENDATIONS } from '../lib/dbOptimizations.ts';
-import { fetchSupportedDevices } from '@/actions/supportedDevices';
 
 interface SupportedDevicesDatabaseProps {
   onSelectDeviceForIntake?: (manufacturer: string, model: string) => void;

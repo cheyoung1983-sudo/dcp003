@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect } from 'react';
 
 export type TabType = 'home' | 'classy_hub' | 'intake' | 'hardware_diag' | 'matrix' | 'calc' | 'track' | 'booking' | 'analytics' | 'academy' | 'support' | 'about' | 'blueprint' | 'eleven_tts' | 'eleven_procedures' | 'eleven_flow' | 'eleven_voice_studio' | 'voice_to_circuit' | 'eleven_inspector' | 'auth0_flows' | 'eleven_kb_tools';

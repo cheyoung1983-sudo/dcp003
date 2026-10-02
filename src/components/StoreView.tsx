@@ -1,21 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { ShoppingCart, ShoppingBag, Loader2 } from "lucide-react";
 import { STORE_PRODUCTS } from "@/lib/ui-constants";
 import { shopifyFetch } from "@/lib/shopify";
 import { PRODUCTS_QUERY } from "@/lib/shopify-queries";
 import type { Product } from "@/lib/shopify-types";
 import AddToCartButton from "@/components/AddToCartButton";
-import NextOptimizedImage from "./NextOptimizedImage.tsx";
-import ShopifyCollectionEmbed from "./ShopifyCollectionEmbed";
-import ShopifyProductEmbed from "./ShopifyProductEmbed";
 
 export function StoreView() {
   const [shopifyProducts, setShopifyProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [storeViewMode, setStoreViewMode] = useState<"catalog" | "shopify_collection" | "shopify_product">("catalog");
 
   useEffect(() => {
     async function loadProducts() {
@@ -48,55 +43,16 @@ export function StoreView() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex bg-slate-900 border border-slate-800 rounded-xl p-1">
-            <button
-              onClick={() => setStoreViewMode("catalog")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                storeViewMode === "catalog"
-                  ? "bg-blue-600 text-white shadow"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Native Store
-            </button>
-            <button
-              onClick={() => setStoreViewMode("shopify_collection")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                storeViewMode === "shopify_collection"
-                  ? "bg-cyan-600 text-white shadow"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Shopify Collection
-            </button>
-            <button
-              onClick={() => setStoreViewMode("shopify_product")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                storeViewMode === "shopify_product"
-                  ? "bg-emerald-600 text-white shadow"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Featured Product
-            </button>
-          </div>
-
-          <Link
-            href="/cart"
-            className="flex items-center text-slate-200 bg-slate-800/80 hover:bg-slate-700 px-4 py-2.5 rounded-xl border border-slate-700 font-semibold text-sm transition-colors w-fit gap-2 shadow-md"
-          >
-            <ShoppingCart size={18} className="text-blue-400" />
-            <span>View Shopping Cart</span>
-          </Link>
-        </div>
+        <a
+          href="#cart"
+          className="flex items-center text-slate-200 bg-slate-800/80 hover:bg-slate-700 px-4 py-2.5 rounded-xl border border-slate-700 font-semibold text-sm transition-colors w-fit gap-2 shadow-md"
+        >
+          <ShoppingCart size={18} className="text-blue-400" />
+          <span>View Shopping Cart</span>
+        </a>
       </div>
 
-      {storeViewMode === "shopify_collection" ? (
-        <ShopifyCollectionEmbed />
-      ) : storeViewMode === "shopify_product" ? (
-        <ShopifyProductEmbed />
-      ) : loading ? (
+      {loading ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
           <p className="text-sm font-mono">Fetching Shopify Storefront catalog...</p>
@@ -116,35 +72,33 @@ export function StoreView() {
                 key={product.id}
                 className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden group flex flex-col hover:border-slate-700 transition-all shadow-lg"
               >
-                <Link
-                  href={`/products/${product.handle}`}
+                <a
+                  href={`#product-${product.handle}`}
                   className="h-52 overflow-hidden relative bg-slate-950 block"
                 >
                   {product.featuredImage ? (
-                    <NextOptimizedImage
+                    <img
                       src={product.featuredImage.url}
                       alt={product.featuredImage.altText || product.title}
-                      fill={true}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-700">
                       <ShoppingBag size={48} />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded text-emerald-400 border border-slate-700 z-10">
+                  <div className="absolute top-2 right-2 bg-slate-900/90 backdrop-blur text-[10px] font-bold px-2 py-1 rounded text-emerald-400 border border-slate-700">
                     {product.availableForSale ? "In Stock" : "Sold Out"}
                   </div>
-                </Link>
+                </a>
 
                 <div className="p-5 flex flex-col flex-grow space-y-4">
                   <div>
-                    <Link href={`/products/${product.handle}`}>
+                    <a href={`#product-${product.handle}`}>
                       <h3 className="text-base font-bold text-white mb-1 leading-snug line-clamp-2 hover:text-blue-400 transition-colors">
                         {product.title}
                       </h3>
-                    </Link>
+                    </a>
                     <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                       {product.description || "Certified component for store distribution."}
                     </p>
@@ -183,14 +137,12 @@ export function StoreView() {
                 className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden group flex flex-col"
               >
                 <div className="h-48 overflow-hidden relative">
-                  <NextOptimizedImage
+                  <img
                     src={product.img}
                     alt={product.name}
-                    fill={true}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    fallbackSrc="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%230f172a'/%3E%3C/svg%3E"
                   />
-                  <div className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur text-xs font-bold px-2 py-1 rounded text-slate-300 border border-slate-700 z-10">
+                  <div className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur text-xs font-bold px-2 py-1 rounded text-slate-300 border border-slate-700">
                     {product.category}
                   </div>
                 </div>
@@ -202,12 +154,12 @@ export function StoreView() {
                     <span className="text-lg font-bold text-blue-400 font-mono">
                       ${product.price.toFixed(2)}
                     </span>
-                    <Link
-                      href="/cart"
+                    <a
+                      href="#cart"
                       className="bg-slate-800 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border border-slate-700"
                     >
                       Buy
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </div>

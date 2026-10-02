@@ -1,23 +1,19 @@
 "use client";
 
 import React from "react";
-import { useSafeAuth0 } from "./Auth0ProviderWithConfig";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function SignInButton() {
-  const { loginWithRedirect } = useSafeAuth0();
+  const { loginWithRedirect } = useAuth0();
 
   const onClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      if (typeof window !== 'undefined' && (window as any).grecaptcha && (window as any).grecaptcha.enterprise) {
+      if (typeof window !== 'undefined' && window.grecaptcha && window.grecaptcha.enterprise) {
         await new Promise<void>((resolve) => {
-          (window as any).grecaptcha.enterprise.ready(async () => {
-            try {
-              const token = await (window as any).grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
-              console.log('reCAPTCHA enterprise token generated:', token);
-            } catch (recaptchaErr) {
-              console.warn('reCAPTCHA execution fallback:', recaptchaErr);
-            }
+          window.grecaptcha.enterprise.ready(async () => {
+            const token = await window.grecaptcha.enterprise.execute('6LcB60UtAAAAAEk-ADlBMnuUjbWXddXTyXLcmoSj', { action: 'LOGIN' });
+            console.log('reCAPTCHA enterprise token generated:', token);
             loginWithRedirect();
             resolve();
           });
@@ -43,3 +39,4 @@ export default function SignInButton() {
     </button>
   );
 }
+

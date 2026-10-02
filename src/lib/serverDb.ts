@@ -373,11 +373,9 @@ export async function runSupportedDevicesIndexMigration(): Promise<MigrationResu
     };
   }
 }
+
 export const getDbPool = getDatabasePool;
 export const queryWithToken = query;
-export function isDbConfigured(): boolean {
-  return Boolean(process.env.PGHOST || process.env.DATABASE_URL);
-}
 export const pool = {
   query: (sql: string, args: any[] = []) => query(sql, args),
 };

@@ -2,27 +2,21 @@ import { useState, useEffect } from 'react';
 
 /**
  * Custom React hook that persists state to localStorage across page reloads.
- * Initializes with initialValue to prevent SSR hydration mismatches,
- * and synchronizes with localStorage on client mount.
  */
 export function useLocalStorage<T>(
   key: string,
   initialValue: T
 ): [T, (value: T | ((val: T) => T)) => void, () => void] {
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
-
-  // Sync with localStorage on client mount
-  useEffect(() => {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === 'undefined') return initialValue;
       const item = window.localStorage.getItem(key);
-      if (item !== null) {
-        setStoredValue(JSON.parse(item));
-      }
+      return item !== null ? JSON.parse(item) : initialValue;
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error);
+      return initialValue;
     }
-  }, [key]);
+  });
 
   const setValue = (value: T | ((val: T) => T)) => {
     try {
@@ -71,4 +65,3 @@ export function useLocalStorage<T>(
 
   return [storedValue, setValue, removeValue];
 }
-

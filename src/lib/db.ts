@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -678,3 +676,6 @@ export function useDatabase(): UseDatabaseReturn {
 
 // Alias for convenience
 export const useOfflineDatabase = useDatabase;
+
+
+

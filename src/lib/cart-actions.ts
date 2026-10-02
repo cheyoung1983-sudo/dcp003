@@ -1,6 +1,3 @@
-"use server";
-
-import { cookies } from "next/headers";
 import { shopifyFetch } from "./shopify";
 import {
   CREATE_CART_MUTATION,
@@ -11,19 +8,17 @@ import {
 } from "./shopify-queries";
 import type { Cart } from "./shopify-types";
 
-async function getCartId(): Promise<string | undefined> {
-  const cookieStore = await cookies();
-  return cookieStore.get("cartId")?.value;
+function getCartId(): string | undefined {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("dcp_shopify_cart_id") || undefined;
+  }
+  return undefined;
 }
 
-async function setCartId(cartId: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("cartId", cartId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-  });
+function setCartId(cartId: string) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("dcp_shopify_cart_id", cartId);
+  }
 }
 
 export async function getCart(): Promise<Cart | null> {

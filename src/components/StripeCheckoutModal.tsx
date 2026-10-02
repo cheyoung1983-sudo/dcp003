@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useCallback } from 'react';
 import {
   EmbeddedCheckout,
@@ -8,10 +6,7 @@ import {
 import { loadStripe } from '@stripe/stripe-js';
 import { CreditCard, X, ShieldCheck, Lock, Sparkles } from 'lucide-react';
 
-const publishableKey = 
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) ||
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_STRIPE_PUBLIC_KEY) ||
-  'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
+const publishableKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51U0JtlGMZFe3OZW6ciQD5jP967DjUZlnpRWD8WvBfzu1bD2sCZxFlDufW9nySu7MJaHKP533fiDYXmBo87XX03EF00nODFh01E';
 const stripePromise = loadStripe(publishableKey);
 
 interface StripeCheckoutModalProps {

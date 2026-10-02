@@ -1,5 +1,3 @@
-'use client';
-
 import React, { ReactNode, createContext, useContext, useMemo } from 'react';
 import { Auth0Provider, useAuth0, User } from '@auth0/auth0-react';
 
@@ -8,7 +6,6 @@ interface Auth0ContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user?: User;
-  error?: Error;
   loginWithRedirect: (options?: any) => Promise<void>;
   loginWithPopup: (options?: any) => Promise<void>;
   logout: (options?: any) => Promise<void>;
@@ -18,11 +15,10 @@ interface Auth0ContextType {
 const SafeAuth0Context = createContext<Auth0ContextType | null>(null);
 
 export function isAuth0Configured(): boolean {
-  const domain = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_AUTH0_DOMAIN) || 
-                 (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AUTH0_DOMAIN);
-  const clientId = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_AUTH0_CLIENT_ID) || 
-                   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AUTH0_CLIENT_ID);
-  return Boolean(domain && clientId);
+  return Boolean(
+    import.meta.env.VITE_AUTH0_DOMAIN && 
+    import.meta.env.VITE_AUTH0_CLIENT_ID
+  );
 }
 
 function ConfiguredAuth0Consumer({ children }: { children: ReactNode }) {
@@ -33,7 +29,6 @@ function ConfiguredAuth0Consumer({ children }: { children: ReactNode }) {
     isAuthenticated: auth0.isAuthenticated,
     isLoading: auth0.isLoading,
     user: auth0.user,
-    error: auth0.error,
     loginWithRedirect: auth0.loginWithRedirect,
     loginWithPopup: auth0.loginWithPopup,
     logout: auth0.logout,
@@ -53,7 +48,6 @@ function FallbackAuth0Provider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     isLoading: false,
     user: undefined,
-    error: undefined,
     loginWithRedirect: async () => {
       alert('Auth0 is not configured yet. Please add VITE_AUTH0_DOMAIN and VITE_AUTH0_CLIENT_ID in your environment.');
     },
@@ -76,13 +70,9 @@ interface Auth0ProviderWithConfigProps {
 }
 
 export function Auth0ProviderWithConfig({ children }: Auth0ProviderWithConfigProps) {
-  const domain = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_AUTH0_DOMAIN) || 
-                 (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AUTH0_DOMAIN);
-  const clientId = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_AUTH0_CLIENT_ID) || 
-                   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AUTH0_CLIENT_ID);
-  const audience = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_AUTH0_AUDIENCE) || 
-                   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AUTH0_AUDIENCE) || 
-                   'https://api.displaycellpros.com';
+  const domain = import.meta.env.VITE_AUTH0_DOMAIN;
+  const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+  const audience = import.meta.env.VITE_AUTH0_AUDIENCE || 'https://api.displaycellpros.com';
 
   if (!domain || !clientId) {
     return <FallbackAuth0Provider>{children}</FallbackAuth0Provider>;

@@ -3,12 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-<<<<<<< HEAD
-import express from 'express';
-import path from 'path';
-import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';
-=======
 import 'dotenv/config';
 import express from 'express';
 import crypto from 'crypto';
@@ -16,7 +10,6 @@ import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import OpenAI from 'openai';
 import { GoogleGenAI } from '@google/genai';
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 import { getToken, getTokenResponse } from '@vercel/connect';
 import { handleVercelConnectError } from './src/utils/vercelConnect.ts';
 import {
@@ -44,9 +37,6 @@ const PORT = 3000;
 // Attach HTTP Security Headers Middleware
 app.use(securityHeadersMiddleware);
 
-<<<<<<< HEAD
-app.use(express.json({ limit: '10mb' }));
-=======
 app.use(express.json({ 
   limit: '50mb',
   verify: (req: any, _res, buf) => {
@@ -75,7 +65,6 @@ app.use(express.static(publicDirectoryPath, {
     }
   }
 }));
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
 // Rate limiters for abuse prevention
 const aiRateLimiter = createRateLimiter({
@@ -95,11 +84,7 @@ const VERCEL_CONNECT_RESOURCE = 'mcp.vercel.com/cheyoung1983-sudo-www-displaycel
 // AWS Aurora Database API endpoints
 app.get('/api/db/health', async (_req, res) => {
   try {
-<<<<<<< HEAD
-    const { query, getPoolMetrics } = await import('./src/lib/db.ts');
-=======
     const { query, getPoolMetrics } = await import('./src/lib/serverDb.ts');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     const result = await query('SELECT NOW() as now, version() as version', []);
     res.json({
       status: 'ok',
@@ -116,11 +101,7 @@ app.get('/api/db/health', async (_req, res) => {
 
 app.get('/api/db/version', async (_req, res) => {
   try {
-<<<<<<< HEAD
-    const { query } = await import('./src/lib/db.ts');
-=======
     const { query } = await import('./src/lib/serverDb.ts');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     const result = await query('SELECT version() as version', []);
     res.json({ status: 'ok', version: result.rows[0]?.version });
   } catch (error: any) {
@@ -130,11 +111,7 @@ app.get('/api/db/version', async (_req, res) => {
 
 app.get('/api/db/read-only/version', async (_req, res) => {
   try {
-<<<<<<< HEAD
-    const { queryReadOnly } = await import('./src/lib/db.ts');
-=======
     const { queryReadOnly } = await import('./src/lib/serverDb.ts');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     const result = await queryReadOnly('SELECT version() as version', []);
     res.json({
       status: 'ok',
@@ -149,11 +126,7 @@ app.get('/api/db/read-only/version', async (_req, res) => {
 // Database Connection Pool Performance Metrics Endpoint
 app.get('/api/db/pool/metrics', async (_req, res) => {
   try {
-<<<<<<< HEAD
-    const { getPoolMetrics } = await import('./src/lib/db.ts');
-=======
     const { getPoolMetrics } = await import('./src/lib/serverDb.ts');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     res.json(getPoolMetrics());
   } catch (error: any) {
     res.status(500).json({ status: 'error', message: error.message || 'Error fetching pool metrics' });
@@ -181,12 +154,6 @@ app.get('/api/db/indexes/suggestions', async (_req, res) => {
   }
 });
 
-<<<<<<< HEAD
-// Database Query Benchmark Endpoint
-app.get('/api/db/benchmark', async (_req, res) => {
-  try {
-    const { query, queryReadOnly, getPoolMetrics } = await import('./src/lib/db.ts');
-=======
 // Execute B-Tree Index Migration for supported_devices table (device_model, repair_category)
 app.post('/api/db/migrate/indexes', async (_req, res) => {
   try {
@@ -1550,7 +1517,6 @@ app.post('/api/checkout/session', async (req, res) => {
 app.get('/api/db/benchmark', async (_req, res) => {
   try {
     const { query, queryReadOnly, getPoolMetrics } = await import('./src/lib/serverDb.ts');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     
     const startPrimary = Date.now();
     let primaryLatency = -1;
@@ -1591,11 +1557,7 @@ app.get('/api/db/benchmark', async (_req, res) => {
 
 app.get('/api/db/comments', async (_req, res) => {
   try {
-<<<<<<< HEAD
-    const { query } = await import('./src/lib/db.ts');
-=======
     const { query } = await import('./src/lib/serverDb.ts');
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     const result = await query('SELECT * FROM comments ORDER BY id DESC LIMIT 50', []);
     res.json({ status: 'ok', comments: result.rows });
   } catch (error: any) {
@@ -1628,18 +1590,6 @@ app.post('/api/auth/vercel-connect/token', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
-});
-
-  // Gemini AI Diagnostic Assistant
-=======
 let openaiClient: OpenAI | null = null;
 function getOpenAI(): OpenAI | null {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -1663,7 +1613,6 @@ function getGemini(): GoogleGenAI | null {
 }
 
   // AI Diagnostic Assistant
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   app.post('/api/ai/diagnose', aiRateLimiter, async (req, res) => {
     const parseResult = DiagnoseSchema.safeParse(req.body);
     const { telemetry, customerReportedIssue, deviceModel } = parseResult.success 
@@ -1677,9 +1626,6 @@ function getGemini(): GoogleGenAI | null {
     }
 
     try {
-<<<<<<< HEAD
-      if (process.env.GEMINI_API_KEY) {
-=======
       const gemini = getGemini();
       if (gemini) {
         try {
@@ -1735,7 +1681,6 @@ function getGemini(): GoogleGenAI | null {
 
       const openai = getOpenAI();
       if (openai) {
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         try {
           const prompt = `
             You are the D&CP LLC Senior Technical Diagnostic Assistant. 
@@ -1769,25 +1714,6 @@ function getGemini(): GoogleGenAI | null {
             Response must be structured, technical, and use markdown.
           `;
 
-<<<<<<< HEAD
-          const aiPromise = ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-          });
-
-          const response = await withTimeout(aiPromise, 4000, null);
-
-          if (response?.text) {
-            diagnosticCache.set(cacheKey, response.text);
-            return res.json({ analysis: response.text });
-          }
-        } catch (aiErr) {
-          console.warn('Gemini API call failed, using rule-based diagnostic generator:', aiErr);
-        }
-      }
-
-      // Rule-based fallback if GEMINI_API_KEY is not configured or failed
-=======
           const aiPromise = openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -1816,7 +1742,6 @@ function getGemini(): GoogleGenAI | null {
       }
 
       // Rule-based fallback if OPENAI_API_KEY is not configured or failed
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
       const current = telemetry?.ammeterDrawAmps ?? 0;
       const isShort = Boolean(telemetry?.isShortToGround);
       const tier = isShort || current > 2.0 ? 'Tier 3 (Board Rework)' : current < 1.0 ? 'Tier 1 (Power/Port)' : 'Tier 2 (Display/Assembly)';
@@ -1833,11 +1758,7 @@ function getGemini(): GoogleGenAI | null {
     }
   });
 
-<<<<<<< HEAD
-  // Gemini Smart Triage Symptom Analyzer API
-=======
   // AI Smart Triage Symptom Analyzer API
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   app.post('/api/ai/smart-triage', aiRateLimiter, async (req, res) => {
     const parseResult = SmartTriageSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -1855,12 +1776,8 @@ function getGemini(): GoogleGenAI | null {
     }
 
     try {
-<<<<<<< HEAD
-      if (process.env.GEMINI_API_KEY) {
-=======
       const openai = getOpenAI();
       if (openai) {
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         try {
           const prompt = `
 You are the Lead Hardware Triage Specialist at D&CP Spokane Lab.
@@ -1888,20 +1805,6 @@ Return ONLY a valid JSON object matching this schema (no markdown code fences):
 }
           `;
 
-<<<<<<< HEAD
-          const aiPromise = ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-              responseMimeType: 'application/json',
-            }
-          });
-
-          const response = await withTimeout(aiPromise, 4000, null);
-
-          if (response?.text) {
-            const parsed = JSON.parse(response.text);
-=======
           const aiPromise = openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -1923,24 +1826,15 @@ Return ONLY a valid JSON object matching this schema (no markdown code fences):
 
           if (replyText) {
             const parsed = JSON.parse(replyText);
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             triageCache.set(cacheKey, parsed);
             return res.json({ success: true, triage: parsed });
           }
         } catch (aiErr) {
-<<<<<<< HEAD
-          console.warn('Gemini smart-triage call failed, falling back to rule-based triage:', aiErr);
-        }
-      }
-
-      // Fallback rule-based smart triage if GEMINI_API_KEY is not set or API failed
-=======
           console.warn('OpenAI smart-triage call failed, falling back to rule-based triage:', aiErr);
         }
       }
 
       // Fallback rule-based smart triage if OPENAI_API_KEY is not set or API failed
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
       const descLower = (symptomDescription || '').toLowerCase();
       let suspectedFault = "Power Rail & Charge IC Interruption";
       let recommendedTier = "TIER_1_POWER_PORT_REFRESH";
@@ -2021,11 +1915,7 @@ Return ONLY a valid JSON object matching this schema (no markdown code fences):
     }
   });
 
-<<<<<<< HEAD
-  // Gemini AI Recommended Diagnostic Path Endpoint
-=======
   // AI Recommended Diagnostic Path Endpoint
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   app.post('/api/ai/diagnostic-path', aiRateLimiter, async (req, res) => {
     const parseResult = DiagnosticPathSchema.safeParse(req.body);
     const { 
@@ -2043,12 +1933,8 @@ Return ONLY a valid JSON object matching this schema (no markdown code fences):
     };
 
     try {
-<<<<<<< HEAD
-      if (process.env.GEMINI_API_KEY) {
-=======
       const openai = getOpenAI();
       if (openai) {
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         try {
           const prompt = `
 You are the Lead Master Bench Technician at D&CP Spokane Repair Lab (IPC-A-610 Certified).
@@ -2072,69 +1958,6 @@ ${telemetry ? `
 - Battery Temp: ${telemetry.batteryTempCelsius}°C
 ` : 'No live telemetry attached'}
 
-<<<<<<< HEAD
-Produce a structured JSON plan with step-by-step bench actions, expected readings, required tools, parts needed, and safety precautions.
-`;
-
-          const aiPromise = ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-              responseMimeType: 'application/json',
-              responseSchema: {
-                type: Type.OBJECT,
-                properties: {
-                  primaryDiagnosis: { type: Type.STRING },
-                  confidenceScore: { type: Type.NUMBER },
-                  complexityLevel: { type: Type.STRING },
-                  estimatedBenchTimeMinutes: { type: Type.NUMBER },
-                  technicianBriefing: { type: Type.STRING },
-                  diagnosticSteps: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        stepNumber: { type: Type.NUMBER },
-                        actionTitle: { type: Type.STRING },
-                        instructions: { type: Type.STRING },
-                        expectedReading: { type: Type.STRING },
-                        toolRequired: { type: Type.STRING },
-                      },
-                      required: ['stepNumber', 'actionTitle', 'instructions', 'expectedReading', 'toolRequired'],
-                    },
-                  },
-                  requiredTools: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  riskPrecautions: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  partsLikelyNeeded: { type: Type.ARRAY, items: { type: Type.STRING } },
-                },
-                required: [
-                  'primaryDiagnosis',
-                  'confidenceScore',
-                  'complexityLevel',
-                  'estimatedBenchTimeMinutes',
-                  'technicianBriefing',
-                  'diagnosticSteps',
-                  'requiredTools',
-                  'riskPrecautions',
-                  'partsLikelyNeeded',
-                ],
-              },
-            },
-          });
-
-          const response = await withTimeout(aiPromise, 4000, null);
-
-          if (response?.text) {
-            const parsed = JSON.parse(response.text);
-            return res.json({ success: true, path: parsed });
-          }
-        } catch (aiErr) {
-          console.warn('Gemini diagnostic path API call failed, falling back to rule-based engine:', aiErr);
-        }
-      }
-
-      // Fallback rule-based diagnostic path generator when GEMINI_API_KEY is omitted or failed
-=======
 Produce a structured JSON plan strictly matching this format:
 {
   "primaryDiagnosis": "string",
@@ -2186,7 +2009,6 @@ Produce a structured JSON plan strictly matching this format:
       }
 
       // Fallback rule-based diagnostic path generator when OPENAI_API_KEY is omitted or failed
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
       const notesLower = (repairNotes || '').toLowerCase();
       let primaryDiagnosis = "Power & Charge Rail Delivery Interruption";
       let complexityLevel = "Tier 1 (Standard Assembly)";
@@ -2420,8 +2242,6 @@ Produce a structured JSON plan strictly matching this format:
     }
   });
 
-<<<<<<< HEAD
-=======
   // Client Profile & Repair Orders History API
   app.get('/api/client/orders', (req, res) => {
     const clientEmail = (req.query.email as string || 'cheyoung1983@gmail.com').trim().toLowerCase();
@@ -2723,7 +2543,6 @@ Produce a structured JSON plan strictly matching this format:
     });
   });
 
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   // Repair Status Tracker API
   app.get('/api/repair-status/:ticketNumber', (req, res) => {
     const ticketNumber = (req.params.ticketNumber || '').trim().toUpperCase().slice(0, 30);
@@ -2737,10 +2556,7 @@ Produce a structured JSON plan strictly matching this format:
         serviceTier: 'Tier 3 (Board Rework)',
         currentStage: 2,
         estimatedCompletionDate: 'Tomorrow at 3:15 PM (18h remaining)',
-<<<<<<< HEAD
-=======
         estimated_completion: 'Tomorrow at 3:15 PM (18h remaining)',
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         technicianNotes: 'Triage complete. Awaiting logic board components for VDD_MAIN short rework near U3100 PMIC.',
         telemetrySummary: {
           batteryHealthPercentage: 88,
@@ -2763,10 +2579,7 @@ Produce a structured JSON plan strictly matching this format:
         serviceTier: 'Tier 2 (Display Renewal)',
         currentStage: 3,
         estimatedCompletionDate: 'Today at 5:30 PM (2h remaining)',
-<<<<<<< HEAD
-=======
         estimated_completion: 'Today at 5:30 PM (2h remaining)',
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         technicianNotes: 'Bench testing active. OEM Display Assembly installed and undergoing digitizer touch grid calibration.',
         telemetrySummary: {
           batteryHealthPercentage: 94,
@@ -2789,10 +2602,7 @@ Produce a structured JSON plan strictly matching this format:
         serviceTier: 'Tier 1 (Power/Port Refresh)',
         currentStage: 4,
         estimatedCompletionDate: 'Completed (Ready for Pickup)',
-<<<<<<< HEAD
-=======
         estimated_completion: 'Completed (Ready for Pickup)',
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         technicianNotes: 'Quality Assurance complete. Charge current nominal at 2.1A. Ready for customer pickup at Spokane Lab HQ.',
         telemetrySummary: {
           batteryHealthPercentage: 91,
@@ -2811,25 +2621,18 @@ Produce a structured JSON plan strictly matching this format:
     };
 
     if (sampleTickets[ticketNumber]) {
-<<<<<<< HEAD
-      return res.json({ success: true, ticket: sampleTickets[ticketNumber] });
-=======
       // Ensure both fields exist
       const t = sampleTickets[ticketNumber];
       t.estimated_completion = t.estimated_completion || t.estimatedCompletionDate;
       t.estimatedCompletionDate = t.estimatedCompletionDate || t.estimated_completion;
       return res.json({ success: true, ticket: t });
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
     }
 
     // Dynamic mock for any other valid ticket number format
     const stages = [1, 2, 3, 4];
     const numHash = ticketNumber.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const mockStage = stages[numHash % stages.length];
-<<<<<<< HEAD
-=======
     const estCompStr = mockStage === 4 ? 'Completed' : 'Within 24 Hours';
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 
     res.json({
       success: true,
@@ -2839,12 +2642,8 @@ Produce a structured JSON plan strictly matching this format:
         deviceModel: 'Mobile Communications Unit',
         serviceTier: mockStage > 2 ? 'Tier 3 (Board Rework)' : 'Tier 2 (Display Renewal)',
         currentStage: mockStage,
-<<<<<<< HEAD
-        estimatedCompletionDate: mockStage === 4 ? 'Completed' : 'Within 24 Hours',
-=======
         estimatedCompletionDate: estCompStr,
         estimated_completion: estCompStr,
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         technicianNotes: `Ticket ${ticketNumber} is active in D&CP Spokane Lab. Current stage: ${mockStage}/4. Telemetry diagnostics active.`,
         telemetrySummary: {
           batteryHealthPercentage: 85 + (numHash % 12),
@@ -2859,49 +2658,6 @@ Produce a structured JSON plan strictly matching this format:
 
   // Shopify & Lab Intake Sync
   app.post('/api/intake/sync', formRateLimiter, async (req, res) => {
-<<<<<<< HEAD
-    const data = req.body || {};
-    const devicePhotos = data.devicePhotos || [];
-    const photoMetadata = data.photoMetadata || {
-      totalCount: devicePhotos.length,
-      categories: Array.from(new Set(devicePhotos.map((p: any) => p.category || 'General Condition')))
-    };
-    
-    console.log('Syncing intake with Spokane Lab & Shopify:', {
-      deviceManufacturer: data.deviceManufacturer,
-      deviceModel: data.deviceModel,
-      imei: data.imei,
-      attachedPhotosCount: devicePhotos.length,
-      photoCategories: photoMetadata.categories
-    });
-    
-    const draftOrderId = `gid://shopify/DraftOrder/${Math.floor(100000000 + Math.random() * 900000000)}`;
-
-    if (!process.env.SHOPIFY_STORE_DOMAIN || !process.env.SHOPIFY_ADMIN_API_TOKEN) {
-      return res.json({ 
-        success: true, 
-        mocked: true,
-        draftOrderId,
-        invoiceUrl: 'https://checkout.shopify.com/mock-invoice',
-        attachedPhotoCount: devicePhotos.length,
-        attachedCategories: photoMetadata.categories,
-        labTicketCreated: true,
-      });
-    }
-
-    try {
-      res.json({ 
-        success: true, 
-        draftOrderId, 
-        invoiceUrl: '#',
-        attachedPhotoCount: devicePhotos.length,
-        attachedCategories: photoMetadata.categories,
-        labTicketCreated: true,
-      });
-    } catch (error) {
-      res.status(500).json({ success: false, errors: ['Shopify synchronization failed'] });
-    }
-=======
     try {
       const data = req.body || {};
       const devicePhotos = data.devicePhotos || [];
@@ -2942,7 +2698,6 @@ Produce a structured JSON plan strictly matching this format:
         labTicketCreated: true,
       });
     }
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   });
 
   // Support Message API
@@ -2978,16 +2733,6 @@ Produce a structured JSON plan strictly matching this format:
 
       const { message, conversationHistory, ticketId } = parseResult.data;
 
-<<<<<<< HEAD
-      if (process.env.GEMINI_API_KEY) {
-        try {
-          const historyText = Array.isArray(conversationHistory) 
-            ? conversationHistory.map((m: any) => `${m.sender === 'user' ? 'Customer' : 'Technician David'}: ${m.text}`).join('\n')
-            : '';
-
-          const systemPrompt = `
-You are David Chen, Lead Systems Engineer at D&CP LLC (Spokane Lab, WA).
-=======
       const openai = getOpenAI();
       if (openai) {
         try {
@@ -3003,41 +2748,12 @@ You are David Chen, Lead Systems Engineer at D&CP LLC (Spokane Lab, WA).
 
           const systemPrompt = `
 You are Ryan Young, Founder & Lead Systems Engineer at Display & Cell Pros LLC (Spokane Lab, WA; UEI: VAJXG5MNYQK8, EIN: 39-5018763, UBI: 605 985 265).
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
 You are answering a live support chat with a customer.
 Key Details:
 - D&CP provides hardware diagnostics, display renewals, battery replacements, and Tier 3 micro-soldering (VDD_MAIN shorts, BGA reballing, data recovery).
 - Spokane Lab Address: 115 S Adams St, Spokane, WA 99201.
 - Turnaround: Tier 1 (1-2 hours), Tier 2 (Same day), Tier 3 (24-48 hours).
 - Warranty: Lifetime warranty on OEM-spec parts and workmanship.
-<<<<<<< HEAD
-- Compliance: Washington RCW 19.415 data privacy compliant.
-${ticketId ? `- Active Customer Ticket ID referenced: ${ticketId}` : ''}
-
-Respond concisely (2-4 sentences max), professionally, and directly in character as David Chen.
-Provide clear technical guidance, reassure data privacy, and suggest next steps (e.g. submitting an Intake form or using the Repair Status tracker).
-          `;
-
-          const userPrompt = `Recent Chat History:\n${historyText}\n\nCustomer Message: "${message}"\n\nProvide David Chen's reply:`;
-
-          const aiPromise = ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: userPrompt,
-            config: {
-              systemInstruction: systemPrompt,
-            }
-          });
-
-          const response = await withTimeout(aiPromise, 4000, null);
-
-          if (response?.text) {
-            return res.json({
-              success: true,
-              reply: response.text,
-              technician: {
-                name: "David Chen",
-                title: "Lead Systems Engineer",
-=======
 - Compliance: Washington RCW 19.415 data privacy compliant, Combat Veteran & Enrolled Tribal Member owned.
 ${ticketId ? `- Active Customer Ticket ID referenced: ${ticketId}` : ''}
 
@@ -3066,25 +2782,16 @@ Provide clear technical guidance, reassure data privacy, and suggest next steps 
               technician: {
                 name: "Ryan Young",
                 title: "Founder & Lead Systems Engineer",
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
                 avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
               }
             });
           }
         } catch (aiErr) {
-<<<<<<< HEAD
-          console.warn('Gemini support chat call failed, falling back to rule-based technician response:', aiErr);
-        }
-      }
-
-      // Smart fallback responses if Gemini API Key is not set
-=======
           console.warn('OpenAI support chat call failed, falling back to rule-based technician response:', aiErr);
         }
       }
 
       // Smart fallback responses if OPENAI_API_KEY is not set
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
       let reply = "Thank you for contacting Spokane Lab HQ. Our bench technicians are standing by. For immediate status updates, please check the Repair Status Tracker or submit a formal Intake Form.";
       const lower = message.toLowerCase();
 
@@ -3104,13 +2811,8 @@ Provide clear technical guidance, reassure data privacy, and suggest next steps 
         success: true,
         reply,
         technician: {
-<<<<<<< HEAD
-          name: "David Chen",
-          title: "Lead Systems Engineer",
-=======
           name: "Ryan Young",
           title: "Founder & Lead Systems Engineer",
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
           avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200"
         }
       });
@@ -3140,12 +2842,8 @@ Provide clear technical guidance, reassure data privacy, and suggest next steps 
     }
 
     try {
-<<<<<<< HEAD
-      if (process.env.GEMINI_API_KEY) {
-=======
       const openai = getOpenAI();
       if (openai) {
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
         try {
           const prompt = `
 You are the Master Educational Director at D&CP Spokane Repair Academy.
@@ -3177,20 +2875,6 @@ Return ONLY a valid JSON object strictly matching this format without markdown c
 Generate exactly 4-5 well-thought-out scenes.
           `;
 
-<<<<<<< HEAD
-          const aiPromise = ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-              responseMimeType: 'application/json',
-            }
-          });
-
-          const response = await withTimeout(aiPromise, 4000, null);
-
-          if (response?.text) {
-            const parsed = JSON.parse(response.text);
-=======
           const aiPromise = openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -3212,24 +2896,15 @@ Generate exactly 4-5 well-thought-out scenes.
 
           if (replyText) {
             const parsed = JSON.parse(replyText);
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
             videoGuideCache.set(cacheKey, parsed);
             return res.json({ success: true, video: parsed });
           }
         } catch (aiErr) {
-<<<<<<< HEAD
-          console.warn('Gemini video generation failed, falling back to rule-based video generator:', aiErr);
-        }
-      }
-
-      // Fallback AI video tutorial response if GEMINI_API_KEY is absent or failed
-=======
           console.warn('OpenAI video generation failed, falling back to rule-based video generator:', aiErr);
         }
       }
 
       // Fallback AI video tutorial response if OPENAI_API_KEY is absent or failed
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
       const topicLower = topic.toLowerCase();
       let category = "Cleanliness";
       if (topicLower.includes('display') || topicLower.includes('screen') || topicLower.includes('oled')) category = "Display";
@@ -3374,8 +3049,6 @@ Generate exactly 4-5 well-thought-out scenes.
     }
   });
 
-<<<<<<< HEAD
-=======
   // Stripe Embedded Checkout Session Endpoint
   app.post('/api/stripe/create-checkout-session', formRateLimiter, async (req, res) => {
     try {
@@ -3554,7 +3227,6 @@ Generate exactly 4-5 well-thought-out scenes.
     }
   });
 
->>>>>>> 7eb9bfe (feat(repo): synchronize complete production codebase with TypeScript fixes and Stripe integration)
   // Dedicated JSON 404 handler for unmatched /api routes
   app.all('/api/*', (req, res) => {
     res.status(404).json({

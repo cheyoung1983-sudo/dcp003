@@ -56,16 +56,15 @@ if (typeof window !== 'undefined') {
 
 registerServiceWorker();
 
-const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null;
-if (rootElement) {
-  rootElement.dataset.mounted = 'true';
-  createRoot(rootElement).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <Auth0ProviderWithConfig>
-          <App />
-        </Auth0ProviderWithConfig>
-      </ErrorBoundary>
-    </StrictMode>,
-  );
-}
+const rootElement = document.getElementById('root')!;
+rootElement.dataset.mounted = 'true';
+
+createRoot(rootElement).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <Auth0ProviderWithConfig>
+        <App />
+      </Auth0ProviderWithConfig>
+    </ErrorBoundary>
+  </StrictMode>,
+);
